@@ -4,6 +4,7 @@ package exchange.dydx.abacus.calculator.v2.tradeinput
 
 import abs
 import exchange.dydx.abacus.calculator.CalculationPeriod
+import exchange.dydx.abacus.output.input.MarginMode
 import exchange.dydx.abacus.output.input.OrderSide
 import exchange.dydx.abacus.output.input.OrderbookUsage
 import exchange.dydx.abacus.output.input.TradeInputMarketOrder
@@ -15,9 +16,12 @@ import exchange.dydx.abacus.state.internalstate.InternalSubaccountState
 import exchange.dydx.abacus.state.internalstate.InternalTradeInputState
 import exchange.dydx.abacus.state.internalstate.InternalUserState
 import exchange.dydx.abacus.state.internalstate.safeCreate
+import exchange.dydx.abacus.utils.MAX_FREE_CROSS_COLLATERAL_BUFFER_PERCENT
+import exchange.dydx.abacus.utils.MAX_FREE_ISOLATED_COLLATERAL_BUFFER_PERCENT
 import exchange.dydx.abacus.utils.Numeric
 import exchange.dydx.abacus.utils.Rounder
 import kollections.toIList
+import kotlin.math.min
 
 internal class TradeInputMarketOrderCalculator() {
     fun calculate(
@@ -38,15 +42,22 @@ internal class TradeInputMarketOrderCalculator() {
         var tradeSize = TradeInputSize.safeCreate(trade.size)
         when (input) {
             "size.size", "size.percent" ->
-                tradeSize = tradeSize.copy(usdcSize = if (filled) marketOrder?.usdcSize else null)
+                tradeSize = tradeSize.copy(
+                    usdcSize = if (filled) marketOrder?.usdcSize else null,
+                    balancePercent = if (filled) marketOrder?.balancePercent else null,
+                )
 
             "size.usdcSize" ->
-                tradeSize = tradeSize.copy(size = if (filled) marketOrder?.size else null)
+                tradeSize = tradeSize.copy(
+                    size = if (filled) marketOrder?.size else null,
+                    balancePercent = if (filled) marketOrder?.balancePercent else null,
+                )
 
             "size.leverage" -> {
                 tradeSize = tradeSize.copy(
                     size = if (filled) marketOrder?.size else null,
                     usdcSize = if (filled) marketOrder?.usdcSize else null,
+                    balancePercent = if (filled) marketOrder?.balancePercent else null,
                 )
                 val orderbook = market?.consolidatedOrderbook
                 if (marketOrder != null && orderbook != null) {
@@ -55,6 +66,13 @@ internal class TradeInputMarketOrderCalculator() {
                         trade.side = side
                     }
                 }
+            }
+
+            "size.balancePercent" -> {
+                tradeSize = tradeSize.copy(
+                    size = if (filled) marketOrder?.size else null,
+                    usdcSize = if (filled) marketOrder?.usdcSize else null,
+                )
             }
         }
 
@@ -87,13 +105,44 @@ internal class TradeInputMarketOrderCalculator() {
         user: InternalUserState?,
         input: String?,
     ): TradeInputMarketOrder? {
+        val tradeSide = trade.side
         val tradeSize = trade.size
-        if (tradeSize != null) {
+        val freeCollateral = subaccount?.calculated?.get(CalculationPeriod.current)?.freeCollateral
+
+        if (tradeSize != null && freeCollateral != null && freeCollateral > Numeric.double.ZERO) {
+            val maxMarketLeverage = market?.perpetualMarket?.configs?.maxMarketLeverage ?: Numeric.double.ONE
+            val targetLeverage = trade.targetLeverage
+            val marginMode = trade.marginMode ?: MarginMode.Cross
+            val tradeLeverage = if (marginMode == MarginMode.Isolated && targetLeverage != null && targetLeverage > Numeric.double.ZERO) {
+                targetLeverage
+            } else {
+                maxMarketLeverage
+            }
+
+            val positions = subaccount.openPositions
+            val marketId = market?.perpetualMarket?.id
+            val positionNotionalSize = if (positions != null && marketId != null) {
+                positions[marketId]?.calculated?.get(CalculationPeriod.current)?.notionalTotal ?: Numeric.double.ZERO
+            } else {
+                Numeric.double.ZERO
+            }
+            val positionSize = if (positions != null && marketId != null) {
+                positions[marketId]?.calculated?.get(CalculationPeriod.current)?.size ?: Numeric.double.ZERO
+            } else {
+                Numeric.double.ZERO
+            }
+            val isTradeSameSide = tradeSide != null &&
+                ((tradeSide == OrderSide.Buy && positionSize >= Numeric.double.ZERO) || (tradeSide == OrderSide.Sell && positionSize <= Numeric.double.ZERO))
+
             return when (input) {
                 "size.size", "size.percent" -> {
                     val orderbook = getOrderbook(market = market, isBuying = trade.isBuying)
                     createMarketOrderFromSize(
                         size = tradeSize.size,
+                        existingPositionNotionalSize = positionNotionalSize,
+                        isTradeSameSide = isTradeSameSide,
+                        freeCollateral = freeCollateral,
+                        tradeLeverage = tradeLeverage,
                         orderbook = orderbook,
                     )
                 }
@@ -103,6 +152,10 @@ internal class TradeInputMarketOrderCalculator() {
                     val orderbook = getOrderbook(market = market, isBuying = trade.isBuying)
                     createMarketOrderFromUsdcSize(
                         usdcSize = tradeSize.usdcSize,
+                        existingPositionNotionalSize = positionNotionalSize,
+                        isTradeSameSide = isTradeSameSide,
+                        freeCollateral = freeCollateral,
+                        tradeLeverage = tradeLeverage,
                         orderbook = orderbook,
                         stepSize = stepSize,
                     )
@@ -112,9 +165,36 @@ internal class TradeInputMarketOrderCalculator() {
                     val leverage = tradeSize.leverage ?: return null
                     createMarketOrderFromLeverage(
                         leverage = leverage,
+                        existingPositionNotionalSize = positionNotionalSize,
+                        existingPositionSize = positionSize,
+                        isTradeSameSide = isTradeSameSide,
                         market = market,
+                        freeCollateral = freeCollateral,
+                        tradeLeverage = tradeLeverage,
                         subaccount = subaccount,
                         user = user,
+                    )
+                }
+
+                "size.balancePercent" -> {
+                    val stepSize = market?.perpetualMarket?.configs?.stepSize ?: 0.001
+                    val orderbook = getOrderbook(market = market, isBuying = trade.isBuying)
+                    val balancePercent = tradeSize.balancePercent ?: return null
+                    val oraclePrice = market?.perpetualMarket?.oraclePrice
+                    val isReduceOnly = trade.reduceOnly
+
+                    createMarketOrderFromBalancePercent(
+                        balancePercent = balancePercent,
+                        existingPositionNotionalSize = positionNotionalSize,
+                        existingPositionSize = positionSize,
+                        isTradeSameSide = isTradeSameSide,
+                        marginMode = marginMode,
+                        freeCollateral = freeCollateral,
+                        tradeLeverage = tradeLeverage,
+                        orderbook = orderbook,
+                        stepSize = stepSize,
+                        oraclePrice = oraclePrice,
+                        isReduceOnly = isReduceOnly,
                     )
                 }
 
@@ -135,8 +215,126 @@ internal class TradeInputMarketOrderCalculator() {
         }
     }
 
+    private fun isolatedPnlImpact(marginMode: MarginMode, size: Double, entryPrice: Double, oraclePrice: Double?, isReduceOnly: Boolean): Double {
+        // Calculate the difference between the oracle price and the ask/bid price in order to determine immediate PnL impact that would affect collateral checks
+        // TODO CT-1192: refactor to call into MarginCalculator.getShouldTransferInCollateralDeprecated and MarginCalculator.getTransferAmountFromTargetLeverage
+        return when (marginMode) {
+            MarginMode.Cross -> Numeric.double.ZERO
+            MarginMode.Isolated -> if (isReduceOnly) Numeric.double.ZERO else (entryPrice - (oraclePrice ?: entryPrice)).abs() * size
+        }
+    }
+
+    private fun createMarketOrderFromBalancePercent(
+        balancePercent: Double,
+        existingPositionNotionalSize: Double,
+        existingPositionSize: Double,
+        isTradeSameSide: Boolean,
+        marginMode: MarginMode,
+        freeCollateral: Double,
+        tradeLeverage: Double,
+        orderbook: List<InternalOrderbookTick>?,
+        stepSize: Double,
+        oraclePrice: Double?,
+        isReduceOnly: Boolean,
+    ): TradeInputMarketOrder? {
+        if (marginMode == MarginMode.Isolated && !isTradeSameSide) {
+            // For isolated margin orders where the user is trading on the opposite side of their currentPosition, the balancePercent represents a percentage of their current position rather than freeCollateral
+            val desiredSize = existingPositionSize.abs() * balancePercent
+            return createMarketOrderFromSize(size = desiredSize, existingPositionNotionalSize = existingPositionNotionalSize, isTradeSameSide = isTradeSameSide, freeCollateral = freeCollateral, tradeLeverage = tradeLeverage, orderbook = orderbook)
+        }
+
+        val maxPercent = when (marginMode) {
+            MarginMode.Cross -> MAX_FREE_CROSS_COLLATERAL_BUFFER_PERCENT
+            MarginMode.Isolated -> MAX_FREE_ISOLATED_COLLATERAL_BUFFER_PERCENT
+        }
+        val cappedPercent = min(balancePercent, maxPercent)
+
+        val existingBalance = existingPositionNotionalSize.abs() / tradeLeverage
+
+        val desiredBalance = when (marginMode) {
+            MarginMode.Cross -> {
+                if (isTradeSameSide) cappedPercent * freeCollateral else cappedPercent * (existingBalance + freeCollateral) + existingBalance
+            }
+            MarginMode.Isolated -> {
+                cappedPercent * freeCollateral
+            }
+        }
+
+        return if (desiredBalance != Numeric.double.ZERO) {
+            if (orderbook != null) {
+                var sizeTotal = Numeric.double.ZERO
+                var usdcSizeTotal = Numeric.double.ZERO
+                var balanceTotal = Numeric.double.ZERO
+                var worstPrice: Double? = null
+                var filled = false
+                val marketOrderOrderBook = mutableListOf<InternalOrderbookTick>()
+
+                orderbookLoop@ for (element in orderbook) {
+                    val entryPrice = element.price
+                    val entrySize = element.size
+
+                    if (entryPrice > Numeric.double.ZERO) {
+                        val entryUsdcSize = entrySize * entryPrice
+                        val entryBalanceSize = entryUsdcSize / tradeLeverage
+                        filled = (balanceTotal + entryBalanceSize + isolatedPnlImpact(marginMode = marginMode, size = entrySize, entryPrice = entryPrice, oraclePrice = oraclePrice, isReduceOnly = isReduceOnly)) >= desiredBalance
+
+                        var matchedSize = entrySize
+                        var matchedUsdcSize = entryUsdcSize
+                        var matchedBalance = matchedUsdcSize / tradeLeverage + isolatedPnlImpact(marginMode = marginMode, size = matchedSize, entryPrice = entryPrice, oraclePrice = oraclePrice, isReduceOnly = isReduceOnly)
+
+                        if (filled) {
+                            matchedBalance = desiredBalance - balanceTotal + isolatedPnlImpact(marginMode = marginMode, size = (desiredBalance - balanceTotal) * tradeLeverage / entryPrice, entryPrice = entryPrice, oraclePrice = oraclePrice, isReduceOnly = isReduceOnly)
+                            matchedUsdcSize = matchedBalance * tradeLeverage
+                            matchedSize = matchedUsdcSize / entryPrice
+                            matchedSize =
+                                Rounder.quickRound(
+                                    matchedSize,
+                                    stepSize,
+                                )
+                            matchedUsdcSize = matchedSize * entryPrice
+                            matchedBalance = matchedUsdcSize / tradeLeverage + isolatedPnlImpact(marginMode = marginMode, size = matchedSize, entryPrice = entryPrice, oraclePrice = oraclePrice, isReduceOnly = isReduceOnly)
+                        }
+                        sizeTotal += matchedSize
+                        usdcSizeTotal += matchedUsdcSize
+                        balanceTotal += matchedBalance
+
+                        worstPrice = entryPrice
+                        marketOrderOrderBook.add(matchingOrderbookEntry(element, matchedSize))
+                        if (filled) {
+                            break@orderbookLoop
+                        }
+                    }
+                }
+                val balancePercentTotal = balanceTotal / freeCollateral
+                createMarketOrderWith(
+                    orderbook = marketOrderOrderBook,
+                    size = sizeTotal,
+                    usdcSize = usdcSizeTotal,
+                    balancePercent = balancePercentTotal,
+                    worstPrice = worstPrice,
+                    filled = filled,
+                )
+            } else {
+                createMarketOrderWith(
+                    orderbook = listOf<InternalOrderbookTick>(),
+                    size = Numeric.double.ZERO,
+                    usdcSize = Numeric.double.ZERO,
+                    balancePercent = balancePercent,
+                    worstPrice = null,
+                    filled = false,
+                )
+            }
+        } else {
+            null
+        }
+    }
+
     private fun createMarketOrderFromSize(
         size: Double?,
+        existingPositionNotionalSize: Double,
+        isTradeSameSide: Boolean,
+        freeCollateral: Double,
+        tradeLeverage: Double,
         orderbook: List<InternalOrderbookTick>?,
     ): TradeInputMarketOrder? {
         return if (size != null && size != Numeric.double.ZERO) {
@@ -165,10 +363,12 @@ internal class TradeInputMarketOrderCalculator() {
                         break@orderbookLoop
                     }
                 }
+                val balancePercentTotal = calculateBalancePercentFromUsdcSize(usdcSize = usdcSizeTotal, freeCollateral = freeCollateral, positionSize = existingPositionNotionalSize, tradeLeverage = tradeLeverage, isTradeSameSide = isTradeSameSide)
                 createMarketOrderWith(
                     orderbook = marketOrderOrderBook,
                     size = sizeTotal,
                     usdcSize = usdcSizeTotal,
+                    balancePercent = balancePercentTotal,
                     worstPrice = worstPrice,
                     filled = filled,
                 )
@@ -177,6 +377,7 @@ internal class TradeInputMarketOrderCalculator() {
                     orderbook = listOf<InternalOrderbookTick>(),
                     size = size,
                     usdcSize = Numeric.double.ZERO,
+                    balancePercent = Numeric.double.ZERO,
                     worstPrice = null,
                     filled = false,
                 )
@@ -188,6 +389,10 @@ internal class TradeInputMarketOrderCalculator() {
 
     private fun createMarketOrderFromUsdcSize(
         usdcSize: Double?,
+        existingPositionNotionalSize: Double,
+        isTradeSameSide: Boolean,
+        freeCollateral: Double,
+        tradeLeverage: Double,
         orderbook: List<InternalOrderbookTick>?,
         stepSize: Double,
     ): TradeInputMarketOrder? {
@@ -210,6 +415,7 @@ internal class TradeInputMarketOrderCalculator() {
 
                         var matchedSize = entrySize
                         var matchedUsdcSize = entryUsdcSize
+
                         if (filled) {
                             matchedUsdcSize = desiredUsdcSize - usdcSizeTotal
                             matchedSize = matchedUsdcSize / entryPrice
@@ -230,10 +436,12 @@ internal class TradeInputMarketOrderCalculator() {
                         }
                     }
                 }
+                val balancePercentTotal = calculateBalancePercentFromUsdcSize(usdcSize = usdcSizeTotal, freeCollateral = freeCollateral, positionSize = existingPositionNotionalSize, tradeLeverage = tradeLeverage, isTradeSameSide = isTradeSameSide)
                 createMarketOrderWith(
                     orderbook = marketOrderOrderBook,
                     size = sizeTotal,
                     usdcSize = usdcSizeTotal,
+                    balancePercent = balancePercentTotal,
                     worstPrice = worstPrice,
                     filled = filled,
                 )
@@ -242,6 +450,7 @@ internal class TradeInputMarketOrderCalculator() {
                     orderbook = listOf<InternalOrderbookTick>(),
                     size = Numeric.double.ZERO,
                     usdcSize = usdcSize,
+                    balancePercent = Numeric.double.ZERO,
                     worstPrice = null,
                     filled = false,
                 )
@@ -253,7 +462,12 @@ internal class TradeInputMarketOrderCalculator() {
 
     private fun createMarketOrderFromLeverage(
         leverage: Double,
+        existingPositionNotionalSize: Double,
+        existingPositionSize: Double,
+        isTradeSameSide: Boolean,
         market: InternalMarketState?,
+        freeCollateral: Double,
+        tradeLeverage: Double,
         subaccount: InternalSubaccountState?,
         user: InternalUserState?,
     ): TradeInputMarketOrder? {
@@ -261,16 +475,9 @@ internal class TradeInputMarketOrderCalculator() {
         val equity = subaccount?.calculated?.get(CalculationPeriod.current)?.equity ?: return null
         val oraclePrice = market?.perpetualMarket?.oraclePrice ?: return null
         val feeRate = user?.takerFeeRate ?: Numeric.double.ZERO
-        val positions = subaccount.openPositions
-        val marketId = market.perpetualMarket?.id
-        val positionSize = if (positions != null && marketId != null) {
-            positions[marketId]?.calculated?.get(CalculationPeriod.current)?.size
-        } else {
-            null
-        }
         return if (equity > Numeric.double.ZERO) {
             val existingLeverage =
-                ((positionSize ?: Numeric.double.ZERO) * oraclePrice) / equity
+                (existingPositionSize * oraclePrice) / equity
             val calculatedIsBuying =
                 if (leverage > existingLeverage) {
                     true
@@ -285,11 +492,15 @@ internal class TradeInputMarketOrderCalculator() {
                     createMarketOrderFromLeverageWith(
                         equity = equity,
                         oraclePrice = oraclePrice,
-                        positionSize = positionSize,
+                        positionSize = existingPositionSize,
+                        positionSizeNotional = existingPositionNotionalSize,
                         isBuying = calculatedIsBuying,
                         feeRate = feeRate,
                         leverage = leverage,
                         stepSize = stepSize,
+                        isTradeSameSide = isTradeSameSide,
+                        freeCollateral = freeCollateral,
+                        tradeLeverage = tradeLeverage,
                         orderbook = orderbook,
                     )
                 } else {
@@ -306,11 +517,15 @@ internal class TradeInputMarketOrderCalculator() {
     private fun createMarketOrderFromLeverageWith(
         equity: Double,
         oraclePrice: Double,
-        positionSize: Double?,
+        positionSize: Double,
+        positionSizeNotional: Double,
         isBuying: Boolean,
         feeRate: Double,
         leverage: Double,
         stepSize: Double,
+        isTradeSameSide: Boolean,
+        freeCollateral: Double,
+        tradeLeverage: Double,
         orderbook: List<InternalOrderbookTick>,
     ): TradeInputMarketOrder? {
         /*
@@ -366,7 +581,7 @@ internal class TradeInputMarketOrderCalculator() {
         var AE = equity
 
         @Suppress("LocalVariableName", "PropertyName", "VariableNaming")
-        var SZ = positionSize ?: Numeric.double.ZERO
+        var SZ = positionSize
 
         orderbookLoop@ for (element in orderbook) {
             val entryPrice = element.price
@@ -407,19 +622,40 @@ internal class TradeInputMarketOrderCalculator() {
                 break@orderbookLoop
             }
         }
+        val balancePercentTotal = calculateBalancePercentFromUsdcSize(usdcSize = usdcSizeTotal, freeCollateral = freeCollateral, positionSize = positionSizeNotional, tradeLeverage = tradeLeverage, isTradeSameSide = isTradeSameSide)
         return createMarketOrderWith(
             orderbook = marketOrderOrderBook,
             size = sizeTotal,
             usdcSize = usdcSizeTotal,
+            balancePercent = balancePercentTotal,
             worstPrice = worstPrice,
             filled = filled,
         )
+    }
+
+    private fun calculateBalancePercentFromUsdcSize(
+        usdcSize: Double,
+        freeCollateral: Double,
+        positionSize: Double,
+        tradeLeverage: Double,
+        isTradeSameSide: Boolean,
+    ): Double {
+        if (freeCollateral <= Numeric.double.ZERO || tradeLeverage <= Numeric.double.ZERO) {
+            return Numeric.double.ZERO
+        }
+        return if (isTradeSameSide) {
+            (usdcSize / tradeLeverage) / freeCollateral
+        } else {
+            val existingBalance = positionSize.abs() / tradeLeverage
+            (usdcSize / tradeLeverage - existingBalance) / (freeCollateral + existingBalance)
+        }
     }
 
     private fun createMarketOrderWith(
         orderbook: List<InternalOrderbookTick>,
         size: Double?,
         usdcSize: Double?,
+        balancePercent: Double?,
         worstPrice: Double?,
         filled: Boolean,
     ): TradeInputMarketOrder? {
@@ -434,6 +670,7 @@ internal class TradeInputMarketOrderCalculator() {
                 price = if (size != Numeric.double.ZERO) usdcSize / size else null,
                 size = size,
                 usdcSize = usdcSize,
+                balancePercent = balancePercent,
                 worstPrice = worstPrice,
                 filled = filled,
             )

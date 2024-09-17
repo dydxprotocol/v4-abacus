@@ -140,7 +140,7 @@ class TriggerOrderToastGeneratorTests {
                 cancelOrderPayloads = iListOf(
                     HumanReadableCancelOrderPayload(
                         subaccountNumber = 0,
-                        clientId = 0,
+                        clientId = "0",
                         type = "TAKE_PROFIT",
                         orderId = "existingOrderId",
                         orderFlags = SHORT_TERM_ORDER_FLAGS,
@@ -153,7 +153,7 @@ class TriggerOrderToastGeneratorTests {
                     HumanReadablePlaceOrderPayload(
                         subaccountNumber = 0,
                         marketId = "ETH-USD",
-                        clientId = 0,
+                        clientId = "0",
                         type = "STOP_LIMIT",
                         side = "buy",
                         price = 1000.0,
@@ -212,7 +212,7 @@ class TriggerOrderToastGeneratorTests {
                 cancelOrderPayloads = iListOf(
                     HumanReadableCancelOrderPayload(
                         subaccountNumber = 0,
-                        clientId = 0,
+                        clientId = "0",
                         type = "TAKE_PROFIT",
                         orderId = "existingOrderId",
                         orderFlags = SHORT_TERM_ORDER_FLAGS,
@@ -244,7 +244,7 @@ class TriggerOrderToastGeneratorTests {
                     HumanReadablePlaceOrderPayload(
                         subaccountNumber = 0,
                         marketId = "ETH-USD",
-                        clientId = 0,
+                        clientId = "0",
                         type = "TAKE_PROFIT_MARKET",
                         side = "buy",
                         price = 1000.0,
@@ -298,7 +298,7 @@ class TriggerOrderToastGeneratorTests {
                     HumanReadableCancelOrderPayload(
                         subaccountNumber = 0,
                         type = "TAKE_PROFIT",
-                        clientId = 0,
+                        clientId = "0",
                         orderId = "existingOrderId",
                         orderFlags = SHORT_TERM_ORDER_FLAGS,
                         clobPairId = 0,

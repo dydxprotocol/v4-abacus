@@ -2,6 +2,7 @@ package exchange.dydx.abacus.state.manager
 
 import exchange.dydx.abacus.output.ComplianceAction
 import exchange.dydx.abacus.output.Documentation
+import exchange.dydx.abacus.output.PerpetualState
 import exchange.dydx.abacus.output.Restriction
 import exchange.dydx.abacus.output.input.SelectionOption
 import exchange.dydx.abacus.protocols.TransactionCallback
@@ -10,11 +11,15 @@ import exchange.dydx.abacus.state.model.ClosePositionInputField
 import exchange.dydx.abacus.state.model.TradeInputField
 import exchange.dydx.abacus.state.model.TransferInputField
 import exchange.dydx.abacus.state.model.TriggerOrdersInputField
+import exchange.dydx.abacus.state.model.WalletConnectionType
 import exchange.dydx.abacus.utils.IList
 import kotlin.js.JsExport
 
 @JsExport
 interface AsyncAbacusStateManagerProtocol {
+
+    val state: PerpetualState?
+
     // Connection environments
     val availableEnvironments: IList<SelectionOption>
     var environmentId: String?
@@ -96,6 +101,8 @@ interface AsyncAbacusStateManagerProtocol {
 
     // Get chain data from id. Necessary to know chain name based on chain id
     fun getChainById(chainId: String): TransferChainInfo?
+
+    fun registerPushNotification(token: String, languageCode: String?)
 }
 
 @JsExport
@@ -104,7 +111,7 @@ interface AsyncAbacusStateManagerSingletonProtocol {
     var sourceAddress: String?
     var subaccountNumber: Int
     var market: String?
-    var cosmosWalletConnected: Boolean?
+    var walletConnectionType: WalletConnectionType?
 }
 
 @JsExport

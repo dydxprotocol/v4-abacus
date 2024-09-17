@@ -70,6 +70,7 @@ data class TradeInputOptions(
     val needsMarginMode: Boolean,
     val needsSize: Boolean,
     val needsLeverage: Boolean,
+    val needsBalancePercent: Boolean,
     val maxLeverage: Double?,
     val needsLimitPrice: Boolean,
     val needsTargetLeverage: Boolean,
@@ -184,6 +185,7 @@ data class TradeInputOptions(
                 needsMarginMode = state.needsMarginMode,
                 needsSize = state.needsSize,
                 needsLeverage = state.needsLeverage,
+                needsBalancePercent = state.needsBalancePercent,
                 maxLeverage = state.maxLeverage,
                 needsLimitPrice = state.needsLimitPrice,
                 needsTargetLeverage = state.needsTargetLeverage,
@@ -215,6 +217,7 @@ data class TradeInputOptions(
                 val needsMarginMode = parser.asBool(data["needsMarginMode"]) ?: true
                 val needsSize = parser.asBool(data["needsSize"]) ?: false
                 val needsLeverage = parser.asBool(data["needsLeverage"]) ?: false
+                val needsBalancePercent = parser.asBool(data["needsBalancePercent"]) ?: false
                 val maxLeverage = parser.asDouble(data["maxLeverage"])
                 val needsLimitPrice = parser.asBool(data["needsLimitPrice"]) ?: false
                 val needsTargetLeverage = parser.asBool(data["needsTargetLeverage"]) ?: false
@@ -282,6 +285,7 @@ data class TradeInputOptions(
                     existing?.needsMarginMode != needsMarginMode ||
                     existing.needsSize != needsSize ||
                     existing.needsLeverage != needsLeverage ||
+                    existing.needsBalancePercent != needsBalancePercent ||
                     existing.maxLeverage != maxLeverage ||
                     existing.needsLimitPrice != needsLimitPrice ||
                     existing.needsTargetLeverage != needsTargetLeverage ||
@@ -302,6 +306,7 @@ data class TradeInputOptions(
                         needsMarginMode,
                         needsSize,
                         needsLeverage,
+                        needsBalancePercent,
                         maxLeverage,
                         needsLimitPrice,
                         needsTargetLeverage,
@@ -464,6 +469,7 @@ data class OrderbookUsage(
 data class TradeInputMarketOrder(
     val size: Double?,
     val usdcSize: Double?,
+    val balancePercent: Double?,
     val price: Double?,
     val worstPrice: Double?,
     val filled: Boolean,
@@ -480,6 +486,7 @@ data class TradeInputMarketOrder(
             data?.let {
                 val size = parser.asDouble(data["size"])
                 val usdcSize = parser.asDouble(data["usdcSize"])
+                val balancePercent = parser.asDouble(data["balancePercent"])
                 val price = parser.asDouble(data["price"])
                 val worstPrice = parser.asDouble(data["worstPrice"])
                 val filled = parser.asBool(data["filled"]) ?: false
@@ -499,6 +506,7 @@ data class TradeInputMarketOrder(
                 }
                 return if (existing?.size != size ||
                     existing?.usdcSize != usdcSize ||
+                    existing?.balancePercent != balancePercent ||
                     existing?.price != price ||
                     existing?.worstPrice != worstPrice ||
                     existing?.filled != filled ||
@@ -507,6 +515,7 @@ data class TradeInputMarketOrder(
                     TradeInputMarketOrder(
                         size,
                         usdcSize,
+                        balancePercent,
                         price,
                         worstPrice,
                         filled,
@@ -528,6 +537,7 @@ data class TradeInputSize(
     val size: Double?,
     val usdcSize: Double?,
     val leverage: Double?,
+    val balancePercent: Double?,
     val input: String?,
 ) {
     companion object {
@@ -542,13 +552,15 @@ data class TradeInputSize(
                 val size = parser.asDouble(data["size"])
                 val usdcSize = parser.asDouble(data["usdcSize"])
                 val leverage = parser.asDouble(data["leverage"])
+                val balancePercent = parser.asDouble(data["balancePercent"])
                 val input = parser.asString(data["input"])
                 return if (existing?.size != size ||
                     existing?.usdcSize != usdcSize ||
                     existing?.leverage != leverage ||
+                    existing?.balancePercent != balancePercent ||
                     existing?.input != input
                 ) {
-                    TradeInputSize(size, usdcSize, leverage, input)
+                    TradeInputSize(size, usdcSize, leverage, balancePercent, input)
                 } else {
                     existing
                 }

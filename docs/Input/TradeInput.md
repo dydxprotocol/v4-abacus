@@ -86,6 +86,8 @@ data class TradeInputSize(
 &emsp;val size: Double?,  
 &emsp;val usdcSize: Double?,  
 &emsp;val leverage: Double?,  
+&emsp;val percent: Double?,  
+&emsp;val balancePercent: Double?,  
 &emsp;val input: String?  
 )
 
@@ -101,10 +103,19 @@ Size of the trade in USDC
 
 Leverage of the order
 
+## percent
+
+Percentage (of existing position) to use for the order. Only used for the close position input.
+
+## balancePercent
+
+Percentage (of available balance / free collateral) to use for the order. Currently only on market orders.
+
 ## input
 
 Which one of the fields are entered by the user:
-size, usdcSize, leverage
+- TradeInput: size, usdcSize, leverage, percent, balancePercent
+- ClosePositionInput: size, percent
 
 # TradeInputPrice
 
@@ -171,6 +182,7 @@ Execution settings for the bracket orders
 data class TradeInputMarketOrder(  
 &emsp;val size: Double?,  
 &emsp;val usdcSize: Double?,  
+&emsp;val balancePercent: Double?,  
 &emsp;val price: Double?,  
 &emsp;val worstPrice: Double?,  
 &emsp;val filled: Boolean,  
@@ -184,6 +196,11 @@ size of the market order
 ## usdcSize
 
 USDC amount of the market order
+
+## balancePercent
+
+Percentage (of available balance / free collateral) of the market order
+
 
 ## price
 
@@ -206,6 +223,7 @@ The orderbook entries taken by the market order
 data class TradeInputOptions(  
 &emsp;val needsSize: Boolean,  
 &emsp;val needsLeverage: Boolean,  
+&emsp;val needsBalancePercent: Boolean,
 &emsp;val maxLeverage: Double?,  
 &emsp;val needsLimitPrice: Boolean,
 &emsp;val needsTargetLeverage: Boolean,
@@ -230,6 +248,10 @@ UX should ask user for size
 ## needsLeverage
 
 UX should ask user for leverage input
+
+## needsBalancePercent
+
+UX should ask user for balance percent input
 
 ## maxLeverage
 

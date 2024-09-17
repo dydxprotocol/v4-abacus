@@ -266,7 +266,7 @@ An array of [SubaccountOrder](#SubaccountOrder)
 data class SubaccountOrder(
 &emsp;val subaccountNumber: Int,
 &emsp;val id: String,  
-&emsp;val clientId: Int?,  
+&emsp;val clientId: String?,  
 &emsp;val type: OrderType,  
 &emsp;val side: OrderSide,  
 &emsp;val status: OrderStatus,  

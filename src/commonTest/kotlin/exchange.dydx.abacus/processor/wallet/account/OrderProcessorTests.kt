@@ -40,7 +40,7 @@ class OrderProcessorTests {
         val orderMock = SubaccountOrder(
             subaccountNumber = 0,
             id = "1",
-            clientId = 1,
+            clientId = "1",
             type = OrderType.Limit,
             side = OrderSide.Buy,
             status = OrderStatus.Open,

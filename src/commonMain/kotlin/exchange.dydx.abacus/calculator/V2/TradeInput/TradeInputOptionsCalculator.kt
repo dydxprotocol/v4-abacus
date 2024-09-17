@@ -81,6 +81,7 @@ internal class TradeInputOptionsCalculator(
                 return when (trade.marginMode) {
                     MarginMode.Isolated -> listOf(
                         sizeField(),
+                        balancePercentField(),
                         bracketsField(),
                         marginModeField(market, account, subaccount),
                         reduceOnlyField(),
@@ -89,6 +90,7 @@ internal class TradeInputOptionsCalculator(
                     else -> listOf(
                         sizeField(),
                         leverageField(),
+                        balancePercentField(),
                         bracketsField(),
                         marginModeField(market, account, subaccount),
                         reduceOnlyField(),
@@ -181,6 +183,7 @@ internal class TradeInputOptionsCalculator(
                 when (parser.asString(field["field"])) {
                     "size.size" -> options.needsSize = true
                     "size.leverage" -> options.needsLeverage = true
+                    "size.balancePercent" -> options.needsBalancePercent = true
                     "price.triggerPrice" -> options.needsTriggerPrice = true
                     "price.limitPrice" -> options.needsLimitPrice = true
                     "price.trailingPercent" -> options.needsTrailingPercent = true
@@ -354,17 +357,9 @@ internal class TradeInputOptionsCalculator(
             return null
         }
 
-        val initialMarginFraction =
-            market.perpetualMarket?.configs?.effectiveInitialMarginFraction ?: return null
-
-        val maxMarketLeverage = if (initialMarginFraction <= Numeric.double.ZERO) {
-            return null
-        } else {
-            Numeric.double.ONE / initialMarginFraction
-        }
-
         val equity = subaccount.calculated[CalculationPeriod.current]?.equity
         val freeCollateral = subaccount.calculated[CalculationPeriod.current]?.freeCollateral ?: Numeric.double.ZERO
+        val maxMarketLeverage = market.perpetualMarket?.configs?.maxMarketLeverage ?: Numeric.double.ONE
         val positionNotionalTotal = position?.calculated?.get(CalculationPeriod.current)?.notionalTotal ?: Numeric.double.ZERO
 
         return if (equity != null && equity > Numeric.double.ZERO) {
@@ -408,6 +403,13 @@ internal class TradeInputOptionsCalculator(
     private fun leverageField(): Map<String, Any> {
         return mapOf(
             "field" to "size.leverage",
+            "type" to "double",
+        )
+    }
+
+    private fun balancePercentField(): Map<String, Any> {
+        return mapOf(
+            "field" to "size.balancePercent",
             "type" to "double",
         )
     }

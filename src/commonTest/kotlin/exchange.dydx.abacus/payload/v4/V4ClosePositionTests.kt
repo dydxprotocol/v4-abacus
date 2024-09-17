@@ -237,15 +237,19 @@ class V4ClosePositionTests : V4BaseTests() {
     }
 
     private fun testCloseShortPositionInput() {
-        test(
-            {
-                perp.socket(mock.socketUrl, mock.accountsChannel.v4_subscribed, 0, null)
-            },
-            """
+        if (perp.staticTyping) {
+            perp.socket(mock.socketUrl, mock.accountsChannel.v4_subscribed, 0, null)
+        } else {
+            test(
+                {
+                    perp.socket(mock.socketUrl, mock.accountsChannel.v4_subscribed, 0, null)
+                },
+                """
                 {
                 }
-            """.trimIndent(),
-        )
+                """.trimIndent(),
+            )
+        }
 
         /*
         Initial setup
@@ -436,15 +440,20 @@ class V4ClosePositionTests : V4BaseTests() {
 
     private fun testLimitClosePositionInput() {
         StatsigConfig.ff_enable_limit_close = true
-        test(
-            {
-                perp.socket(mock.socketUrl, mock.accountsChannel.v4_subscribed, 0, null)
-            },
-            """
+
+        if (perp.staticTyping) {
+            perp.socket(mock.socketUrl, mock.accountsChannel.v4_subscribed, 0, null)
+        } else {
+            test(
+                {
+                    perp.socket(mock.socketUrl, mock.accountsChannel.v4_subscribed, 0, null)
+                },
+                """
                 {
                 }
-            """.trimIndent(),
-        )
+                """.trimIndent(),
+            )
+        }
 
         /*
         Initial setup

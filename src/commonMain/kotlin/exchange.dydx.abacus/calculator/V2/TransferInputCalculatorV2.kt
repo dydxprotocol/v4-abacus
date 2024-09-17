@@ -57,6 +57,7 @@ internal class TransferInputCalculatorV2(
                 val toAmount = parser.asDouble(parser.value(route, "toAmount"))
                 val toAmountMin = parser.asDouble(parser.value(route, "toAmountMin"))
                 val toAmountUSDC = parser.asDouble(parser.value(route, "toAmountUSDC"))
+                val toAmountUSD = parser.asDouble(parser.value(route, "toAmountUSD"))
                 var aggregatePriceImpact = parser.asDouble(parser.value(route, "aggregatePriceImpact"))
                 aggregatePriceImpact = if (aggregatePriceImpact != null) aggregatePriceImpact / 100.0 else null
 
@@ -80,6 +81,7 @@ internal class TransferInputCalculatorV2(
                     toAmount = toAmount,
                     toAmountMin = toAmountMin,
                     toAmountUSDC = toAmountUSDC,
+                    toAmountUSD = toAmountUSD,
                     aggregatePriceImpact = aggregatePriceImpact,
                 )
             }
@@ -98,6 +100,7 @@ internal class TransferInputCalculatorV2(
                 val toAmount = parser.asDouble(parser.value(route, "toAmount"))
                 val toAmountMin = parser.asDouble(parser.value(route, "toAmountMin"))
                 val toAmountUSDC = parser.asDouble(parser.value(route, "toAmountUSDC"))
+                val toAmountUSD = parser.asDouble(parser.value(route, "toAmountUSD"))
                 var aggregatePriceImpact = parser.asDouble(parser.value(route, "aggregatePriceImpact"))
                 aggregatePriceImpact = if (aggregatePriceImpact != null) aggregatePriceImpact / 100.0 else null
 
@@ -113,6 +116,7 @@ internal class TransferInputCalculatorV2(
                     toAmount = toAmount,
                     toAmountMin = toAmountMin,
                     toAmountUSDC = toAmountUSDC,
+                    toAmountUSD = toAmountUSD,
                     aggregatePriceImpact = aggregatePriceImpact,
                 )
             }
@@ -132,6 +136,7 @@ internal class TransferInputCalculatorV2(
                     toAmount = null,
                     toAmountMin = null,
                     toAmountUSDC = null,
+                    toAmountUSD = null,
                     aggregatePriceImpact = null,
                 )
             }

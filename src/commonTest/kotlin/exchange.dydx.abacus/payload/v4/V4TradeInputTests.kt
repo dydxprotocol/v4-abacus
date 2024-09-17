@@ -1,6 +1,7 @@
 package exchange.dydx.abacus.payload.v4
 
 import exchange.dydx.abacus.calculator.CalculationPeriod
+import exchange.dydx.abacus.output.input.ErrorFormat
 import exchange.dydx.abacus.output.input.ErrorType
 import exchange.dydx.abacus.output.input.OrderSide
 import exchange.dydx.abacus.output.input.OrderStatus
@@ -90,9 +91,29 @@ open class V4TradeInputTests : V4BaseTests() {
             )
         }
 
-        test({
+        if (perp.staticTyping) {
             perp.trade("LIMIT", TradeInputField.type, 0)
-        }, null)
+            val size = perp.internalState.input.trade.size
+            assertNotNull(size)
+            assertEquals(size.input, "size.size")
+        } else {
+            test(
+                {
+                    perp.trade("LIMIT", TradeInputField.type, 0)
+                },
+                """
+                {
+                    "input": {
+                        "trade": {
+                            "size": {
+                                "input": "size.size"
+                            }
+                        }
+                    }
+                }
+                """.trimIndent(),
+            )
+        }
 
         test({
             perp.trade("BUY", TradeInputField.side, 0)
@@ -396,15 +417,19 @@ open class V4TradeInputTests : V4BaseTests() {
             perp.trade("MARKET", TradeInputField.type, 0)
         }, null)
 
-        test(
-            {
-                perp.tradeInMarket("LTC-USD", 0)
-            },
-            """
+        if (perp.staticTyping) {
+            perp.tradeInMarket("LTC-USD", 0)
+        } else {
+            test(
+                {
+                    perp.tradeInMarket("LTC-USD", 0)
+                },
+                """
             {
             }
-            """.trimIndent(),
-        )
+                """.trimIndent(),
+            )
+        }
 
         if (perp.staticTyping) {
             perp.trade("1", TradeInputField.size, 0)
@@ -448,35 +473,41 @@ open class V4TradeInputTests : V4BaseTests() {
             )
         }
 
-        test(
-            {
-                perp.tradeInMarket("ETH-USD", 0)
-            },
-            """
+        if (perp.staticTyping) {
+            perp.tradeInMarket("ETH-USD", 0)
+            perp.trade("SELL", TradeInputField.side, 0)
+            perp.trade(null, TradeInputField.usdcSize, 0)
+        } else {
+            test(
+                {
+                    perp.tradeInMarket("ETH-USD", 0)
+                },
+                """
             {
             }
-            """.trimIndent(),
-        )
+                """.trimIndent(),
+            )
 
-        test(
-            {
-                perp.trade("SELL", TradeInputField.side, 0)
-            },
-            """
+            test(
+                {
+                    perp.trade("SELL", TradeInputField.side, 0)
+                },
+                """
             {
             }
-            """.trimIndent(),
-        )
+                """.trimIndent(),
+            )
 
-        test(
-            {
-                perp.trade(null, TradeInputField.usdcSize, 0)
-            },
-            """
+            test(
+                {
+                    perp.trade(null, TradeInputField.usdcSize, 0)
+                },
+                """
             {
             }
-            """.trimIndent(),
-        )
+                """.trimIndent(),
+            )
+        }
 
         if (perp.staticTyping) {
             perp.trade("0.5", TradeInputField.usdcSize, 0)
@@ -543,6 +574,105 @@ open class V4TradeInputTests : V4BaseTests() {
                 """.trimIndent(),
             )
         }
+
+        if (perp.staticTyping) {
+            perp.trade("10", TradeInputField.usdcSize, 0)
+            val size = perp.internalState.input.trade.size
+            assertNotNull(size)
+            assertEquals(size.usdcSize, 10.0)
+            assertEquals(size.size, 0.006)
+            assertEquals(size.balancePercent, 0.0000049629) // freeCollateral: 100000, 20x leverage
+            assertEquals(size.input, "size.usdcSize")
+            val errors = perp.internalState.input.errors
+            assertEquals(errors?.size, 0)
+        } else {
+            test(
+                {
+                    perp.trade("10", TradeInputField.usdcSize, 0)
+                },
+                """
+            {
+                "input": {
+                    "trade": {
+                        "size": {
+                            "usdcSize": 10.0,
+                            "size": 0.006,
+                            "balancePercent": 0.000005,
+                            "input": "size.usdcSize"
+                        }
+                    },
+                    "errors": null
+                }
+            }
+                """.trimIndent(),
+            )
+        }
+
+        if (perp.staticTyping) {
+            perp.trade("10", TradeInputField.size, 0)
+            val size = perp.internalState.input.trade.size
+            assertNotNull(size)
+            assertEquals(size.usdcSize, 16543.0)
+            assertEquals(size.size, 10.0)
+            assertEquals(size.balancePercent, 0.0082715) // freeCollateral: 100000, 20x leverage
+            assertEquals(size.input, "size.size")
+            val errors = perp.internalState.input.errors
+            assertEquals(errors?.size, 0)
+        } else {
+            test(
+                {
+                    perp.trade("10", TradeInputField.size, 0)
+                },
+                """
+            {
+                "input": {
+                    "trade": {
+                        "size": {
+                            "usdcSize": 16540.0,
+                            "size": 10.0,
+                            "balancePercent": 0.00827,
+                            "input": "size.size"
+                        }
+                    },
+                    "errors": null
+                }
+            }
+                """.trimIndent(),
+            )
+        }
+
+        if (perp.staticTyping) {
+            perp.trade("0.5", TradeInputField.balancePercent, 0)
+            val size = perp.internalState.input.trade.size
+            assertNotNull(size)
+            assertEquals(size.usdcSize, 1000000.1169)
+            assertEquals(size.size, 605.7059999999999)
+            assertEquals(size.balancePercent, 0.5) // freeCollateral: 100000, 20x leverage
+            assertEquals(size.input, "size.balancePercent")
+            val errors = perp.internalState.input.errors
+            assertEquals(errors?.size, 0)
+        } else {
+            test(
+                {
+                    perp.trade("0.5", TradeInputField.balancePercent, 0)
+                },
+                """
+            {
+                "input": {
+                    "trade": {
+                        "size": {
+                            "usdcSize": 1000000.0,
+                            "size": 593.6,
+                            "balancePercent": 0.5,
+                            "input": "size.balancePercent"
+                        }
+                    },
+                    "errors": null
+                }
+            }
+                """.trimIndent(),
+            )
+        }
     }
 
     private fun testIsolatedLimitTradeInputOnce() {
@@ -604,7 +734,7 @@ open class V4TradeInputTests : V4BaseTests() {
             assertEquals("ERRORS.TRADE_BOX.ISOLATED_MARGIN_LIMIT_ORDER_BELOW_MINIMUM", error?.resources?.text?.stringKey)
             val param = error?.resources?.text?.params?.first()!!
             assertEquals("20.0", param.value)
-            assertEquals("price", param.format)
+            assertEquals(ErrorFormat.UsdcPrice, param.format)
             assertEquals("MIN_VALUE", param.key)
             assertEquals("APP.TRADE.MODIFY_SIZE_FIELD", error?.resources?.action?.stringKey)
         } else {
@@ -645,7 +775,7 @@ open class V4TradeInputTests : V4BaseTests() {
                                     "params": [
                                         {
                                             "value": 20.0,
-                                            "format": "price",
+                                            "format": "usdcPrice",
                                             "key": "MIN_VALUE"
                                         }
                                     ]
@@ -1193,35 +1323,41 @@ open class V4TradeInputTests : V4BaseTests() {
             )
         }
 
-        test(
-            {
-                perp.tradeInMarket("ETH-USD", 0)
-            },
-            """
+        if (perp.staticTyping) {
+            perp.tradeInMarket("ETH-USD", 0)
+            perp.trade("0.1", TradeInputField.size, 0)
+            perp.trade("1000", TradeInputField.triggerPrice, 0)
+        } else {
+            test(
+                {
+                    perp.tradeInMarket("ETH-USD", 0)
+                },
+                """
             {
             }
-            """.trimMargin(),
-        )
+                """.trimMargin(),
+            )
 
-        test(
-            {
-                perp.trade("0.1", TradeInputField.size, 0)
-            },
-            """
+            test(
+                {
+                    perp.trade("0.1", TradeInputField.size, 0)
+                },
+                """
             {
             }
-            """.trimMargin(),
-        )
+                """.trimMargin(),
+            )
 
-        test(
-            {
-                perp.trade("1000", TradeInputField.triggerPrice, 0)
-            },
-            """
+            test(
+                {
+                    perp.trade("1000", TradeInputField.triggerPrice, 0)
+                },
+                """
             {
             }
-            """.trimMargin(),
-        )
+                """.trimMargin(),
+            )
+        }
 
         if (perp.staticTyping) {
             perp.trade("STOP_MARKET", TradeInputField.type, 0)

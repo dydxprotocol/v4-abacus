@@ -151,6 +151,7 @@ internal data class InternalTradeInputOptions(
     var needsMarginMode: Boolean = false,
     var needsSize: Boolean = false,
     var needsLeverage: Boolean = false,
+    var needsBalancePercent: Boolean = false,
     var maxLeverage: Double? = null,
     var needsLimitPrice: Boolean = false,
     var needsTargetLeverage: Boolean = false,
@@ -172,6 +173,10 @@ internal data class InternalTradeInputOptions(
 
 internal data class InternalMarketSummaryState(
     var markets: MutableMap<String, InternalMarketState> = mutableMapOf(),
+
+    var volume24HUSDC: Double? = null,
+    var openInterestUSDC: Double? = null,
+    var trades24H: Double? = null,
 )
 
 internal data class InternalMarketState(
@@ -436,6 +441,7 @@ internal fun TradeInputSize.Companion.safeCreate(existing: TradeInputSize?): Tra
         size = null,
         usdcSize = null,
         leverage = null,
+        balancePercent = null,
         input = null,
     )
 }

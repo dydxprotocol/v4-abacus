@@ -17,6 +17,97 @@ class TradeInputOptionsTests : V4BaseTests() {
         setup()
 
         testTradeInputOnce()
+        testIsolatedInputOnce()
+    }
+
+    private fun testIsolatedInputOnce() {
+        if (perp.staticTyping) {
+            perp.trade("ISOLATED", TradeInputField.marginMode, 0)
+            perp.trade("MARKET", TradeInputField.type, 0)
+            val options = perp.internalState.input.trade.options
+            assertEquals(options.needsSize, true)
+            assertEquals(options.needsLeverage, false)
+            assertEquals(options.needsBalancePercent, true)
+            assertEquals(options.needsTriggerPrice, false)
+            assertEquals(options.needsLimitPrice, false)
+            assertEquals(options.needsTrailingPercent, false)
+            assertEquals(options.needsReduceOnly, true)
+            assertEquals(options.needsPostOnly, false)
+            assertEquals(options.needsBrackets, true)
+            assertEquals(options.needsGoodUntil, false)
+        } else {
+            perp.trade("ISOLATED", TradeInputField.marginMode, 0)
+            test(
+                {
+                    perp.trade("MARKET", TradeInputField.type, 0)
+                },
+                """
+                {
+                "input": {
+                    "trade": {
+                        "options": {
+                            "needsSize": true,
+                            "needsLeverage": false,
+                            "needsBalancePercent": true,
+                            "needsTriggerPrice": false,
+                            "needsLimitPrice": false,
+                            "needsTrailingPercent": false,
+                            "needsReduceOnly": true,
+                            "needsPostOnly": false,
+                            "needsBrackets": true,
+                            "needsTimeInForce": false,
+                            "needsGoodUntil": false,
+                            "needsExecution": false
+                        }
+                    }
+                }
+            }
+                """.trimIndent(),
+            )
+        }
+
+        if (perp.staticTyping) {
+            perp.trade("LIMIT", TradeInputField.type, 0)
+            val options = perp.internalState.input.trade.options
+            assertEquals(options.needsSize, true)
+            assertEquals(options.needsLeverage, false)
+            assertEquals(options.needsBalancePercent, false)
+            assertEquals(options.needsTriggerPrice, false)
+            assertEquals(options.needsLimitPrice, true)
+            assertEquals(options.needsTrailingPercent, false)
+            assertEquals(options.needsReduceOnly, false)
+            assertEquals(options.needsPostOnly, true)
+            assertEquals(options.needsBrackets, false)
+            assertEquals(options.needsGoodUntil, true)
+        } else {
+            test(
+                {
+                    perp.trade("LIMIT", TradeInputField.type, 0)
+                },
+                """
+                {
+                "input": {
+                    "trade": {
+                        "options": {
+                            "needsSize": true,
+                            "needsLeverage": false,
+                            "needsBalancePercent": false,
+                            "needsTriggerPrice": false,
+                            "needsLimitPrice": true,
+                            "needsTrailingPercent": false,
+                            "needsReduceOnly": false,
+                            "needsPostOnly": false,
+                            "needsBrackets": true,
+                            "needsTimeInForce": true,
+                            "needsGoodUntil": false,
+                            "needsExecution": true
+                        }
+                    }
+                }
+            }
+                """.trimIndent(),
+            )
+        }
     }
 
     private fun testTradeInputOnce() {
@@ -126,6 +217,7 @@ class TradeInputOptionsTests : V4BaseTests() {
             val options = trade.options
             assertEquals(options.needsSize, true)
             assertEquals(options.needsLeverage, true)
+            assertEquals(options.needsBalancePercent, true)
             assertEquals(options.needsTriggerPrice, false)
             assertEquals(options.needsLimitPrice, false)
             assertEquals(options.needsTrailingPercent, false)
@@ -145,6 +237,7 @@ class TradeInputOptionsTests : V4BaseTests() {
                         "options": {
                             "needsSize": true,
                             "needsLeverage": true,
+                            "needsBalancePercent": true,
                             "needsTriggerPrice": false,
                             "needsLimitPrice": false,
                             "needsTrailingPercent": false,
@@ -168,6 +261,7 @@ class TradeInputOptionsTests : V4BaseTests() {
             val options = trade.options
             assertEquals(options.needsSize, true)
             assertEquals(options.needsLeverage, false)
+            assertEquals(options.needsBalancePercent, false)
             assertEquals(options.needsTriggerPrice, false)
             assertEquals(options.needsLimitPrice, true)
             assertEquals(options.needsTrailingPercent, false)
@@ -187,6 +281,7 @@ class TradeInputOptionsTests : V4BaseTests() {
                         "options": {
                             "needsSize": true,
                             "needsLeverage": false,
+                            "needsBalancePercent": false,
                             "needsTriggerPrice": false,
                             "needsLimitPrice": true,
                             "needsTrailingPercent": false,
@@ -210,6 +305,7 @@ class TradeInputOptionsTests : V4BaseTests() {
             val options = trade.options
             assertEquals(options.needsSize, true)
             assertEquals(options.needsLeverage, false)
+            assertEquals(options.needsBalancePercent, false)
             assertEquals(options.needsTriggerPrice, false)
             assertEquals(options.needsLimitPrice, true)
             assertEquals(options.needsTrailingPercent, false)
@@ -229,6 +325,7 @@ class TradeInputOptionsTests : V4BaseTests() {
                         "options": {
                             "needsSize": true,
                             "needsLeverage": false,
+                            "needsBalancePercent": false,
                             "needsTriggerPrice": false,
                             "needsLimitPrice": true,
                             "needsTrailingPercent": false,
@@ -252,6 +349,7 @@ class TradeInputOptionsTests : V4BaseTests() {
             val options = trade.options
             assertEquals(options.needsSize, true)
             assertEquals(options.needsLeverage, false)
+            assertEquals(options.needsBalancePercent, false)
             assertEquals(options.needsTriggerPrice, false)
             assertEquals(options.needsLimitPrice, true)
             assertEquals(options.needsTrailingPercent, false)
@@ -290,6 +388,7 @@ class TradeInputOptionsTests : V4BaseTests() {
                         "options": {
                             "needsSize": true,
                             "needsLeverage": false,
+                            "needsBalancePercent": false,
                             "needsTriggerPrice": false,
                             "needsLimitPrice": true,
                             "needsTrailingPercent": false,

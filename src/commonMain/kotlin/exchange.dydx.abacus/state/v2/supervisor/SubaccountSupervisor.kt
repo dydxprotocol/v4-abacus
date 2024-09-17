@@ -111,12 +111,13 @@ internal class SubaccountSupervisor(
         }
 
     private val notificationsProvider = NotificationsProvider(
-        stateMachine,
-        helper.uiImplementations,
-        helper.environment,
-        helper.parser,
-        helper.jsonEncoder,
-        configs.useParentSubaccount,
+        stateMachine = stateMachine,
+        uiImplementations = helper.uiImplementations,
+        environment = helper.environment,
+        parser = helper.parser,
+        jsonEncoder = helper.jsonEncoder,
+        useParentSubaccount = configs.useParentSubaccount,
+        notifications = configs.notifications,
     )
 
     internal var notifications: IMap<String, Notification> = iMapOf()
