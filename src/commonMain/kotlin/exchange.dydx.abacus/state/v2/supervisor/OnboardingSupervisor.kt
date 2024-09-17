@@ -29,6 +29,7 @@ import exchange.dydx.abacus.state.manager.SystemUtils
 import exchange.dydx.abacus.state.manager.pendingCctpWithdraw
 import exchange.dydx.abacus.state.model.TradingStateMachine
 import exchange.dydx.abacus.state.model.TransferInputField
+import exchange.dydx.abacus.state.model.WalletConnectionType
 import exchange.dydx.abacus.state.model.evmSwapVenues
 import exchange.dydx.abacus.state.model.routerChains
 import exchange.dydx.abacus.state.model.routerStatus
@@ -88,12 +89,18 @@ internal class OnboardingSupervisor(
     private val configs: OnboardingConfigs,
 ) : NetworkSupervisor(stateMachine, helper, analyticsUtils) {
 
-    var cosmosWalletConnected: Boolean? = false
+    var walletConnectionType: WalletConnectionType? = WalletConnectionType.Ethereum
         set(value) {
             if (field != value) {
                 field = value
                 stateMachine.routerProcessor.selectedChainType =
-                    if (value == true) ChainType.COSMOS else ChainType.EVM
+                    if (value == WalletConnectionType.Cosmos) {
+                        ChainType.COSMOS
+                    } else if (value === WalletConnectionType.Solana) {
+                        ChainType.SVM
+                    } else {
+                        ChainType.EVM
+                    }
             }
         }
 
@@ -248,7 +255,12 @@ internal class OnboardingSupervisor(
         val fromTokenDenomForAPIUse = fromTokenSkipDenom ?: fromTokenDenom
         val fromAmount = helper.parser.asDecimal(state.input.transfer.size?.size)?.let {
             val decimals =
-                helper.parser.asInt(stateMachine.routerProcessor.selectedTokenDecimals(tokenAddress = fromTokenDenom, selectedChainId = fromChain))
+                helper.parser.asInt(
+                    stateMachine.routerProcessor.selectedTokenDecimals(
+                        tokenAddress = fromTokenDenom,
+                        selectedChainId = fromChain,
+                    ),
+                )
             if (decimals != null) {
                 (it * Numeric.decimal.TEN.pow(decimals)).toBigInteger()
             } else {
@@ -302,7 +314,10 @@ internal class OnboardingSupervisor(
             Logger.ddInfo(body.toIMap(), { "retrieveSkipDepositRouteNonCCTP payload sending" })
             helper.post(url, header, body.toJsonPrettyPrint()) { _, response, code, headers ->
                 if (response != null) {
-                    Logger.ddInfo(helper.parser.decodeJsonObject(response), { "retrieveSkipDepositRouteCCTP payload received" })
+                    Logger.ddInfo(
+                        helper.parser.decodeJsonObject(response),
+                        { "retrieveSkipDepositRouteCCTP payload received" },
+                    )
                     val currentFromAmount = stateMachine.state?.input?.transfer?.size?.size
                     val oldFromAmount = oldState?.input?.transfer?.size?.size
                     if (currentFromAmount == oldFromAmount) {
@@ -327,7 +342,12 @@ internal class OnboardingSupervisor(
         val fromChain = state?.input?.transfer?.chain ?: return
         val fromToken = state.input.transfer.token ?: return
         val fromAmount = helper.parser.asDecimal(state.input.transfer.size?.size)?.let {
-            val decimals = helper.parser.asInt(stateMachine.routerProcessor.selectedTokenDecimals(tokenAddress = fromToken, selectedChainId = fromChain))
+            val decimals = helper.parser.asInt(
+                stateMachine.routerProcessor.selectedTokenDecimals(
+                    tokenAddress = fromToken,
+                    selectedChainId = fromChain,
+                ),
+            )
             if (decimals != null) {
                 (it * Numeric.decimal.TEN.pow(decimals)).toBigInteger()
             } else {
@@ -362,7 +382,10 @@ internal class OnboardingSupervisor(
         Logger.ddInfo(body.toIMap(), { "retrieveSkipDepositRouteCCTP payload sending" })
         helper.post(url, header, body.toJsonPrettyPrint()) { _, response, code, headers ->
             if (response != null) {
-                Logger.ddInfo(helper.parser.decodeJsonObject(response), { "retrieveSkipDepositRouteCCTP payload received" })
+                Logger.ddInfo(
+                    helper.parser.decodeJsonObject(response),
+                    { "retrieveSkipDepositRouteCCTP payload received" },
+                )
                 val currentFromAmount = stateMachine.state?.input?.transfer?.size?.size
                 val oldFromAmount = oldState?.input?.transfer?.size?.size
                 if (currentFromAmount == oldFromAmount) {
@@ -660,7 +683,8 @@ internal class OnboardingSupervisor(
         subaccountNumber: Int?,
     ) {
         val toChain = state?.input?.transfer?.chain ?: return
-        val toAddress = state?.input?.transfer?.address
+        val toAddress = state.input.transfer.address ?: return
+        if (toAddress.isBlank()) return
         val toTokenDenom = state.input.transfer.token ?: return
         val toTokenSkipDenom = stateMachine.routerProcessor.getTokenByDenomAndChainId(
             tokenDenom = toTokenDenom,
@@ -671,7 +695,7 @@ internal class OnboardingSupervisor(
 //        So we prefer the skimDenom and default to the regular denom for API calls.
         val toTokenDenomForAPIUse = toTokenSkipDenom ?: toTokenDenom
 
-        val usdcSize = helper.parser.asDecimal(state?.input?.transfer?.size?.usdcSize) ?: return
+        val usdcSize = helper.parser.asDecimal(state.input.transfer.size?.usdcSize) ?: return
         val fromAmount = if (usdcSize > gas) {
             ((usdcSize - gas) * Numeric.decimal.TEN.pow(decimals)).toBigInteger()
         } else {
@@ -717,7 +741,10 @@ internal class OnboardingSupervisor(
         Logger.ddInfo(body.toIMap(), { "retrieveSkipWithdrawalRouteNonCCTP payload sending" })
         helper.post(url, header, body.toJsonPrettyPrint()) { _, response, code, headers ->
             if (response != null) {
-                Logger.ddInfo(helper.parser.decodeJsonObject(response), { "retrieveSkipWithdrawalRouteNonCCTP payload received" })
+                Logger.ddInfo(
+                    helper.parser.decodeJsonObject(response),
+                    { "retrieveSkipWithdrawalRouteNonCCTP payload received" },
+                )
                 update(stateMachine.squidRoute(response, subaccountNumber ?: 0, null), oldState)
             } else {
                 Logger.e { "retrieveSkipWithdrawalRouteNonCCTP error, code: $code" }
@@ -736,6 +763,7 @@ internal class OnboardingSupervisor(
         val toChain = state?.input?.transfer?.chain ?: return
         val toToken = state.input.transfer.token ?: return
         val toAddress = state.input.transfer.address ?: return
+        if (toAddress.isBlank()) return
         val usdcSize = helper.parser.asDecimal(state.input.transfer.size?.usdcSize) ?: return
         val fromAmount = if (usdcSize > gas) {
             ((usdcSize - gas) * Numeric.decimal.TEN.pow(decimals)).toBigInteger()
@@ -774,7 +802,10 @@ internal class OnboardingSupervisor(
         Logger.ddInfo(body.toIMap(), { "retrieveSkipWithdrawalRouteCCTP payload sending" })
         helper.post(url, header, body.toJsonPrettyPrint()) { _, response, code, _ ->
             if (response != null) {
-                Logger.ddInfo(helper.parser.decodeJsonObject(response), { "retrieveSkipWithdrawalRouteCCTP payload received" })
+                Logger.ddInfo(
+                    helper.parser.decodeJsonObject(response),
+                    { "retrieveSkipWithdrawalRouteCCTP payload received" },
+                )
                 val currentFromAmount = stateMachine.state?.input?.transfer?.size?.size
                 val oldFromAmount = oldState?.input?.transfer?.size?.size
                 if (currentFromAmount == oldFromAmount) {
@@ -925,7 +956,7 @@ internal class OnboardingSupervisor(
         val string = Json.encodeToString(payload)
 
         helper.transaction(TransactionType.Deposit, string) { response ->
-            val error = parseTransactionResponse(response)
+            val error = helper.parseTransactionResponse(response)
             helper.send(error, callback, payload)
         }
     }
@@ -935,7 +966,7 @@ internal class OnboardingSupervisor(
         val string = Json.encodeToString(payload)
 
         helper.transaction(TransactionType.Withdraw, string) { response ->
-            val error = parseTransactionResponse(response)
+            val error = helper.parseTransactionResponse(response)
             helper.send(error, callback, payload)
         }
     }
@@ -945,7 +976,7 @@ internal class OnboardingSupervisor(
         val string = Json.encodeToString(payload)
 
         helper.transaction(TransactionType.SubaccountTransfer, string) { response ->
-            val error = parseTransactionResponse(response)
+            val error = helper.parseTransactionResponse(response)
             helper.send(error, callback, payload)
         }
     }
@@ -1084,7 +1115,7 @@ internal class OnboardingSupervisor(
                             ),
                         )
                         helper.transaction(TransactionType.WithdrawToNobleIBC, payload) {
-                            val error = parseTransactionResponse(it)
+                            val error = helper.parseTransactionResponse(it)
                             if (error != null) {
                                 Logger.e { "withdrawToNobleIBC error: $error" }
                                 helper.send(error, callback)

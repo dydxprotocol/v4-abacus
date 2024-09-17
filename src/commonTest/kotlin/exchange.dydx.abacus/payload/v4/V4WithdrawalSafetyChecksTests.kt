@@ -1,5 +1,6 @@
 package exchange.dydx.abacus.payload.v4
 
+import exchange.dydx.abacus.output.input.ErrorFormat
 import exchange.dydx.abacus.output.input.ErrorType
 import exchange.dydx.abacus.output.input.TransferType
 import exchange.dydx.abacus.responses.ParsingError
@@ -69,7 +70,7 @@ class V4WithdrawalSafetyChecksTests : V4BaseTests() {
             assertEquals(1, resources?.text?.params?.size)
             val param = resources?.text?.params?.get(0)
             assertEquals("1", param?.value)
-            assertEquals("string", param?.format)
+            assertEquals(ErrorFormat.StringVal, param?.format)
             assertEquals("SECONDS", param?.key)
         } else {
             test(
@@ -190,7 +191,7 @@ class V4WithdrawalSafetyChecksTests : V4BaseTests() {
             assertEquals(resources?.text?.params?.size, 1)
             val param = resources?.text?.params?.get(0)
             assertEquals(param?.value, "1234.567891")
-            assertEquals(param?.format, "price")
+            assertEquals(param?.format, ErrorFormat.Price)
             assertEquals(param?.key, "USDC_LIMIT")
 
             assertEquals(

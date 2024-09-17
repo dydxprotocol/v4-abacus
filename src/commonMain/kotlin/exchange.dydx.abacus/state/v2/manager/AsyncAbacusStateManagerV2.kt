@@ -41,6 +41,7 @@ import exchange.dydx.abacus.state.model.ClosePositionInputField
 import exchange.dydx.abacus.state.model.TradeInputField
 import exchange.dydx.abacus.state.model.TransferInputField
 import exchange.dydx.abacus.state.model.TriggerOrdersInputField
+import exchange.dydx.abacus.state.model.WalletConnectionType
 import exchange.dydx.abacus.state.v2.supervisor.AppConfigsV2
 import exchange.dydx.abacus.utils.CoroutineTimer
 import exchange.dydx.abacus.utils.DummyFormatter
@@ -140,7 +141,7 @@ class AsyncAbacusStateManagerV2(
                 value?.historicalPnlPeriod = historicalPnlPeriod
                 value?.candlesResolution = candlesResolution
                 value?.readyToConnect = readyToConnect
-                value?.cosmosWalletConnected = cosmosWalletConnected
+                value?.walletConnectionType = walletConnectionType
                 field = value
             }
         }
@@ -187,11 +188,11 @@ class AsyncAbacusStateManagerV2(
             }
         }
 
-    override var cosmosWalletConnected: Boolean? = false
+    override var walletConnectionType: WalletConnectionType? = WalletConnectionType.Ethereum
         set(value) {
             field = value
             ioImplementations.threading?.async(ThreadingType.abacus) {
-                adaptor?.cosmosWalletConnected = field
+                adaptor?.walletConnectionType = field
             }
         }
 
@@ -235,6 +236,9 @@ class AsyncAbacusStateManagerV2(
                 adaptor?.gasToken = field
             }
         }
+
+    private var pushNotificationToken: String? = null
+    private var pushNotificationLanguageCode: String? = null
 
     companion object {
         private fun createIOImplementions(_nativeImplementations: ProtocolNativeImpFactory): IOImplementations {
@@ -388,15 +392,15 @@ class AsyncAbacusStateManagerV2(
                 val data = parser.asMap(value) ?: continue
                 val dydxChainId = parser.asString(data["dydxChainId"]) ?: continue
                 val environment = V4Environment.parse(
-                    key,
-                    data,
-                    parser,
-                    deploymentUri,
-                    uiImplementations.localizer,
-                    parser.asNativeMap(tokensData?.get(dydxChainId)),
-                    parser.asNativeMap(linksData?.get(dydxChainId)),
-                    parser.asNativeMap(walletsData?.get(dydxChainId)),
-                    parser.asNativeMap(governanceData?.get(dydxChainId)),
+                    id = key,
+                    data = data,
+                    parser = parser,
+                    deploymentUri = deploymentUri,
+                    localizer = uiImplementations.localizer,
+                    tokensData = parser.asNativeMap(tokensData?.get(dydxChainId)),
+                    linksData = parser.asNativeMap(linksData?.get(dydxChainId)),
+                    walletsData = parser.asNativeMap(walletsData?.get(dydxChainId)),
+                    governanceData = parser.asNativeMap(governanceData?.get(dydxChainId)),
                 ) ?: continue
                 parsedEnvironments[environment.id] = environment
             }
@@ -447,6 +451,9 @@ class AsyncAbacusStateManagerV2(
                 dataNotification = dataNotification,
                 presentationProtocol = presentationProtocol,
             )
+            pushNotificationToken?.let { token ->
+                adaptor?.registerPushNotification(token, pushNotificationLanguageCode)
+            }
         }
     }
 
@@ -655,5 +662,11 @@ class AsyncAbacusStateManagerV2(
             )
         }
         return null
+    }
+
+    override fun registerPushNotification(token: String, languageCode: String?) {
+        pushNotificationToken = token
+        pushNotificationLanguageCode = languageCode
+        adaptor?.registerPushNotification(token, languageCode)
     }
 }
