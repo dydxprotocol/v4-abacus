@@ -1,7 +1,9 @@
 package exchange.dydx.abacus.functional.vault
 
 import exchange.dydx.abacus.output.input.ErrorType
+import exchange.dydx.abacus.protocols.asTypedObject
 import exchange.dydx.abacus.utils.IList
+import exchange.dydx.abacus.utils.Parser
 import kollections.toIList
 import kotlinx.serialization.Serializable
 import kotlin.js.JsExport
@@ -101,10 +103,15 @@ data class VaultFormValidationResult(
 
 @JsExport
 object VaultDepositWithdrawFormValidator {
+    private val parser = Parser()
 
     private const val SLIPPAGE_PERCENT_WARN = 0.01
     private const val SLIPPAGE_PERCENT_ACK = 0.04
     private const val SLIPPAGE_TOLERANCE = 0.01
+
+    fun getVaultDepositWithdrawSlippageResponse(apiResponse: String): VaultDepositWithdrawSlippageResponse? {
+        return parser.asTypedObject<VaultDepositWithdrawSlippageResponse>(apiResponse)
+    }
 
     fun validateVaultForm(
         formData: VaultFormData,
