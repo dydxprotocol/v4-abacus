@@ -1214,8 +1214,8 @@ internal fun AccountSupervisor.cancelAllOrders(marketId: String?, callback: Tran
     subaccount?.cancelAllOrders(marketId, callback)
 }
 
-internal fun AccountSupervisor.closeAllPositions(currentHeight: Int?, callback: TransactionCallback) {
-    subaccount?.closeAllPositions(currentHeight, callback)
+internal fun AccountSupervisor.closeAllPositions(currentHeight: Int?, callback: TransactionCallback): HumanReadableCloseAllPositionsPayload? {
+    return subaccount?.closeAllPositions(currentHeight, callback)
 }
 
 internal fun AccountSupervisor.orderCanceled(orderId: String) {
