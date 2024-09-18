@@ -171,16 +171,7 @@ internal class ConnectionsSupervisor(
     }
 
     private fun bestEffortConnectIndexer() {
-        findOptimalIndexer { config ->
-            this.indexerConfig = config
-        }
-    }
-
-    private fun findOptimalIndexer(callback: (config: IndexerURIs?) -> Unit) {
-        val first = helper.configs.indexerConfigs?.firstOrNull()
-        helper.ioImplementations.threading?.async(ThreadingType.abacus) {
-            callback(first)
-        }
+        indexerConfig = helper.configs.indexerConfigs?.firstOrNull()
     }
 
     private fun bestEffortConnectChain() {
