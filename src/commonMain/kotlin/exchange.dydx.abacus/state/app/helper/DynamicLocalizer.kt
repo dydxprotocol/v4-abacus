@@ -251,8 +251,7 @@ class DynamicLocalizer(
                     }
                 }
             } else {
-                // Not a valid language
-                callback(false, null)
+                callback(_loadingLanguage == language, null)
             }
         } else {
             // Not a valid language
