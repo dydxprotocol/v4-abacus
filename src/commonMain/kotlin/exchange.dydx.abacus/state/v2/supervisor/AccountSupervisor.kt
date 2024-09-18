@@ -23,6 +23,7 @@ import exchange.dydx.abacus.state.manager.BlockAndTime
 import exchange.dydx.abacus.state.manager.HistoricalTradingRewardsPeriod
 import exchange.dydx.abacus.state.manager.HumanReadableCancelAllOrdersPayload
 import exchange.dydx.abacus.state.manager.HumanReadableCancelOrderPayload
+import exchange.dydx.abacus.state.manager.HumanReadableCloseAllPositionsPayload
 import exchange.dydx.abacus.state.manager.HumanReadableDepositPayload
 import exchange.dydx.abacus.state.manager.HumanReadablePlaceOrderPayload
 import exchange.dydx.abacus.state.manager.HumanReadableSubaccountTransferPayload
@@ -1154,6 +1155,10 @@ internal fun AccountSupervisor.cancelAllOrdersPayload(marketId: String?): HumanR
     return subaccount?.cancelAllOrdersPayload(marketId)
 }
 
+internal fun AccountSupervisor.closeAllPositionsPayload(currentHeight: Int?): HumanReadableCloseAllPositionsPayload? {
+    return subaccount?.closeAllPositionsPayload(currentHeight)
+}
+
 internal fun AccountSupervisor.depositPayload(): HumanReadableDepositPayload? {
     return subaccount?.depositPayload()
 }
@@ -1207,6 +1212,10 @@ internal fun AccountSupervisor.cancelOrder(orderId: String, callback: Transactio
 
 internal fun AccountSupervisor.cancelAllOrders(marketId: String?, callback: TransactionCallback) {
     subaccount?.cancelAllOrders(marketId, callback)
+}
+
+internal fun AccountSupervisor.closeAllPositions(currentHeight: Int?, callback: TransactionCallback) {
+    subaccount?.closeAllPositions(currentHeight, callback)
 }
 
 internal fun AccountSupervisor.orderCanceled(orderId: String) {

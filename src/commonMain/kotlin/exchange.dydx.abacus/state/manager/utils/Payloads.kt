@@ -3,6 +3,7 @@ package exchange.dydx.abacus.state.manager
 import exchange.dydx.abacus.output.input.OrderStatus
 import exchange.dydx.abacus.utils.IList
 import kollections.JsExport
+import kollections.List
 import kotlinx.serialization.Serializable
 
 internal data class Subaccount(
@@ -87,7 +88,13 @@ data class HumanReadableCancelOrderPayload(
 @Serializable
 data class HumanReadableCancelAllOrdersPayload(
     val marketId: String?,
-    val payloads: IList<HumanReadableCancelOrderPayload>,
+    val payloads: List<HumanReadableCancelOrderPayload>,
+)
+
+@JsExport
+@Serializable
+data class HumanReadableCloseAllPositionsPayload(
+    val payloads: List<HumanReadablePlaceOrderPayload>,
 )
 
 @JsExport
