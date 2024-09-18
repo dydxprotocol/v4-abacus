@@ -140,7 +140,7 @@ class V4HeightTests {
 
         // Halting Indexer
         for (i in 0..10) {
-            // This causes 10x same height from validatorsh
+            // This causes 10x same height from validator
             stateManager.readyToConnect = false
             testRest?.setResponse(
                 "https://indexer.v4staging.dydx.exchange/v4/height",

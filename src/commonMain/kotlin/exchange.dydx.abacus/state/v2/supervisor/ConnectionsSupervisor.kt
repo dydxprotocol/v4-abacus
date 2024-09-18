@@ -102,6 +102,7 @@ internal class ConnectionsSupervisor(
             indexerConfig = null
             validatorConnected = false
             socketConnected = false
+            validatorUrl = null
             disconnectSocket()
         }
     }
@@ -183,8 +184,14 @@ internal class ConnectionsSupervisor(
     }
 
     private fun bestEffortConnectChain() {
+        if (validatorUrl == null) {
+            val endpointUrls = helper.configs.validatorUrls()
+            validatorUrl = endpointUrls?.firstOrNull()
+        }
         findOptimalNode { url ->
-            this.validatorUrl = url
+            if (url != this.validatorUrl) {
+                this.validatorUrl = url
+            }
         }
     }
 
@@ -263,13 +270,34 @@ internal class ConnectionsSupervisor(
                         val json = helper.parser.decodeJsonObject(response)
                         helper.ioImplementations.threading?.async(ThreadingType.main) {
                             if (json != null) {
-                                callback(json["error"] == null)
+                                val error = json["error"]
+                                if (error != null) {
+                                    tracking(
+                                        eventName = "ConnectNetworkFailed",
+                                        params = iMapOf(
+                                            "errorMessage" to helper.parser.asString(error),
+                                        ),
+                                    )
+                                }
+                                callback(error == null)
                             } else {
+                                tracking(
+                                    eventName = "ConnectNetworkFailed",
+                                    params = iMapOf(
+                                        "errorMessage" to "Invalid response: $response",
+                                    ),
+                                )
                                 callback(false)
                             }
                         }
                     } else {
                         helper.ioImplementations.threading?.async(ThreadingType.main) {
+                            tracking(
+                                eventName = "ConnectNetworkFailed",
+                                params = iMapOf(
+                                    "errorMessage" to "null response",
+                                ),
+                            )
                             callback(false)
                         }
                     }
@@ -372,6 +400,7 @@ internal class ConnectionsSupervisor(
             val timer = helper.ioImplementations.timer ?: CoroutineTimer.instance
             chainTimer = timer.schedule(serverPollingDuration, null) {
                 if (readyToConnect) {
+                    validatorUrl = null
                     bestEffortConnectChain()
                 }
                 false
