@@ -74,6 +74,8 @@ sed -i '' 's/\ PerpetualPositionsMap/\ Map<String, IndexerPerpetualPositionRespo
 # replace AssetPositionsMap with Map<String, AssetPositionResponseObject> in SubaccountResponseObject.kt
 sed -i '' 's/\ AssetPositionsMap/\ Map<String, IndexerAssetPositionResponseObject>/g' generated/src/main/kotlin/indexer/codegen/SubaccountResponseObject.kt
 
+# add import kotlinx.serialization.SerialName to the top of CandleResolution.kt
+sed -i '' 's/package indexer.codegen/package indexer.codegen\n\nimport kotlinx.serialization.SerialName/' generated/src/main/kotlin/indexer/codegen/CandleResolution.kt
 # add import kotlinx.serialization.Serializable to the top of CandleResolution.kt
 sed -i '' 's/package indexer.codegen/package indexer.codegen\n\nimport kotlinx.serialization.Serializable/' generated/src/main/kotlin/indexer/codegen/CandleResolution.kt
 

@@ -25,6 +25,7 @@ import kotlin.js.JsExport
  * @param price
  * @param size
  * @param fee
+ * @param affiliateRevShare
  * @param createdAt
  * @param createdAtHeight
  * @param orderId
@@ -44,6 +45,7 @@ data class IndexerFillResponseObject(
     val price: kotlin.String? = null,
     val size: kotlin.String? = null,
     val fee: kotlin.String? = null,
+    val affiliateRevShare: kotlin.String? = null,
     val createdAt: IndexerIsoString? = null,
     val createdAtHeight: kotlin.String? = null,
     val orderId: kotlin.String? = null,
