@@ -2,6 +2,8 @@ package exchange.dydx.abacus.state.internalstate
 
 import com.ionspin.kotlin.bignum.decimal.BigDecimal
 import exchange.dydx.abacus.calculator.CalculationPeriod
+import exchange.dydx.abacus.functional.vault.ThirtyDayPnl
+import exchange.dydx.abacus.functional.vault.VaultDetails
 import exchange.dydx.abacus.output.Asset
 import exchange.dydx.abacus.output.EquityTiers
 import exchange.dydx.abacus.output.FeeTier
@@ -225,6 +227,7 @@ internal data class InternalWalletState(
     var account: InternalAccountState = InternalAccountState(),
     var user: InternalUserState? = null,
     var walletAddress: String? = null,
+    var vault: InternalVaultState? = null,
 ) {
     val isWalletConnected: Boolean
         get() = walletAddress != null
@@ -232,6 +235,18 @@ internal data class InternalWalletState(
     val isAccountConnected: Boolean
         get() = account.subaccounts != null
 }
+
+internal data class InternalVaultState(
+    var details: VaultDetails? = null,
+    var positions: List<InternalVaultPositionState>? = null,
+    var pnls: MutableMap<String, ThirtyDayPnl> = mutableMapOf(),
+)
+
+internal data class InternalVaultPositionState(
+    var openPosition: InternalPerpetualPosition? = null,
+    var assetPosition: InternalAssetPositionState? = null,
+    var equity: Double? = null,
+)
 
 internal data class InternalUserState(
     var feeTierId: String? = null,

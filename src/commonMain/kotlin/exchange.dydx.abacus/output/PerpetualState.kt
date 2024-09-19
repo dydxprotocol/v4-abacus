@@ -69,7 +69,7 @@ data class PerpetualState(
                 restriction = null,
                 launchIncentive = null,
                 compliance = null,
-                vault = null
+                vault = null,
             )
         }
     }
