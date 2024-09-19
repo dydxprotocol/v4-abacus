@@ -1677,6 +1677,7 @@ open class TradingStateMachine(
             restriction = restriction,
             launchIncentive = launchIncentive,
             compliance = geo,
+            vault = null,
         )
     }
 

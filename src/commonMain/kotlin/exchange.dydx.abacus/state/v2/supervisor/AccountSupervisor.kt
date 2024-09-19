@@ -991,30 +991,8 @@ internal open class AccountSupervisor(
     }
 
     private fun didSetRestriction(restriction: UsageRestriction?) {
-        val state = stateMachine.state
-        stateMachine.state =
-            PerpetualState(
-                assets = state?.assets,
-                marketsSummary = state?.marketsSummary,
-                orderbooks = state?.orderbooks,
-                candles = state?.candles,
-                trades = state?.trades,
-                historicalFundings = state?.historicalFundings,
-                wallet = state?.wallet,
-                account = state?.account,
-                historicalPnl = state?.historicalPnl,
-                fills = state?.fills,
-                transfers = state?.transfers,
-                fundingPayments = state?.fundingPayments,
-                configs = state?.configs,
-                input = state?.input,
-                availableSubaccountNumbers = state?.availableSubaccountNumbers ?: iListOf(),
-                transferStatuses = state?.transferStatuses,
-                trackStatuses = state?.trackStatuses,
-                restriction = restriction,
-                launchIncentive = state?.launchIncentive,
-                compliance = state?.compliance,
-            )
+        val state = stateMachine.state ?: PerpetualState.newState()
+        stateMachine.state = state.copy(restriction = restriction)
         helper.ioImplementations.threading?.async(ThreadingType.main) {
             helper.stateNotification?.stateChanged(
                 state = stateMachine.state,
@@ -1026,35 +1004,15 @@ internal open class AccountSupervisor(
     }
 
     private fun didSetComplianceStatus(compliance: Compliance) {
-        val state = stateMachine.state
-        stateMachine.state =
-            PerpetualState(
-                assets = state?.assets,
-                marketsSummary = state?.marketsSummary,
-                orderbooks = state?.orderbooks,
-                candles = state?.candles,
-                trades = state?.trades,
-                historicalFundings = state?.historicalFundings,
-                wallet = state?.wallet,
-                account = state?.account,
-                historicalPnl = state?.historicalPnl,
-                fills = state?.fills,
-                transfers = state?.transfers,
-                fundingPayments = state?.fundingPayments,
-                configs = state?.configs,
-                input = state?.input,
-                availableSubaccountNumbers = state?.availableSubaccountNumbers ?: iListOf(),
-                transferStatuses = state?.transferStatuses,
-                trackStatuses = state?.trackStatuses,
-                restriction = state?.restriction,
-                launchIncentive = state?.launchIncentive,
-                compliance = Compliance(
-                    geo = state?.compliance?.geo,
-                    status = compliance.status,
-                    updatedAt = compliance.updatedAt,
-                    expiresAt = compliance.expiresAt,
-                ),
-            )
+        val state = stateMachine.state ?: PerpetualState.newState()
+        stateMachine.state = state.copy(
+            compliance = Compliance(
+                geo = state?.compliance?.geo,
+                status = compliance.status,
+                updatedAt = compliance.updatedAt,
+                expiresAt = compliance.expiresAt,
+            ),
+        )
         helper.ioImplementations.threading?.async(ThreadingType.main) {
             helper.stateNotification?.stateChanged(
                 state = stateMachine.state,

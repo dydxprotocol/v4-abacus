@@ -682,29 +682,8 @@ internal class StateManagerAdaptorV2(
     }
 
     private fun didSetRestriction(restriction: UsageRestriction?) {
-        val state = stateMachine.state
-        stateMachine.state = PerpetualState(
-            assets = state?.assets,
-            marketsSummary = state?.marketsSummary,
-            orderbooks = state?.orderbooks,
-            candles = state?.candles,
-            trades = state?.trades,
-            historicalFundings = state?.historicalFundings,
-            wallet = state?.wallet,
-            account = state?.account,
-            historicalPnl = state?.historicalPnl,
-            fills = state?.fills,
-            transfers = state?.transfers,
-            fundingPayments = state?.fundingPayments,
-            configs = state?.configs,
-            input = state?.input,
-            availableSubaccountNumbers = state?.availableSubaccountNumbers ?: iListOf(),
-            transferStatuses = state?.transferStatuses,
-            trackStatuses = state?.trackStatuses,
-            restriction = restriction,
-            launchIncentive = state?.launchIncentive,
-            compliance = state?.compliance,
-        )
+        val state = stateMachine.state ?: PerpetualState.newState()
+        stateMachine.state = state.copy(restriction = restriction)
         ioImplementations.threading?.async(ThreadingType.main) {
             stateNotification?.stateChanged(
                 state = stateMachine.state,
@@ -716,32 +695,13 @@ internal class StateManagerAdaptorV2(
     }
 
     private fun didSetGeo(geo: String?) {
-        val state = stateMachine.state
-        stateMachine.state = PerpetualState(
-            assets = state?.assets,
-            marketsSummary = state?.marketsSummary,
-            orderbooks = state?.orderbooks,
-            candles = state?.candles,
-            trades = state?.trades,
-            historicalFundings = state?.historicalFundings,
-            wallet = state?.wallet,
-            account = state?.account,
-            historicalPnl = state?.historicalPnl,
-            fills = state?.fills,
-            transfers = state?.transfers,
-            fundingPayments = state?.fundingPayments,
-            configs = state?.configs,
-            input = state?.input,
-            availableSubaccountNumbers = state?.availableSubaccountNumbers ?: iListOf(),
-            transferStatuses = state?.transferStatuses,
-            trackStatuses = state?.trackStatuses,
-            restriction = state?.restriction,
-            launchIncentive = state?.launchIncentive,
+        val state = stateMachine.state ?: PerpetualState.newState()
+        stateMachine.state = state.copy(
             compliance = Compliance(
                 geo = geo,
-                status = state?.compliance?.status ?: ComplianceStatus.COMPLIANT,
-                updatedAt = state?.compliance?.updatedAt,
-                expiresAt = state?.compliance?.expiresAt,
+                status = state.compliance?.status ?: ComplianceStatus.COMPLIANT,
+                updatedAt = state.compliance?.updatedAt,
+                expiresAt = state.compliance?.expiresAt,
             ),
         )
         ioImplementations.threading?.async(ThreadingType.main) {
