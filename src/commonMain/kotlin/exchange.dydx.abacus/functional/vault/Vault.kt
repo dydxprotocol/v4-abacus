@@ -12,6 +12,11 @@ import exchange.dydx.abacus.state.internalstate.InternalSubaccountState
 import exchange.dydx.abacus.utils.IList
 import exchange.dydx.abacus.utils.IMap
 import exchange.dydx.abacus.utils.Parser
+import indexer.codegen.IndexerMegavaultHistoricalPnlResponse
+import indexer.codegen.IndexerMegavaultPositionResponse
+import indexer.codegen.IndexerVaultHistoricalPnl
+import indexer.codegen.IndexerVaultPosition
+import indexer.codegen.IndexerVaultsHistoricalPnlResponse
 import kollections.toIList
 import kotlinx.datetime.Clock
 import kotlinx.serialization.Serializable
@@ -74,24 +79,24 @@ object VaultCalculator {
     private val assetPositionProcessor = AssetPositionProcessor(parser)
     private val subaccountCalculator = SubaccountCalculatorV2(parser)
 
-    fun getVaultHistoricalPnlResponse(apiResponse: String): IndexerVaultHistoricalPnlResponse? {
-        return parser.asTypedObject<IndexerVaultHistoricalPnlResponse>(apiResponse)
+    fun getVaultHistoricalPnlResponse(apiResponse: String): IndexerMegavaultHistoricalPnlResponse? {
+        return parser.asTypedObject<IndexerMegavaultHistoricalPnlResponse>(apiResponse)
     }
 
-    fun getSubvaultHistoricalPnlResponse(apiResponse: String): IndexerSubvaultHistoricalPnlResponse? {
-        return parser.asTypedObject<IndexerSubvaultHistoricalPnlResponse>(apiResponse)
+    fun getSubvaultHistoricalPnlResponse(apiResponse: String): IndexerVaultsHistoricalPnlResponse? {
+        return parser.asTypedObject<IndexerVaultsHistoricalPnlResponse>(apiResponse)
     }
 
-    fun getVaultPositionsResponse(apiResponse: String): IndexerVaultPositionResponse? {
-        return parser.asTypedObject<IndexerVaultPositionResponse>(apiResponse)
+    fun getVaultPositionsResponse(apiResponse: String): IndexerMegavaultPositionResponse? {
+        return parser.asTypedObject<IndexerMegavaultPositionResponse>(apiResponse)
     }
 
-    fun calculateVaultSummary(historical: IndexerVaultHistoricalPnlResponse?): VaultDetails? {
-        if (historical?.vaultOfVaultsPnl.isNullOrEmpty()) {
+    fun calculateVaultSummary(historical: IndexerMegavaultHistoricalPnlResponse?): VaultDetails? {
+        if (historical?.megavaultPnl.isNullOrEmpty()) {
             return null
         }
 
-        val vaultOfVaultsPnl = historical!!.vaultOfVaultsPnl!!.sortedByDescending { parser.asDouble(it.createdAt) }
+        val vaultOfVaultsPnl = historical!!.megavaultPnl!!.sortedByDescending { parser.asDouble(it.createdAt) }
 
         val history = vaultOfVaultsPnl.mapNotNull { entry ->
             parser.asDouble(entry.createdAt)?.let { createdAt ->
@@ -132,21 +137,21 @@ object VaultCalculator {
     }
 
     fun calculateVaultPositions(
-        positions: IndexerVaultPositionResponse?,
-        histories: IndexerSubvaultHistoricalPnlResponse?,
+        positions: IndexerMegavaultPositionResponse?,
+        histories: IndexerVaultsHistoricalPnlResponse?,
         markets: IMap<String, PerpetualMarket>?
     ): VaultPositions? {
         if (positions?.positions == null) {
             return null
         }
 
-        val historiesMap = histories?.vaultsPnl?.associateBy { it.marketId }
+        val historiesMap = histories?.vaultsPnl?.associateBy { it.ticker }
 
-        return VaultPositions(positions = positions.positions.mapNotNull { calculateVaultPosition(it, historiesMap?.get(it.market), markets?.get(it.market)) }.toIList())
+        return VaultPositions(positions = positions.positions.mapNotNull { calculateVaultPosition(it, historiesMap?.get(it.ticker), markets?.get(it.ticker)) }.toIList())
     }
 
     fun calculateVaultPosition(position: IndexerVaultPosition, history: IndexerVaultHistoricalPnl?, perpetualMarket: PerpetualMarket?): VaultPosition? {
-        if (position.market == null) {
+        if (position.ticker == null) {
             return null
         }
         val perpetualPosition = perpetualPositionProcessor.process(null, position.perpetualPosition)
@@ -165,7 +170,7 @@ object VaultCalculator {
                 ),
 
             ),
-            marketsSummary = InternalMarketSummaryState(markets = mutableMapOf(position.market to InternalMarketState(perpetualMarket = perpetualMarket))),
+            marketsSummary = InternalMarketSummaryState(markets = mutableMapOf(position.ticker to InternalMarketState(perpetualMarket = perpetualMarket))),
             periods = setOf(CalculationPeriod.current),
             price = null,
             configs = null,
@@ -173,7 +178,7 @@ object VaultCalculator {
         val calculated = subaccount?.calculated?.get(CalculationPeriod.current)
         val perpCalculated = perpetualPosition?.calculated?.get(CalculationPeriod.current)
         return VaultPosition(
-            marketId = position.market,
+            marketId = position.ticker,
             marginUsdc = calculated?.equity,
             currentLeverageMultiple = perpCalculated?.leverage,
             currentPosition = CurrentPosition(

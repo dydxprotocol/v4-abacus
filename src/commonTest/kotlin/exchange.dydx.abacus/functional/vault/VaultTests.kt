@@ -5,10 +5,13 @@ import exchange.dydx.abacus.functional.vault.VaultCalculator.calculateVaultSumma
 import exchange.dydx.abacus.output.PerpetualMarket
 import exchange.dydx.abacus.utils.NUM_PARENT_SUBACCOUNTS
 import indexer.codegen.IndexerAssetPositionResponseObject
+import indexer.codegen.IndexerMegavaultHistoricalPnlResponse
 import indexer.codegen.IndexerPerpetualPositionResponseObject
 import indexer.codegen.IndexerPerpetualPositionStatus
 import indexer.codegen.IndexerPnlTicksResponseObject
 import indexer.codegen.IndexerPositionSide
+import indexer.codegen.IndexerVaultHistoricalPnl
+import indexer.codegen.IndexerVaultPosition
 import kollections.iListOf
 import kotlin.test.Test
 import kotlin.test.assertEquals
@@ -19,8 +22,8 @@ class VaultTests {
 
     @Test
     fun calculateVaultSummary_basic() {
-        val historicalPnl = IndexerVaultHistoricalPnlResponse(
-            vaultOfVaultsPnl = iListOf(
+        val historicalPnl = IndexerMegavaultHistoricalPnlResponse(
+            megavaultPnl = arrayOf(
                 IndexerPnlTicksResponseObject(
                     equity = "10000.0",
                     totalPnl = "1000.0",
@@ -60,8 +63,8 @@ class VaultTests {
 
     @Test
     fun shouldReturnNullForNullOrEmptyHistoricalPnl() {
-        val nullHistoricalPnl = IndexerVaultHistoricalPnlResponse(vaultOfVaultsPnl = null)
-        val emptyHistoricalPnl = IndexerVaultHistoricalPnlResponse(vaultOfVaultsPnl = iListOf())
+        val nullHistoricalPnl = IndexerMegavaultHistoricalPnlResponse(megavaultPnl = null)
+        val emptyHistoricalPnl = IndexerMegavaultHistoricalPnlResponse(megavaultPnl = arrayOf())
 
         val nullVaultDetails = calculateVaultSummary(nullHistoricalPnl)
         val emptyVaultDetails = calculateVaultSummary(emptyHistoricalPnl)
@@ -77,8 +80,8 @@ class VaultTests {
         val thirtyDaysAgoTimestamp = latestTimestamp - 30.days.inWholeMilliseconds
         val twentyNineDaysAgoTimestamp = latestTimestamp - 29.days.inWholeMilliseconds
 
-        val historicalPnl = IndexerVaultHistoricalPnlResponse(
-            vaultOfVaultsPnl = iListOf(
+        val historicalPnl = IndexerMegavaultHistoricalPnlResponse(
+            megavaultPnl = arrayOf(
                 IndexerPnlTicksResponseObject(
                     equity = "10000.0",
                     totalPnl = "1000.0",
@@ -121,7 +124,7 @@ class VaultTests {
     @Test
     fun shouldCalculateVaultPositionCorrectly() {
         val position = IndexerVaultPosition(
-            market = "BTC-USD",
+            ticker = "BTC-USD",
             assetPosition = IndexerAssetPositionResponseObject(
                 symbol = "USDC",
                 side = IndexerPositionSide.SHORT,
@@ -151,8 +154,8 @@ class VaultTests {
         )
 
         val history = IndexerVaultHistoricalPnl(
-            marketId = "BTC-USD",
-            historicalPnl = iListOf(
+            ticker = "BTC-USD",
+            historicalPnl = arrayOf(
                 IndexerPnlTicksResponseObject(
                     id = "1",
                     equity = "10500.0",
