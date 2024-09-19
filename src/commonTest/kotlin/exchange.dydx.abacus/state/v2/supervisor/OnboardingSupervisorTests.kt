@@ -3,7 +3,7 @@ import kotlin.test.Test
 
 class OnboardingSupervisorTests {
     @Test
-    fun testSquidRoutes() {
-//        TODO: implement
+    fun testMe() {
+//        Implement some onboarding supervisor tests, please
     }
 }

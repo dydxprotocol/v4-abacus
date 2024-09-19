@@ -76,31 +76,6 @@ class V4StateManagerConfigs(
         return parser.asString(parser.value(configs, "channels.candles"))
     }
 
-    fun squidStatus(): String? {
-        val squid = environment.endpoints.squid ?: return null
-        val path = parser.asString(parser.value(configs, "paths.0xsquid.status"))
-        return "$squid$path"
-    }
-
-    fun squidV2Status(): String? {
-        val path = parser.asString(parser.value(configs, "paths.0xsquid.status"))
-        return "$squidV2Host$path"
-    }
-
-    fun squidRoute(): String? {
-        val squid = environment.endpoints.squid ?: return null
-        val path = parser.asString(parser.value(configs, "paths.0xsquid.route"))
-        return "$squid$path"
-    }
-
-    fun squidV2Assets(): String? {
-        return "$squidV2Host/v2/sdk-info"
-    }
-
-    fun squidV2Route(): String? {
-        return "$squidV2Host/v2/route"
-    }
-
     fun nobleChainId(): String {
         return if (environment.isMainNet) "noble-1" else "grand-1"
     }
