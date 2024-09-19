@@ -93,7 +93,7 @@ class VaultFormTests {
         assertEquals(
             VaultFormValidationResult(
                 errors = iListOf(
-                    VaultFormValidationErrors.slippageTooHigh(),
+                    VaultFormValidationErrors.slippageTooHigh(0.02),
                 ),
                 submissionData = VaultDepositWithdrawSubmissionData(
                     deposit = null,
@@ -146,7 +146,7 @@ class VaultFormTests {
             VaultFormValidationResult(
                 errors = iListOf(
                     VaultFormValidationErrors.slippageResponseWrongShares(),
-                    VaultFormValidationErrors.slippageTooHigh(),
+                    VaultFormValidationErrors.slippageTooHigh(0.02),
                 ),
                 submissionData = null,
                 summaryData = VaultFormSummaryData(
@@ -191,7 +191,7 @@ class VaultFormTests {
             VaultFormValidationResult(
                 errors = iListOf(
                     VaultFormValidationErrors.withdrawTooHigh(),
-                    VaultFormValidationErrors.slippageTooHigh(),
+                    VaultFormValidationErrors.slippageTooHigh(0.166666),
                     VaultFormValidationErrors.mustAckSlippage(),
                 ),
                 submissionData = null,

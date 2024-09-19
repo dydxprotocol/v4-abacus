@@ -1,5 +1,7 @@
 package exchange.dydx.abacus.functional.vault
 
+import exchange.dydx.abacus.output.input.ErrorFormat
+import exchange.dydx.abacus.output.input.ErrorParam
 import exchange.dydx.abacus.output.input.ErrorResources
 import exchange.dydx.abacus.output.input.ErrorString
 import exchange.dydx.abacus.output.input.ErrorType
@@ -7,6 +9,7 @@ import exchange.dydx.abacus.output.input.ValidationError
 import exchange.dydx.abacus.protocols.asTypedObject
 import exchange.dydx.abacus.utils.IList
 import exchange.dydx.abacus.utils.Parser
+import exchange.dydx.abacus.utils.format
 import kollections.toIList
 import kotlinx.serialization.Serializable
 import kotlin.js.JsExport
@@ -49,7 +52,8 @@ object VaultFormValidationErrors {
         type: ErrorType,
         fields: List<String>? = null,
         titleKey: String? = null,
-        textKey: String? = null
+        textKey: String? = null,
+        textKeyParams: List<ErrorParam>? = null
     ): ValidationError {
         return ValidationError(
             code = code,
@@ -60,7 +64,13 @@ object VaultFormValidationErrors {
             linkText = null,
             resources = ErrorResources(
                 title = titleKey?.let { ErrorString(stringKey = it, params = null, localized = null) },
-                text = textKey?.let { ErrorString(stringKey = it, params = null, localized = null) },
+                text = textKey?.let {
+                    ErrorString(
+                        stringKey = it,
+                        params = textKeyParams?.toIList(),
+                        localized = null,
+                    )
+                },
                 action = null,
             ),
         )
@@ -111,10 +121,14 @@ object VaultFormValidationErrors {
         textKey = "APP.VAULTS.WITHDRAW_TOO_HIGH",
     )
 
-    fun slippageTooHigh() = createError(
+    fun slippageTooHigh(slippagePercent: Double) = createError(
         code = "SLIPPAGE_TOO_HIGH",
         type = ErrorType.warning,
         textKey = "APP.VAULTS.SLIPPAGE_WARNING",
+        textKeyParams = listOf(
+            ErrorParam(key = "AMOUNT", value = slippagePercent.format(4), format = ErrorFormat.Percent),
+            ErrorParam(key = "LINK", value = "", format = null),
+        ),
     )
 
     fun mustAckSlippage() = createError(
@@ -303,7 +317,7 @@ object VaultDepositWithdrawFormValidator {
                     )
                 }
                 if (needSlippageAck) {
-                    errors.add(VaultFormValidationErrors.slippageTooHigh())
+                    errors.add(VaultFormValidationErrors.slippageTooHigh(slippagePercent))
                     if (slippagePercent >= SLIPPAGE_PERCENT_ACK && !formData.acknowledgedSlippage && formData.inConfirmationStep) {
                         errors.add(VaultFormValidationErrors.mustAckSlippage())
                     }
