@@ -16,6 +16,7 @@ import exchange.dydx.abacus.state.manager.CancelOrderRecord
 import exchange.dydx.abacus.state.manager.FaucetRecord
 import exchange.dydx.abacus.state.manager.HumanReadableCancelAllOrdersPayload
 import exchange.dydx.abacus.state.manager.HumanReadableCancelOrderPayload
+import exchange.dydx.abacus.state.manager.HumanReadableCloseAllPositionsPayload
 import exchange.dydx.abacus.state.manager.HumanReadablePlaceOrderPayload
 import exchange.dydx.abacus.state.manager.HumanReadableSubaccountTransferPayload
 import exchange.dydx.abacus.state.manager.HumanReadableTriggerOrdersPayload
@@ -177,6 +178,23 @@ internal class SubaccountTransactionSupervisor(
                 analyticsPayload = analyticsPayload,
                 uiClickTimeMs = uiClickTimeMs,
             )
+        }
+        return payload
+    }
+
+    internal fun closeAllPositions(currentHeight: Int?, callback: TransactionCallback): HumanReadableCloseAllPositionsPayload {
+        val payload = payloadProvider.closeAllPositionsPayload(currentHeight)
+        payload.payloads.forEach { closePositionPayload ->
+            val marketId = closePositionPayload.marketId
+            val midMarketPrice = stateMachine.state?.marketOrderbook(marketId)?.midPrice
+            val analyticsPayload = analyticsUtils.placeOrderAnalyticsPayload(
+                payload = closePositionPayload,
+                midMarketPrice = midMarketPrice,
+                fromSlTpDialog = false,
+                isClosePosition = true,
+            )
+            val uiClickTimeMs = transactionTracker.trackOrderClick(analyticsPayload, AnalyticsEvent.TradeCloseAllPositionsClick)
+            submitPlaceOrder(callback, closePositionPayload, analyticsPayload, uiClickTimeMs, false)
         }
         return payload
     }
