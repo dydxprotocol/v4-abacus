@@ -16,8 +16,7 @@ import exchange.dydx.abacus.state.internalstate.InternalSubaccountState
 import exchange.dydx.abacus.state.internalstate.InternalTradeInputState
 import exchange.dydx.abacus.state.internalstate.InternalUserState
 import exchange.dydx.abacus.state.internalstate.safeCreate
-import exchange.dydx.abacus.utils.MAX_FREE_CROSS_COLLATERAL_BUFFER_PERCENT
-import exchange.dydx.abacus.utils.MAX_FREE_ISOLATED_COLLATERAL_BUFFER_PERCENT
+import exchange.dydx.abacus.utils.MAX_FREE_COLLATERAL_BUFFER_PERCENT
 import exchange.dydx.abacus.utils.Numeric
 import exchange.dydx.abacus.utils.Rounder
 import kollections.toIList
@@ -106,11 +105,11 @@ internal class TradeInputMarketOrderCalculator() {
         user: InternalUserState?,
         input: String?,
     ): TradeInputMarketOrder? {
-        val tradeSide = trade.side ?: return null
+        val tradeSide = trade.side
         val tradeSize = trade.size
         val freeCollateral = subaccount?.calculated?.get(CalculationPeriod.current)?.freeCollateral
 
-        if (tradeSize != null && freeCollateral != null && freeCollateral > Numeric.double.ZERO) {
+        if (tradeSize != null && tradeSide != null && freeCollateral != null && freeCollateral > Numeric.double.ZERO) {
             val maxMarketLeverage = market?.perpetualMarket?.configs?.maxMarketLeverage ?: Numeric.double.ONE
             val targetLeverage = trade.targetLeverage
             val marginMode = trade.marginMode ?: MarginMode.Cross
@@ -132,8 +131,7 @@ internal class TradeInputMarketOrderCalculator() {
             } else {
                 Numeric.double.ZERO
             }
-            val isTradeSameSide = tradeSide != null &&
-                ((tradeSide == OrderSide.Buy && positionSize >= Numeric.double.ZERO) || (tradeSide == OrderSide.Sell && positionSize <= Numeric.double.ZERO))
+            val isTradeSameSide = ((tradeSide == OrderSide.Buy && positionSize >= Numeric.double.ZERO) || (tradeSide == OrderSide.Sell && positionSize <= Numeric.double.ZERO))
 
             return when (input) {
                 "size.size", "size.percent" -> {
@@ -217,7 +215,7 @@ internal class TradeInputMarketOrderCalculator() {
         }
     }
 
-    private fun isolatedPnlImpact(
+    private fun isolatedPnlImpactForBalance(
         marginMode: MarginMode,
         tradeSide: OrderSide,
         desiredBalance: Double,
@@ -226,8 +224,19 @@ internal class TradeInputMarketOrderCalculator() {
         oraclePrice: Double?,
         isReduceOnly: Boolean
     ): Double {
-        // Calculate the difference between the oracle price and the ask/bid price in order to determine immediate PnL impact that would affect collateral checks
+        // Calculates the pnl impact for an isolated order trade, given:
+        // - the difference between the oracle price and the ask/bid price
+        // - a total balance to be used for the trade, note this balance should also be used for the pnl impact
         // TODO CT-1192: refactor to call into MarginCalculator.getShouldTransferInCollateralDeprecated and MarginCalculator.getTransferAmountFromTargetLeverage
+
+        // Formula Derivation:
+        // pnlImpact = diff * size
+        // size = balance * tradeLeverage / entryPrice
+        // pnlImpact = diff * (balance - pnlImpact) * tradeLeverage / entryPrice
+        // pnlImpact = (diff * balance - diff * pnlImpact) * tradeLeverage / entryPrice
+        // pnlImpact * (entryPrice + diff * tradeLeverage) = diff * balance * tradeLeverage
+        // pnlImpact = (diff * balance * tradeLeverage) / (entryPrice + diff * tradeLeverage)
+
         return when (marginMode) {
             MarginMode.Cross -> Numeric.double.ZERO
             MarginMode.Isolated -> if (isReduceOnly) {
@@ -263,11 +272,7 @@ internal class TradeInputMarketOrderCalculator() {
             return createMarketOrderFromSize(size = desiredSize, existingPositionNotionalSize = existingPositionNotionalSize, isTradeSameSide = isTradeSameSide, freeCollateral = freeCollateral, tradeLeverage = tradeLeverage, orderbook = orderbook)
         }
 
-        val maxPercent = when (marginMode) {
-            MarginMode.Cross -> MAX_FREE_CROSS_COLLATERAL_BUFFER_PERCENT
-            MarginMode.Isolated -> MAX_FREE_ISOLATED_COLLATERAL_BUFFER_PERCENT
-        }
-        val cappedPercent = min(balancePercent, maxPercent)
+        val cappedPercent = min(balancePercent, MAX_FREE_COLLATERAL_BUFFER_PERCENT)
 
         val existingBalance = existingPositionNotionalSize.abs() / tradeLeverage
 
@@ -296,7 +301,7 @@ internal class TradeInputMarketOrderCalculator() {
                     if (entryPrice > Numeric.double.ZERO) {
                         val entryUsdcSize = entrySize * entryPrice
                         val entryBalanceSize = entryUsdcSize / tradeLeverage
-                        val pnlImpact = isolatedPnlImpact(
+                        val pnlImpact = isolatedPnlImpactForBalance(
                             marginMode = marginMode,
                             tradeSide = tradeSide,
                             desiredBalance = desiredBalance,

@@ -13,8 +13,7 @@ import exchange.dydx.abacus.calculator.SlippageConstants.TAKE_PROFIT_MARKET_ORDE
 import exchange.dydx.abacus.output.input.MarginMode
 import exchange.dydx.abacus.output.input.OrderSide
 import exchange.dydx.abacus.protocols.ParserProtocol
-import exchange.dydx.abacus.utils.MAX_FREE_CROSS_COLLATERAL_BUFFER_PERCENT
-import exchange.dydx.abacus.utils.MAX_FREE_ISOLATED_COLLATERAL_BUFFER_PERCENT
+import exchange.dydx.abacus.utils.MAX_FREE_COLLATERAL_BUFFER_PERCENT
 import exchange.dydx.abacus.utils.NUM_PARENT_SUBACCOUNTS
 import exchange.dydx.abacus.utils.Numeric
 import exchange.dydx.abacus.utils.QUANTUM_MULTIPLIER
@@ -479,8 +478,9 @@ internal class TradeInputCalculator(
     ): Map<String, Any>? {
         val marketId = parser.asString(market?.get("id"))
         val tradeSize = parser.asNativeMap(trade["size"])
+        val tradeSide = OrderSide.invoke(parser.asString(trade["side"]))
 
-        if (tradeSize != null && marketId != null) {
+        if (tradeSize != null && marketId != null && tradeSide != null) {
             val maxMarketLeverage = maxMarketLeverage(market)
             val targetLeverage = parser.asDouble(trade["targetLeverage"])
             val marginMode = MarginMode.invoke(parser.asString(trade["marginMode"])) ?: MarginMode.Cross
@@ -491,7 +491,6 @@ internal class TradeInputCalculator(
             }
             val freeCollateral = parser.asDouble(parser.value(subaccount, "freeCollateral.current")) ?: Numeric.double.ZERO
 
-            val tradeSide = OrderSide.invoke(parser.asString(trade["side"])) ?: OrderSide.Buy
             val position = parser.asNativeMap(parser.value(subaccount, "openPositions.$marketId"))
             val positionNotionalSize = if (position != null) {
                 parser.asDouble(
@@ -513,7 +512,7 @@ internal class TradeInputCalculator(
             } else {
                 Numeric.double.ZERO
             }
-            val isTradeSameSide = tradeSide != null &&
+            val isTradeSameSide =
                 ((tradeSide == OrderSide.Buy && positionSize >= Numeric.double.ZERO) || (tradeSide == OrderSide.Sell && positionSize <= Numeric.double.ZERO))
 
             return when (input) {
@@ -593,25 +592,30 @@ internal class TradeInputCalculator(
         return null
     }
 
-    private fun isolatedPnlImpact2(marginMode: MarginMode, tradeSide: OrderSide, desiredBalance: Double, tradeLeverage: Double, entryPrice: Double, oraclePrice: Double?, isReduceOnly: Boolean): Double {
-        // Calculate the difference between the oracle price and the ask/bid price in order to determine immediate PnL impact that would affect collateral checks
-        // Should only apply to orders that are increasing in position size (not reduceOnly)
-        // In a cleaner world, this would call MarginCalculator.getShouldTransferInCollateralDeprecated and MarginCalculator.getTransferAmountFromTargetLeverage but because it will be deprecated soon anyways, just passing in the necessary variables
+    private fun isolatedPnlImpactForBalance(
+        marginMode: MarginMode,
+        tradeSide: OrderSide,
+        balance: Double,
+        tradeLeverage: Double,
+        entryPrice: Double,
+        oraclePrice: Double?,
+        isReduceOnly: Boolean
+    ): Double {
+        // Calculates the pnl impact for an isolated order trade, given:
+        // - the difference between the oracle price and the ask/bid price
+        // - a total balance to be used for the trade, note this balance should also be used for the pnl impact
+        //
+        // This should only apply to orders that are increasing in position size (not reduceOnly).
+        // In a cleaner world, this would call MarginCalculator.getShouldTransferInCollateralDeprecated and MarginCalculator.getTransferAmountFromTargetLeverage but
+        // because it will be deprecated soon anyways, just passing in the necessary variables.
 
+        // Formula Derivation:
         // pnlImpact = diff * size
-        // size = balance * leverage / price
-
-        // pnlImpact = diff * (desiredBalance-pnlImpact) * tradeLeverage / entryPrice
-        // pnlImpact = (diff * desiredBalance - diff * pnlImpact) * tradeLeverage / entryPrice
-        // pnlImpact = [diff * desiredBalance * tradeLeverage - diff * pnlImpact * tradeLeverage] / entryPrice
-        // pnlImpact * entryPrice = diff * desiredBalance * tradeLeverage - diff * pnlImpact * tradeLeverage
-        // pnlImpact * entryPrice + diff * pnlImpact * tradeLeverage = diff * desiredBalance * tradeLeverage
-        // pnlImpact [entryPrice + diff * tradeLeverage] = diff * desiredBalance * tradeLeverage
-        // pnlImpact = (diff * desiredBalance * tradeLeverage) / (entryPrice + diff * tradeLeverage)
-
-        // pnlImpact + (diff * pnlImpact * tradeLeverage) / entryPrice = desiredBalance * tradeLeverage
-        // pnlImpact * (1 + diff * tradeLeverage / entryPrice)= desiredBalance * tradeLeverage
-        // pnlImpact = desiredBalance * tradeLeverage * entryPrice / (1 + diff * tradeLeverage)
+        // size = balance * tradeLeverage / entryPrice
+        // pnlImpact = diff * (balance - pnlImpact) * tradeLeverage / entryPrice
+        // pnlImpact = (diff * balance - diff * pnlImpact) * tradeLeverage / entryPrice
+        // pnlImpact * (entryPrice + diff * tradeLeverage) = diff * balance * tradeLeverage
+        // pnlImpact = (diff * balance * tradeLeverage) / (entryPrice + diff * tradeLeverage)
 
         return when (marginMode) {
             MarginMode.Cross -> Numeric.double.ZERO
@@ -622,8 +626,8 @@ internal class TradeInputCalculator(
                     OrderSide.Buy -> entryPrice - (oraclePrice ?: entryPrice)
                     OrderSide.Sell -> (oraclePrice ?: entryPrice) - entryPrice
                 }
-                val res = (diff * desiredBalance * tradeLeverage) / (entryPrice + diff * tradeLeverage)
-                max(res, Numeric.double.ZERO)
+                val pnlImpact = (diff * balance * tradeLeverage) / (entryPrice + diff * tradeLeverage)
+                max(pnlImpact, Numeric.double.ZERO)
             }
         }
     }
@@ -640,7 +644,7 @@ internal class TradeInputCalculator(
         stepSize: Double,
         oraclePrice: Double?,
         isReduceOnly: Boolean,
-        side: OrderSide,
+        tradeSide: OrderSide,
     ): Map<String, Any>? {
         if (marginMode == MarginMode.Isolated && !isTradeSameSide) {
             // For isolated margin orders where the user is trading on the opposite side of their currentPosition, the balancePercent represents a percentage of their current position rather than freeCollateral
@@ -652,11 +656,7 @@ internal class TradeInputCalculator(
             return null
         }
 
-        val maxPercent = when (marginMode) {
-            MarginMode.Cross -> MAX_FREE_CROSS_COLLATERAL_BUFFER_PERCENT
-            MarginMode.Isolated -> MAX_FREE_ISOLATED_COLLATERAL_BUFFER_PERCENT
-        }
-        val cappedPercent = min(balancePercent, maxPercent)
+        val cappedPercent = min(balancePercent, MAX_FREE_COLLATERAL_BUFFER_PERCENT)
 
         val existingBalance = existingPositionNotionalSize.abs() / tradeLeverage
         val desiredBalance = when (marginMode) {
@@ -683,11 +683,9 @@ internal class TradeInputCalculator(
                     val entrySize = parser.asDouble(entry["size"])
 
                     if (entryPrice != null && entryPrice > Numeric.double.ZERO && entrySize != null) {
-                        // balance = size * price / leverage
-                        // balance * leverage / price = size
                         val entryUsdcSize = entrySize * entryPrice
                         val entryBalanceSize = entryUsdcSize / tradeLeverage
-                        val pnlImpact = isolatedPnlImpact2(marginMode, side, desiredBalance, tradeLeverage, entryPrice, oraclePrice, isReduceOnly)
+                        val pnlImpact = isolatedPnlImpactForBalance(marginMode, tradeSide, desiredBalance, tradeLeverage, entryPrice, oraclePrice, isReduceOnly)
                         filled = (balanceTotal + entryBalanceSize + pnlImpact) >= desiredBalance
 
                         var matchedSize = entrySize
