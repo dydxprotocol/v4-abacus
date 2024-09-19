@@ -246,8 +246,8 @@ internal class TradeInputMarketOrderCalculator() {
                     OrderSide.Buy -> entryPrice - (oraclePrice ?: entryPrice)
                     OrderSide.Sell -> (oraclePrice ?: entryPrice) - entryPrice
                 }
-                val res = (diff * desiredBalance * tradeLeverage) / (entryPrice + diff * tradeLeverage)
-                max(res, Numeric.double.ZERO)
+                val pnlImpact = if ((entryPrice + diff * tradeLeverage) > Numeric.double.ZERO) (diff * desiredBalance * tradeLeverage) / (entryPrice + diff * tradeLeverage) else Numeric.double.ZERO
+                max(pnlImpact, Numeric.double.ZERO)
             }
         }
     }
