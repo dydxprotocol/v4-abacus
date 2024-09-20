@@ -88,7 +88,7 @@ interface AsyncAbacusStateManagerProtocol {
     fun faucet(amount: Double, callback: TransactionCallback)
     fun cancelOrder(orderId: String, callback: TransactionCallback)
     fun cancelAllOrders(marketId: String?, callback: TransactionCallback)
-    fun closeAllPositions(callback: TransactionCallback)
+    fun closeAllPositions(callback: TransactionCallback): HumanReadableCloseAllPositionsPayload?
 
     // Bridge functions.
     // If client is not using cancelOrder function, it should call orderCanceled function with

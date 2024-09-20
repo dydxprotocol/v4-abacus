@@ -615,8 +615,8 @@ internal class StateManagerAdaptorV2(
         accounts.cancelAllOrders(marketId, callback)
     }
 
-    internal fun closeAllPositions(callback: TransactionCallback) {
-        accounts.closeAllPositions(currentHeight, callback)
+    internal fun closeAllPositions(callback: TransactionCallback): HumanReadableCloseAllPositionsPayload? {
+        return accounts.closeAllPositions(currentHeight, callback)
     }
 
     internal fun orderCanceled(orderId: String) {
