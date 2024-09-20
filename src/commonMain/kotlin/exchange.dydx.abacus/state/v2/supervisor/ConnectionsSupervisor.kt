@@ -391,7 +391,6 @@ internal class ConnectionsSupervisor(
             val timer = helper.ioImplementations.timer ?: CoroutineTimer.instance
             chainTimer = timer.schedule(serverPollingDuration, null) {
                 if (readyToConnect) {
-                    validatorUrl = null
                     bestEffortConnectChain()
                 }
                 false
