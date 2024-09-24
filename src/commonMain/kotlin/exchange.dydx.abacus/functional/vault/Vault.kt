@@ -157,7 +157,7 @@ object VaultCalculator {
         val perpetualPosition = perpetualPositionProcessor.process(null, position.perpetualPosition)
         val assetPosition = assetPositionProcessor.process(position.assetPosition)
 
-        val assetPositionsMap = assetPosition?.let { mapOf((it.assetId ?: "") to it) }
+        val assetPositionsMap = assetPosition?.let { mapOf((it.symbol ?: "") to it) }
         val subaccount = subaccountCalculator.calculate(
             subaccount = InternalSubaccountState(
                 equity = parser.asDouble(position.equity) ?: 0.0,
