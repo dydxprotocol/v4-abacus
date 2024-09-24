@@ -129,7 +129,7 @@ class VaultTests {
                 symbol = "USDC",
                 side = IndexerPositionSide.SHORT,
                 size = "40000.0",
-                assetId = "USDC",
+                assetId = "0",
                 subaccountNumber = NUM_PARENT_SUBACCOUNTS,
             ),
             perpetualPosition = IndexerPerpetualPositionResponseObject(
@@ -175,7 +175,7 @@ class VaultTests {
 
         val market = PerpetualMarket(
             id = "BTC-USD",
-            assetId = "BTC",
+            assetId = "0",
             market = "BTC-USD",
             displayId = null,
             oraclePrice = 55000.0,
