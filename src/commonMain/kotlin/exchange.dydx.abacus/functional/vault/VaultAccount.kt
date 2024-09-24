@@ -83,7 +83,7 @@ object VaultAccountCalculator {
             totalVaultTransfersCount = vaultTransfers.totalResults,
             vaultTransfers = vaultTransfers.transfersSubset?.map { el ->
                 VaultTransfer(
-                    timestampMs = parser.asDouble(el.createdAt),
+                    timestampMs = parser.asDatetime(el.createdAt)?.toEpochMilliseconds()?.toDouble(),
                     amountUsdc = parser.asDouble(el.size),
                     type = when (el.type) {
                         TRANSFEROUT -> VaultTransferType.DEPOSIT
