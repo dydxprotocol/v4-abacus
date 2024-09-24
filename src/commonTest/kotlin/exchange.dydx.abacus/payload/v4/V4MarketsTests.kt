@@ -8,6 +8,8 @@ import exchange.dydx.abacus.tests.extensions.loadv4TradesBatchChanged
 import exchange.dydx.abacus.tests.extensions.loadv4TradesChanged
 import exchange.dydx.abacus.tests.extensions.loadv4TradesSubscribed
 import exchange.dydx.abacus.tests.extensions.log
+import exchange.dydx.abacus.tests.extensions.rest
+import exchange.dydx.abacus.tests.extensions.socket
 import exchange.dydx.abacus.utils.ServerTime
 import kotlin.test.Test
 import kotlin.test.assertEquals

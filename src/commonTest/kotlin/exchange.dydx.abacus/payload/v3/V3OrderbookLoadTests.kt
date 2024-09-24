@@ -1,5 +1,6 @@
 package exchange.dydx.abacus.payload.v3
 
+import exchange.dydx.abacus.tests.extensions.socket
 import exchange.dydx.abacus.utils.Logger
 import kotlin.test.Test
 import kotlin.test.assertNotNull
