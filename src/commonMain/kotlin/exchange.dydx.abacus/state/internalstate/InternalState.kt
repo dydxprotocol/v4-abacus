@@ -58,6 +58,7 @@ internal data class InternalState(
     val configs: InternalConfigsState = InternalConfigsState(),
     val marketsSummary: InternalMarketSummaryState = InternalMarketSummaryState(),
     val input: InternalInputState = InternalInputState(),
+    var vault: InternalVaultState? = null,
 )
 
 internal data class InternalInputState(
@@ -227,7 +228,6 @@ internal data class InternalWalletState(
     var account: InternalAccountState = InternalAccountState(),
     var user: InternalUserState? = null,
     var walletAddress: String? = null,
-    var vault: InternalVaultState? = null,
 ) {
     val isWalletConnected: Boolean
         get() = walletAddress != null
