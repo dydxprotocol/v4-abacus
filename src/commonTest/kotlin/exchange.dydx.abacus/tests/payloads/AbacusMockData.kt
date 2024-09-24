@@ -51,17 +51,18 @@ class AbacusMockData {
     internal val v4OnChainMock = V4OnChainMock()
     internal val v4ParentSubaccountsMock = V4ParentSubaccountsMock()
     internal val v4WithdrawalSafetyChecksMock = V4WithdrawalSafetyChecksMock()
+    internal val vaultMocks = VaultMocks()
     internal val v4Environment = V4Environment(
-        "test",
-        "test",
-        "test",
-        "test",
-        "dYdX-api",
-        "dYdX Chain",
-        "dYdX-logo.png",
-        "1704844800000",
-        false,
-        EnvironmentEndpoints(
+        id = "test",
+        name = "test",
+        ethereumChainId = "test",
+        dydxChainId = "test",
+        squidIntegratorId = "dYdX-api",
+        chainName = "dYdX Chain",
+        chainLogo = "dYdX-logo.png",
+        rewardsHistoryStartDateMs = "1704844800000",
+        isMainNet = false,
+        endpoints = EnvironmentEndpoints(
             indexers = null,
             validators = null,
             faucet = null,
@@ -70,7 +71,7 @@ class AbacusMockData {
             nobleValidator = null,
             geo = null,
         ),
-        EnvironmentLinks(
+        links = EnvironmentLinks(
             tos = "https://dydx.exchange/v4-terms",
             privacy = "https://dydx.exchange/privacy",
             mintscan = "https://testnet.mintscan.io/dydx-testnet/txs/{tx_hash}",
@@ -86,7 +87,7 @@ class AbacusMockData {
             withdrawalGateLearnMore = "https://help.dydx.exchange/en/articles/8981384-withdrawals-on-dydx-chain#h_23e97bc665",
             equityTiersLearnMore = "https://help.dydx.trade/en/articles/171918-equity-tiers-and-rate-limits",
         ),
-        WalletConnection(
+        walletConnection = WalletConnection(
             WalletConnect(
                 WalletConnectClient(
                     "test",
@@ -105,25 +106,25 @@ class AbacusMockData {
             "test",
             "test",
         ),
-        null,
-        mapOf(
+        apps = null,
+        tokens = mapOf(
             "chain" to TokenInfo(
-                "DYDX",
-                "adv4tnt",
-                18,
-                null,
-                "/currencies/dydx.png",
+                name = "DYDX",
+                denom = "adv4tnt",
+                decimals = 18,
+                gasDenom = null,
+                imageUrl = "/currencies/dydx.png",
             ),
             "usdc" to TokenInfo(
-                "USDC",
-                "ibc/8E27BA2D5493AF5636760E354E46004562C46AB7EC0CC4C1CA14E9E20E2545B5",
-                6,
-                "uusdc",
-                "/currencies/usdc.png",
+                name = "USDC",
+                denom = "ibc/8E27BA2D5493AF5636760E354E46004562C46AB7EC0CC4C1CA14E9E20E2545B5",
+                decimals = 6,
+                gasDenom = "uusdc",
+                imageUrl = "/currencies/usdc.png",
             ),
         ).toIMap(),
-        null,
-        EnvironmentFeatureFlags(
+        governance = null,
+        featureFlags = EnvironmentFeatureFlags(
             withdrawalSafetyEnabled = true,
             isSlTpLimitOrdersEnabled = true,
         ),

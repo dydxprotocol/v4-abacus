@@ -13,7 +13,7 @@ internal fun TradingStateMachine.onMegaVaultPnl(
 ): StateChanges {
     val pnlResponse = parser.asTypedObject<IndexerMegavaultHistoricalPnlResponse>(payload)
     if (pnlResponse != null) {
-        vaultProcessor.processMegaVaultsHistoricalPnl(internalState.vault, pnlResponse)
+        internalState.vault = vaultProcessor.processMegaVaultsHistoricalPnl(internalState.vault, pnlResponse)
         return StateChanges(changes = iListOf(Changes.vault))
     }
     return StateChanges.noChange
@@ -24,7 +24,7 @@ internal fun TradingStateMachine.onVaultMarketPnls(
 ): StateChanges {
     val pnlResponse = parser.asTypedObject<IndexerVaultsHistoricalPnlResponse>(payload)
     if (pnlResponse != null) {
-        vaultProcessor.processVaultMarketHistoricalPnls(internalState.vault, pnlResponse)
+        internalState.vault = vaultProcessor.processVaultMarketHistoricalPnls(internalState.vault, pnlResponse)
         return StateChanges(changes = iListOf(Changes.vault))
     }
     return StateChanges.noChange
@@ -35,7 +35,7 @@ internal fun TradingStateMachine.onVaultMarketPositions(
 ): StateChanges {
     val pnlResponse = parser.asTypedObject<IndexerMegavaultPositionResponse>(payload)
     if (pnlResponse != null) {
-        vaultProcessor.processVaultMarketPositions(internalState.vault, pnlResponse)
+        internalState.vault = vaultProcessor.processVaultMarketPositions(internalState.vault, pnlResponse)
         return StateChanges(changes = iListOf(Changes.vault))
     }
     return StateChanges.noChange
