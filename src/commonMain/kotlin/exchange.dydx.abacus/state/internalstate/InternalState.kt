@@ -246,6 +246,7 @@ internal data class InternalVaultPositionState(
     var openPosition: InternalPerpetualPosition? = null,
     var assetPosition: InternalAssetPositionState? = null,
     var equity: Double? = null,
+    var ticker: String? = null,
 )
 
 internal data class InternalUserState(

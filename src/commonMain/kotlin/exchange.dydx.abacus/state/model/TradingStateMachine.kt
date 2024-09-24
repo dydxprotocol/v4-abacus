@@ -14,6 +14,7 @@ import exchange.dydx.abacus.calculator.v2.AdjustIsolatedMarginInputCalculatorV2
 import exchange.dydx.abacus.calculator.v2.TransferInputCalculatorV2
 import exchange.dydx.abacus.calculator.v2.TriggerOrdersInputCalculatorV2
 import exchange.dydx.abacus.calculator.v2.tradeinput.TradeInputCalculatorV2
+import exchange.dydx.abacus.functional.vault.VaultCalculator
 import exchange.dydx.abacus.output.Asset
 import exchange.dydx.abacus.output.Configs
 import exchange.dydx.abacus.output.LaunchIncentive
@@ -25,7 +26,9 @@ import exchange.dydx.abacus.output.MarketOrderbook
 import exchange.dydx.abacus.output.MarketTrade
 import exchange.dydx.abacus.output.PerpetualMarketSummary
 import exchange.dydx.abacus.output.PerpetualState
+import exchange.dydx.abacus.output.Restriction
 import exchange.dydx.abacus.output.TransferStatus
+import exchange.dydx.abacus.output.Vault
 import exchange.dydx.abacus.output.Wallet
 import exchange.dydx.abacus.output.WithdrawalCapacity
 import exchange.dydx.abacus.output.account.Account
@@ -444,6 +447,7 @@ open class TradingStateMachine(
                 Changes.trackStatuses,
                 Changes.orderbook,
                 Changes.launchIncentive,
+                Changes.vault
                 -> true
 
                 Changes.wallet -> state?.wallet != wallet
@@ -939,6 +943,7 @@ open class TradingStateMachine(
         val restriction = state?.restriction
         var launchIncentive = state?.launchIncentive
         val geo = state?.compliance
+        var vault = state?.vault
 
         if (changes.changes.contains(Changes.markets)) {
             if (staticTyping) {
@@ -1360,6 +1365,13 @@ open class TradingStateMachine(
                 }
             }
         }
+        if (changes.changes.contains(Changes.vault) || changes.changes.contains(Changes.markets)) {
+            val positions = VaultCalculator.calculateVaultPositionsInternal(
+                vault = internalState.vault,
+                markets = marketsSummary?.markets,
+            )
+            vault = Vault(details = internalState.vault?.details, positions = positions)
+        }
         return PerpetualState(
             assets = assets,
             marketsSummary = marketsSummary,
@@ -1381,7 +1393,7 @@ open class TradingStateMachine(
             restriction = restriction,
             launchIncentive = launchIncentive,
             compliance = geo,
-            vault = null,
+            vault = vault,
         )
     }
 
