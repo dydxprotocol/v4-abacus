@@ -4,6 +4,8 @@ import exchange.dydx.abacus.calculator.CalculationPeriod
 import exchange.dydx.abacus.responses.StateResponse
 import exchange.dydx.abacus.state.app.adaptors.AbUrl
 import exchange.dydx.abacus.tests.extensions.parseOnChainEquityTiers
+import exchange.dydx.abacus.tests.extensions.rest
+import exchange.dydx.abacus.tests.extensions.socket
 import indexer.codegen.IndexerPerpetualPositionStatus
 import kotlin.test.BeforeTest
 import kotlin.test.Test
