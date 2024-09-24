@@ -55,6 +55,7 @@ import exchange.dydx.abacus.state.v2.supervisor.MarketsSupervisor
 import exchange.dydx.abacus.state.v2.supervisor.NetworkHelper
 import exchange.dydx.abacus.state.v2.supervisor.OnboardingSupervisor
 import exchange.dydx.abacus.state.v2.supervisor.SystemSupervisor
+import exchange.dydx.abacus.state.v2.supervisor.VaultSupervisor
 import exchange.dydx.abacus.state.v2.supervisor.accountAddress
 import exchange.dydx.abacus.state.v2.supervisor.addressRestriction
 import exchange.dydx.abacus.state.v2.supervisor.adjustIsolatedMargin
@@ -173,6 +174,13 @@ internal class StateManagerAdaptorV2(
         helper = networkHelper,
         analyticsUtils = analyticsUtils,
         configs = appConfigs.marketConfigs,
+    )
+
+    private val vault = VaultSupervisor(
+        stateMachine = stateMachine,
+        helper = networkHelper,
+        analyticsUtils = analyticsUtils,
+        configs = appConfigs.vaultConfigs,
     )
 
     private val triggerOrderToastGenerator = TriggerOrderToastGenerator(

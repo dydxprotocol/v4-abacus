@@ -45,6 +45,7 @@ import exchange.dydx.abacus.processor.input.TradeInputProcessor
 import exchange.dydx.abacus.processor.launchIncentive.LaunchIncentiveProcessor
 import exchange.dydx.abacus.processor.markets.MarketsSummaryProcessor
 import exchange.dydx.abacus.processor.router.skip.SkipProcessor
+import exchange.dydx.abacus.processor.vault.VaultProcessor
 import exchange.dydx.abacus.processor.wallet.WalletProcessor
 import exchange.dydx.abacus.protocols.LocalizerProtocol
 import exchange.dydx.abacus.protocols.ParserProtocol
@@ -114,6 +115,7 @@ open class TradingStateMachine(
         processor
     }
     internal val walletProcessor = WalletProcessor(parser, localizer)
+    internal val vaultProcessor = VaultProcessor(parser, localizer)
     internal val configsProcessor = ConfigsProcessor(parser, localizer)
     internal val routerProcessor = SkipProcessor(
         parser = parser,
