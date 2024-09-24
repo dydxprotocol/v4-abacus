@@ -13,6 +13,7 @@ import indexer.codegen.IndexerPositionSide
 import indexer.codegen.IndexerVaultHistoricalPnl
 import indexer.codegen.IndexerVaultPosition
 import kollections.iListOf
+import kotlinx.datetime.Instant
 import kotlin.test.Test
 import kotlin.test.assertEquals
 import kotlin.test.assertNotNull
@@ -28,13 +29,13 @@ class VaultTests {
                     equity = "10000.0",
                     totalPnl = "1000.0",
                     netTransfers = "0.0",
-                    createdAt = "1659465600000",
+                    createdAt = Instant.fromEpochMilliseconds(1659465600000).toString(),
                 ),
                 IndexerPnlTicksResponseObject(
                     equity = "5000.0",
                     totalPnl = "500",
                     netTransfers = "0.0",
-                    createdAt = "1659379200000",
+                    createdAt = Instant.fromEpochMilliseconds(1659379200000).toString(),
                 ),
             ),
         )
@@ -86,31 +87,31 @@ class VaultTests {
                     equity = "10000.0",
                     totalPnl = "1000.0",
                     netTransfers = "0.0",
-                    createdAt = latestTimestamp.toString(),
+                    createdAt = Instant.fromEpochMilliseconds(latestTimestamp).toString(),
                 ),
                 IndexerPnlTicksResponseObject(
                     equity = "9700.0",
                     totalPnl = "700.0",
                     netTransfers = "0.0",
-                    createdAt = twentyNineDaysAgoTimestamp.toString(),
+                    createdAt = Instant.fromEpochMilliseconds(twentyNineDaysAgoTimestamp).toString(),
                 ),
                 IndexerPnlTicksResponseObject(
                     equity = "9500.0",
                     totalPnl = "500.0",
                     netTransfers = "0.0",
-                    createdAt = thirtyDaysAgoTimestamp.toString(),
+                    createdAt = Instant.fromEpochMilliseconds(thirtyDaysAgoTimestamp).toString(),
                 ),
                 IndexerPnlTicksResponseObject(
                     equity = "9300.0",
                     totalPnl = "300.0",
                     netTransfers = "0.0",
-                    createdAt = thirtyOneDaysAgoTimestamp.toString(),
+                    createdAt = Instant.fromEpochMilliseconds(thirtyOneDaysAgoTimestamp).toString(),
                 ),
                 IndexerPnlTicksResponseObject(
                     equity = "9000.0",
                     totalPnl = "0.0",
                     netTransfers = "0.0",
-                    createdAt = (thirtyDaysAgoTimestamp - 7.days.inWholeMilliseconds).toString(),
+                    createdAt = Instant.fromEpochMilliseconds((thirtyDaysAgoTimestamp - 7.days.inWholeMilliseconds)).toString(),
                 ),
             ),
         )
@@ -161,14 +162,14 @@ class VaultTests {
                     equity = "10500.0",
                     totalPnl = "500.0",
                     netTransfers = "0.0",
-                    createdAt = "1659465600000",
+                    createdAt = Instant.fromEpochMilliseconds(1659465600000).toString(),
                 ),
                 IndexerPnlTicksResponseObject(
                     id = "2",
                     equity = "10000.0",
                     totalPnl = "0.0",
                     netTransfers = "0.0",
-                    createdAt = "1659379200000",
+                    createdAt = Instant.fromEpochMilliseconds(1659379200000).toString(),
                 ),
             ),
         )

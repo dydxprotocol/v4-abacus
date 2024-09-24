@@ -99,7 +99,7 @@ object VaultCalculator {
         val vaultOfVaultsPnl = historical!!.megavaultPnl!!.sortedByDescending { parser.asDouble(it.createdAt) }
 
         val history = vaultOfVaultsPnl.mapNotNull { entry ->
-            parser.asDouble(entry.createdAt)?.let { createdAt ->
+            parser.asDatetime(entry.createdAt)?.toEpochMilliseconds()?.toDouble()?.let { createdAt ->
                 VaultHistoryEntry(
                     date = createdAt,
                     equity = parser.asDouble(entry.equity) ?: 0.0,
@@ -196,13 +196,13 @@ object VaultCalculator {
             return null
         }
 
-        val sortedPnl = historicalPnl.sortedByDescending { parser.asLong(it.createdAt) }
+        val sortedPnl = historicalPnl.sortedByDescending { it.createdAt }
         val latestEntry = sortedPnl.first()
-        val latestTime = parser.asLong(latestEntry.createdAt) ?: Clock.System.now().toEpochMilliseconds()
+        val latestTime = parser.asDatetime(latestEntry.createdAt)?.toEpochMilliseconds() ?: Clock.System.now().toEpochMilliseconds()
         val thirtyDaysAgoTime = latestTime - 30.days.inWholeMilliseconds
 
         val thirtyDaysAgoEntry = sortedPnl.find {
-            (parser.asLong(it.createdAt) ?: Long.MAX_VALUE) <= thirtyDaysAgoTime
+            (parser.asDatetime(it.createdAt)?.toEpochMilliseconds() ?: Long.MAX_VALUE) <= thirtyDaysAgoTime
         } ?: sortedPnl.last()
 
         val latestTotalPnl = parser.asDouble(latestEntry.totalPnl) ?: 0.0
@@ -217,9 +217,9 @@ object VaultCalculator {
         }
 
         val sparklinePoints = sortedPnl
-            .takeWhile { (parser.asLong(it.createdAt) ?: Long.MAX_VALUE) >= thirtyDaysAgoTime }
+            .takeWhile { (parser.asDatetime(it.createdAt)?.toEpochMilliseconds() ?: Long.MAX_VALUE) >= thirtyDaysAgoTime }
             .groupBy { entry ->
-                val timestamp = parser.asLong(entry.createdAt) ?: 0L
+                val timestamp = parser.asDatetime(entry.createdAt)?.toEpochMilliseconds() ?: 0L
                 timestamp.milliseconds.inWholeDays
             }
             .mapValues { (_, entries) ->
