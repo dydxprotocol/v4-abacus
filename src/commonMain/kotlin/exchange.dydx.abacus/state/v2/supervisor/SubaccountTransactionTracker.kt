@@ -47,7 +47,7 @@ internal class SubaccountTransactionTracker(
     }
 
     override fun tracking(eventName: String, params: IMap<String, Any?>?) {
-        val requiredParams = helper.validatorUrl?.let { iMapOf("validatorUrl" to it) } ?: iMapOf()
+        val requiredParams = helper.apiStateParams()
         val mergedParams =
             params?.let { ParsingHelper.merge(params.filterNotNull(), requiredParams) }
                 ?: requiredParams
