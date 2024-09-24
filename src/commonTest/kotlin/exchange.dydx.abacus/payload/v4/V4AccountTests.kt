@@ -25,6 +25,8 @@ import exchange.dydx.abacus.tests.extensions.loadv4SubaccountWithOrdersAndFillsC
 import exchange.dydx.abacus.tests.extensions.loadv4SubaccountsWithPositions
 import exchange.dydx.abacus.tests.extensions.log
 import exchange.dydx.abacus.tests.extensions.parseOnChainEquityTiers
+import exchange.dydx.abacus.tests.extensions.rest
+import exchange.dydx.abacus.tests.extensions.socket
 import exchange.dydx.abacus.utils.JsonEncoder
 import exchange.dydx.abacus.utils.Parser
 import exchange.dydx.abacus.utils.ServerTime

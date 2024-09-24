@@ -5,6 +5,7 @@ import exchange.dydx.abacus.tests.extensions.loadCandlesAllMarkets
 import exchange.dydx.abacus.tests.extensions.loadCandlesFirst
 import exchange.dydx.abacus.tests.extensions.loadCandlesSecond
 import exchange.dydx.abacus.tests.extensions.log
+import exchange.dydx.abacus.tests.extensions.socket
 import exchange.dydx.abacus.utils.ServerTime
 import kotlin.test.Test
 import kotlin.test.assertEquals

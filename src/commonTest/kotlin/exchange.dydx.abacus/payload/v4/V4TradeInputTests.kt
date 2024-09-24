@@ -12,6 +12,7 @@ import exchange.dydx.abacus.state.model.TradeInputField
 import exchange.dydx.abacus.state.model.trade
 import exchange.dydx.abacus.state.model.tradeInMarket
 import exchange.dydx.abacus.tests.extensions.loadv4Accounts
+import exchange.dydx.abacus.tests.extensions.socket
 import kollections.iListOf
 import kotlin.test.Test
 import kotlin.test.assertEquals

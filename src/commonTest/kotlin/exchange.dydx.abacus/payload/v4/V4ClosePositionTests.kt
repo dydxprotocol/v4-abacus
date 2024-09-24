@@ -8,6 +8,7 @@ import exchange.dydx.abacus.state.manager.StatsigConfig
 import exchange.dydx.abacus.state.model.ClosePositionInputField
 import exchange.dydx.abacus.state.model.closePosition
 import exchange.dydx.abacus.tests.extensions.log
+import exchange.dydx.abacus.tests.extensions.socket
 import exchange.dydx.abacus.utils.ServerTime
 import kotlin.test.Test
 import kotlin.test.assertEquals

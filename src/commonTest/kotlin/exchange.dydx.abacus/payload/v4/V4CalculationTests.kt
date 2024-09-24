@@ -3,6 +3,8 @@ package exchange.dydx.abacus.payload.v4
 import exchange.dydx.abacus.calculator.CalculationPeriod
 import exchange.dydx.abacus.responses.StateResponse
 import exchange.dydx.abacus.state.app.adaptors.AbUrl
+import exchange.dydx.abacus.tests.extensions.rest
+import exchange.dydx.abacus.tests.extensions.socket
 import kotlin.test.Test
 import kotlin.test.assertEquals
 
