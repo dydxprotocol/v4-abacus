@@ -103,7 +103,7 @@ object VaultCalculator {
             historical!!.megavaultPnl!!.sortedByDescending { parser.asDouble(it.createdAt) }
 
         val history = vaultOfVaultsPnl.mapNotNull { entry ->
-            parser.asDouble(entry.createdAt)?.let { createdAt ->
+            parser.asDatetime(entry.createdAt)?.toEpochMilliseconds()?.toDouble()?.let { createdAt ->
                 VaultHistoryEntry(
                     date = createdAt,
                     equity = parser.asDouble(entry.equity) ?: 0.0,
@@ -151,13 +151,15 @@ object VaultCalculator {
 
         val historiesMap = histories?.vaultsPnl?.associateBy { it.ticker }
 
-        return VaultPositions(positions = positions.positions.mapNotNull {
-            calculateVaultPosition(
-                it,
-                historiesMap?.get(it.ticker),
-                markets?.get(it.ticker)
-            )
-        }.toIList())
+        return VaultPositions(
+            positions = positions.positions.mapNotNull {
+                calculateVaultPosition(
+                    it,
+                    historiesMap?.get(it.ticker),
+                    markets?.get(it.ticker),
+                )
+            }.toIList(),
+        )
     }
 
     internal fun calculateVaultPositionsInternal(
@@ -214,8 +216,8 @@ object VaultCalculator {
         assetPosition: InternalAssetPositionState?,
         thirtyDayPnl: ThirtyDayPnl?,
         perpetualMarket: PerpetualMarket?,
-    ): VaultPosition? {
-        val assetPositionsMap = assetPosition?.let { mapOf((it.assetId ?: "") to it) }
+    ): VaultPosition {
+        val assetPositionsMap = assetPosition?.let { mapOf((it.symbol ?: "") to it) }
         val subaccount = subaccountCalculator.calculate(
             subaccount = InternalSubaccountState(
                 equity = equity ?: 0.0,
@@ -224,20 +226,19 @@ object VaultCalculator {
                 subaccountNumber = 0,
                 calculated = mutableMapOf(
                     CalculationPeriod.current to
-                            InternalSubaccountCalculated(
-                                quoteBalance = subaccountCalculator.calculateQuoteBalance(
-                                    assetPositionsMap
-                                )
+                        InternalSubaccountCalculated(
+                            quoteBalance = subaccountCalculator.calculateQuoteBalance(
+                                assetPositionsMap,
                             ),
+                        ),
                 ),
-
-                ),
+            ),
             marketsSummary = InternalMarketSummaryState(
                 markets = mutableMapOf(
                     ticker to InternalMarketState(
-                        perpetualMarket = perpetualMarket
-                    )
-                )
+                        perpetualMarket = perpetualMarket,
+                    ),
+                ),
             ),
             periods = setOf(CalculationPeriod.current),
             price = null,
@@ -264,14 +265,14 @@ object VaultCalculator {
             return null
         }
 
-        val sortedPnl = historicalPnl.sortedByDescending { parser.asLong(it.createdAt) }
+        val sortedPnl = historicalPnl.sortedByDescending { it.createdAt }
         val latestEntry = sortedPnl.first()
-        val latestTime =
-            parser.asLong(latestEntry.createdAt) ?: Clock.System.now().toEpochMilliseconds()
+        val latestTime = parser.asDatetime(latestEntry.createdAt)?.toEpochMilliseconds() ?: Clock.System.now().toEpochMilliseconds()
+        parser.asLong(latestEntry.createdAt) ?: Clock.System.now().toEpochMilliseconds()
         val thirtyDaysAgoTime = latestTime - 30.days.inWholeMilliseconds
 
         val thirtyDaysAgoEntry = sortedPnl.find {
-            (parser.asLong(it.createdAt) ?: Long.MAX_VALUE) <= thirtyDaysAgoTime
+            (parser.asDatetime(it.createdAt)?.toEpochMilliseconds() ?: Long.MAX_VALUE) <= thirtyDaysAgoTime
         } ?: sortedPnl.last()
 
         val latestTotalPnl = parser.asDouble(latestEntry.totalPnl) ?: 0.0
@@ -286,9 +287,9 @@ object VaultCalculator {
         }
 
         val sparklinePoints = sortedPnl
-            .takeWhile { (parser.asLong(it.createdAt) ?: Long.MAX_VALUE) >= thirtyDaysAgoTime }
+            .takeWhile { (parser.asDatetime(it.createdAt)?.toEpochMilliseconds() ?: Long.MAX_VALUE) >= thirtyDaysAgoTime }
             .groupBy { entry ->
-                val timestamp = parser.asLong(entry.createdAt) ?: 0L
+                val timestamp = parser.asDatetime(entry.createdAt)?.toEpochMilliseconds() ?: 0L
                 timestamp.milliseconds.inWholeDays
             }
             .mapValues { (_, entries) ->

@@ -26,7 +26,6 @@ import exchange.dydx.abacus.output.MarketOrderbook
 import exchange.dydx.abacus.output.MarketTrade
 import exchange.dydx.abacus.output.PerpetualMarketSummary
 import exchange.dydx.abacus.output.PerpetualState
-import exchange.dydx.abacus.output.Restriction
 import exchange.dydx.abacus.output.TransferStatus
 import exchange.dydx.abacus.output.Vault
 import exchange.dydx.abacus.output.Wallet

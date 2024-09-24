@@ -53,7 +53,7 @@ internal class VaultProcessor(
         }
 
         val vaultState = existing ?: InternalVaultState()
-        vaultState.pnls =  pnls
+        vaultState.pnls = pnls
         return vaultState
     }
 
@@ -77,7 +77,7 @@ internal class VaultProcessor(
         }
 
         val vaultState = existing ?: InternalVaultState()
-        vaultState.positions =  positions
+        vaultState.positions = positions
         return vaultState
     }
 }

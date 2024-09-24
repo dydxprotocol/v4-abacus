@@ -77,7 +77,7 @@ internal class VaultSupervisor(
     }
 
     private fun retrieveVaultMarketPositions() {
-            val url = helper.configs.publicApiUrl("vault/positions")
+        val url = helper.configs.publicApiUrl("vault/positions")
         if (url != null) {
             helper.get(
                 url = url,
