@@ -9,7 +9,6 @@ import exchange.dydx.abacus.utils.AnalyticsUtils
 import exchange.dydx.abacus.utils.IMap
 import exchange.dydx.abacus.utils.ParsingHelper
 import exchange.dydx.abacus.utils.filterNotNull
-import exchange.dydx.abacus.utils.iMapOf
 import kollections.iListOf
 
 internal open class NetworkSupervisor(
