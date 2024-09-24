@@ -630,12 +630,13 @@ class AsyncAbacusStateManagerV2(
         }
     }
 
-    override fun closeAllPositions(callback: TransactionCallback) {
-        try {
+    override fun closeAllPositions(callback: TransactionCallback): HumanReadableCloseAllPositionsPayload? {
+        return try {
             adaptor?.closeAllPositions(callback)
         } catch (e: Exception) {
             val error = V4TransactionErrors.error(null, e.toString())
             callback(false, error, null)
+            null
         }
     }
 
