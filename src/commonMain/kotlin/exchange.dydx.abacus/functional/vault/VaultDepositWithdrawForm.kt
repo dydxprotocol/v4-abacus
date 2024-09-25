@@ -232,13 +232,9 @@ object VaultDepositWithdrawFormValidator {
         }
 
         val withdrawnAmountIncludingSlippage = slippageResponse?.expectedAmount
-        val postOpVaultBalance = if (vaultAccount?.balanceUsdc != null) {
-            when (formData.action) {
-                VaultFormAction.DEPOSIT -> vaultAccount.balanceUsdc + amount
-                VaultFormAction.WITHDRAW -> vaultAccount.balanceUsdc - amount
-            }
-        } else {
-            null
+        val postOpVaultBalance = when (formData.action) {
+            VaultFormAction.DEPOSIT -> (vaultAccount?.balanceUsdc ?: 0.0) + amount
+            VaultFormAction.WITHDRAW -> (vaultAccount?.balanceUsdc ?: 0.0) - amount
         }
 
         val (postOpFreeCollateral, postOpMarginUsage) = if (accountData?.freeCollateral != null && accountData.marginUsage != null) {
