@@ -17,7 +17,7 @@ internal class SkipRouteProcessor(internal val parser: ParserProtocol) {
             "route.estimated_amount_out" to "toAmount",
             "route.swap_price_impact_percent" to "aggregatePriceImpact",
             "route.warning" to "warning",
-
+            "route.estimated_route_duration_seconds" to "estimatedRouteDurationSeconds",
 //            SQUID PARAMS THAT ARE NOW DEPRECATED:
 //            "route.estimate.gasCosts.0.amountUSD" to "gasFee",
 //            "route.estimate.exchangeRate" to "exchangeRate",
@@ -71,6 +71,8 @@ internal class SkipRouteProcessor(internal val parser: ParserProtocol) {
         decimals: Double?
     ): Map<String, Any> {
         val modified = BaseProcessor(parser).transform(existing, payload, keyMap)
+
+        modified.safeSet("estimatedRouteDurationSeconds", parser.value(payload, "route.estimated_route_duration_seconds"))
 
         var bridgeFees = findFee(payload, "BRIDGE") ?: 0.0
 //        TODO: update web UI to show smart relay fees
