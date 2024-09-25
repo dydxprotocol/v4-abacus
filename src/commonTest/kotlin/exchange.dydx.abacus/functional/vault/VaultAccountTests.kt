@@ -18,8 +18,8 @@ class VaultAccountTests {
             address = "0x123",
             shares = NumShares(numShares = 100.0),
             shareUnlocks = arrayOf(ShareUnlock(unlockBlockHeight = 0.0, shares = NumShares(numShares = 50.0))),
-            equity = 10000.0,
-            withdrawableEquity = 5000.0,
+            equity = 10000.0 * 1_000_000,
+            withdrawableEquity = 5000.0 * 1_000_000,
         )
 
         val vaultTransfers = IndexerTransferBetweenResponse(
