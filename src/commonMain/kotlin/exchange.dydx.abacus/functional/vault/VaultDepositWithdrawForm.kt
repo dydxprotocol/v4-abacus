@@ -1,5 +1,6 @@
 package exchange.dydx.abacus.functional.vault
 
+import com.ionspin.kotlin.bignum.decimal.toBigDecimal
 import exchange.dydx.abacus.output.input.ErrorFormat
 import exchange.dydx.abacus.output.input.ErrorParam
 import exchange.dydx.abacus.output.input.ErrorResources
@@ -165,15 +166,15 @@ data class VaultDepositWithdrawSubmissionData(
 @Serializable
 data class VaultDepositData(
     val subaccountFrom: String,
-    val amount: Double
+    val quoteQuantums: String
 )
 
 @JsExport
 @Serializable
 data class VaultWithdrawData(
     val subaccountTo: String,
-    val shares: Double,
-    val minAmount: Double
+    val shares: String,
+    val minQuoteQuantums: String,
 )
 
 @JsExport
@@ -201,7 +202,9 @@ object VaultDepositWithdrawFormValidator {
 
     private const val SLIPPAGE_PERCENT_WARN = 0.01
     private const val SLIPPAGE_PERCENT_ACK = 0.04
-    private const val SLIPPAGE_TOLERANCE = 0.01
+    private const val EXTRA_SLIPPAGE_TOLERANCE = 0.01
+
+    private const val QUANTUMS_MULTIPLIER = 1_000_000
 
     fun getVaultDepositWithdrawSlippageResponse(apiResponse: String): VaultDepositWithdrawSlippageResponse? {
         return parser.asTypedObject<VaultDepositWithdrawSlippageResponse>(apiResponse)
@@ -331,7 +334,7 @@ object VaultDepositWithdrawFormValidator {
                 VaultFormAction.DEPOSIT -> VaultDepositWithdrawSubmissionData(
                     deposit = VaultDepositData(
                         subaccountFrom = "0",
-                        amount = amount,
+                        quoteQuantums = amount.toBigDecimal().times(QUANTUMS_MULTIPLIER).toBigInteger().toString(),
                     ),
                     withdraw = null,
                 )
@@ -340,8 +343,10 @@ object VaultDepositWithdrawFormValidator {
                     withdraw = if (sharesToAttemptWithdraw != null && sharesToAttemptWithdraw > 0 && slippageResponse != null) {
                         VaultWithdrawData(
                             subaccountTo = "0",
-                            shares = sharesToAttemptWithdraw,
-                            minAmount = slippageResponse.expectedAmount * (1 - SLIPPAGE_TOLERANCE),
+                            shares = sharesToAttemptWithdraw.toBigDecimal().toBigInteger().toString(),
+                            minQuoteQuantums = (slippageResponse.expectedAmount * (1 - EXTRA_SLIPPAGE_TOLERANCE)).toBigDecimal().times(
+                                QUANTUMS_MULTIPLIER,
+                            ).toBigInteger().toString(),
                         )
                     } else {
                         null
