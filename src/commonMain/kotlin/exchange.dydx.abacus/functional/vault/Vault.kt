@@ -268,7 +268,6 @@ object VaultCalculator {
         val sortedPnl = historicalPnl.sortedByDescending { it.createdAt }
         val latestEntry = sortedPnl.first()
         val latestTime = parser.asDatetime(latestEntry.createdAt)?.toEpochMilliseconds() ?: Clock.System.now().toEpochMilliseconds()
-        parser.asLong(latestEntry.createdAt) ?: Clock.System.now().toEpochMilliseconds()
         val thirtyDaysAgoTime = latestTime - 30.days.inWholeMilliseconds
 
         val thirtyDaysAgoEntry = sortedPnl.find {
