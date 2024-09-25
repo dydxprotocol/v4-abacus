@@ -49,10 +49,8 @@ internal class VaultProcessor(
         payload.vaultsPnl?.forEach {
             val marketId = it.ticker ?: return@forEach
 
-            val thirtyDayPnl = VaultCalculator.calculateThirtyDayPnl(it)
-            if (thirtyDayPnl != null) {
-                pnls[marketId] = thirtyDayPnl
-            }
+            val thirtyDayPnl = VaultCalculator.calculateThirtyDayPnl(it) ?: return@forEach
+            pnls[marketId] = thirtyDayPnl
         }
 
         return if (pnls != existing?.pnls) {
