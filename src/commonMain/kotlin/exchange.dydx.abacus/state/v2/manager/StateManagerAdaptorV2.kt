@@ -358,6 +358,7 @@ internal class StateManagerAdaptorV2(
         onboarding.readyToConnect = readyToConnect
         markets.readyToConnect = readyToConnect
         accounts.readyToConnect = readyToConnect
+        vault.readyToConnect = readyToConnect
         if (readyToConnect) {
             pollGeo()
         }
@@ -368,6 +369,7 @@ internal class StateManagerAdaptorV2(
         onboarding.indexerConnected = indexerConnected
         markets.indexerConnected = indexerConnected
         accounts.indexerConnected = indexerConnected
+        vault.indexerConnected = indexerConnected
     }
 
     private fun didSetSocketConnected(socketConnected: Boolean) {
@@ -376,6 +378,7 @@ internal class StateManagerAdaptorV2(
         onboarding.socketConnected = socketConnected
         markets.socketConnected = socketConnected
         accounts.socketConnected = socketConnected
+        vault.socketConnected = socketConnected
     }
 
     private fun didSetValidatorConnected(validatorConnected: Boolean) {
@@ -383,6 +386,7 @@ internal class StateManagerAdaptorV2(
         onboarding.validatorConnected = validatorConnected
         markets.validatorConnected = validatorConnected
         accounts.validatorConnected = validatorConnected
+        vault.validatorConnected = validatorConnected
     }
 
     internal fun dispose() {

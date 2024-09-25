@@ -1365,11 +1365,15 @@ open class TradingStateMachine(
             }
         }
         if (changes.changes.contains(Changes.vault) || changes.changes.contains(Changes.markets)) {
-            val positions = VaultCalculator.calculateVaultPositionsInternal(
-                vault = internalState.vault,
-                markets = marketsSummary?.markets,
-            )
-            vault = Vault(details = internalState.vault?.details, positions = positions)
+            if (internalState.vault != null) {
+                val positions = VaultCalculator.calculateVaultPositionsInternal(
+                    vault = internalState.vault,
+                    markets = marketsSummary?.markets,
+                )
+                vault = Vault(details = internalState.vault?.details, positions = positions)
+            } else {
+                vault = null
+            }
         }
         return PerpetualState(
             assets = assets,
