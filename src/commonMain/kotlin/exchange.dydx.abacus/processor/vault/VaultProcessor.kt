@@ -29,9 +29,12 @@ internal class VaultProcessor(
             return existing
         }
 
-        val vaultState = existing ?: InternalVaultState()
-        vaultState.details = VaultCalculator.calculateVaultSummary(payload)
-        return vaultState
+        val newValue = VaultCalculator.calculateVaultSummary(payload)
+        return if (newValue != existing?.details) {
+            existing?.copy(details = newValue) ?: InternalVaultState(details = newValue)
+        } else {
+            existing
+        }
     }
 
     fun processVaultMarketHistoricalPnls(
@@ -52,9 +55,11 @@ internal class VaultProcessor(
             }
         }
 
-        val vaultState = existing ?: InternalVaultState()
-        vaultState.pnls = pnls
-        return vaultState
+        return if (pnls != existing?.pnls) {
+            existing?.copy(pnls = pnls) ?: InternalVaultState(pnls = pnls)
+        } else {
+            existing
+        }
     }
 
     fun processVaultMarketPositions(
@@ -76,8 +81,10 @@ internal class VaultProcessor(
             )
         }
 
-        val vaultState = existing ?: InternalVaultState()
-        vaultState.positions = positions
-        return vaultState
+        return if (positions != existing?.positions) {
+            existing?.copy(positions = positions) ?: InternalVaultState(positions = positions)
+        } else {
+            existing
+        }
     }
 }

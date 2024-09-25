@@ -237,9 +237,9 @@ internal data class InternalWalletState(
 }
 
 internal data class InternalVaultState(
-    var details: VaultDetails? = null,
-    var positions: List<InternalVaultPositionState>? = null,
-    var pnls: MutableMap<String, ThirtyDayPnl> = mutableMapOf(),
+    val details: VaultDetails? = null,
+    val positions: List<InternalVaultPositionState>? = null,
+    val pnls: MutableMap<String, ThirtyDayPnl> = mutableMapOf(),
 )
 
 internal data class InternalVaultPositionState(
