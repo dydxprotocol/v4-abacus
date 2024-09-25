@@ -231,7 +231,7 @@ object VaultDepositWithdrawFormValidator {
             null
         }
 
-        val withdrawnAmountIncludingSlippage = if (slippageResponse?.expectedQuoteQuantums != null) slippageResponse.expectedQuoteQuantums / 1_000_000.0 else null
+        val withdrawnAmountIncludingSlippage = slippageResponse?.expectedQuoteQuantums?.let { it / 1_000_000.0 }
         val postOpVaultBalance = when (formData.action) {
             VaultFormAction.DEPOSIT -> (vaultAccount?.balanceUsdc ?: 0.0) + amount
             VaultFormAction.WITHDRAW -> (vaultAccount?.balanceUsdc ?: 0.0) - amount
