@@ -67,7 +67,7 @@ class SkipRouteProcessorTests {
             ),
         )
 //        Sometimes assertEquals behaves strangely where it insists on comparing the memory address.
-//        When this happens I need to tokenize the objects first. This behavior appear to be non-deterministic.
+//        When this happens I need to serialize the objects first. This behavior appear to be non-deterministic.
         assertEquals(expected.toJsonElement(), result.toJsonElement())
     }
 
