@@ -14,14 +14,25 @@ import kotlin.js.JsExport
 
 @JsExport
 @Serializable
+data class ShareUnlock(
+    val shares: NumShares?,
+    val unlockBlockHeight: Double?,
+)
+
+@JsExport
+@Serializable
+data class NumShares(
+    val numShares: Double?,
+)
+
+@JsExport
+@Serializable
 data class AccountVaultResponse(
     val address: String? = null,
-    val shares: Double? = null,
-    @Suppress("ConstructorParameterNaming")
-    val locked_shares: Double? = null,
+    val shares: NumShares? = null,
+    val shareUnlocks: Array<ShareUnlock>? = null,
     val equity: Double? = null,
-    @Suppress("ConstructorParameterNaming")
-    val withdrawable_amount: Double? = null,
+    val withdrawableEquity: Double? = null,
 )
 
 @JsExport
@@ -68,16 +79,16 @@ object VaultAccountCalculator {
         vaultInfo: AccountVaultResponse,
         vaultTransfers: IndexerTransferBetweenResponse
     ): VaultAccount {
-        val presentValue = vaultInfo.equity
+        val presentValue = vaultInfo.equity?.let { it / 1_000_000 }
         val netTransfers = parser.asDouble(vaultTransfers.totalNetTransfers)
-        val withdrawable = vaultInfo.withdrawable_amount
+        val withdrawable = vaultInfo.withdrawableEquity?.let { it / 1_000_000 }
         val allTimeReturn =
             if (presentValue != null && netTransfers != null) (presentValue - netTransfers) else null
 
         return VaultAccount(
             balanceUsdc = presentValue,
-            balanceShares = vaultInfo.shares,
-            lockedShares = vaultInfo.locked_shares,
+            balanceShares = vaultInfo.shares?.numShares,
+            lockedShares = vaultInfo.shareUnlocks?.sumOf { el -> el.shares?.numShares ?: 0.0 },
             withdrawableUsdc = withdrawable,
             allTimeReturnUsdc = allTimeReturn,
             totalVaultTransfersCount = vaultTransfers.totalResults,
