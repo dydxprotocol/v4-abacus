@@ -79,9 +79,9 @@ object VaultAccountCalculator {
         vaultInfo: AccountVaultResponse,
         vaultTransfers: IndexerTransferBetweenResponse
     ): VaultAccount {
-        val presentValue = vaultInfo.equity
+        val presentValue = vaultInfo.equity?.let { it / 1_000_000 }
         val netTransfers = parser.asDouble(vaultTransfers.totalNetTransfers)
-        val withdrawable = vaultInfo.withdrawableEquity
+        val withdrawable = vaultInfo.withdrawableEquity?.let { it / 1_000_000 }
         val allTimeReturn =
             if (presentValue != null && netTransfers != null) (presentValue - netTransfers) else null
 
