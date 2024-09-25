@@ -189,7 +189,7 @@ data class OnboardingConfigs(
 @JsExport
 data class VaultConfigs(
     val retrieveVault: Boolean,
-    var useMocks: Boolean = true,
+    var useMocks: Boolean = false,
 ) {
     companion object {
         val forApp = VaultConfigs(

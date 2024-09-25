@@ -7,6 +7,7 @@ import exchange.dydx.abacus.state.model.onVaultMarketPnls
 import exchange.dydx.abacus.state.model.onVaultMarketPositions
 import exchange.dydx.abacus.utils.AnalyticsUtils
 import exchange.dydx.abacus.utils.CoroutineTimer
+import exchange.dydx.abacus.utils.Logger
 import exchange.dydx.abacus.utils.NUM_PARENT_SUBACCOUNTS
 import indexer.codegen.IndexerAssetPositionResponseObject
 import indexer.codegen.IndexerMegavaultHistoricalPnlResponse
@@ -50,7 +51,7 @@ internal class VaultSupervisor(
 
         if (indexerConnected) {
             val timer = helper.ioImplementations.timer ?: CoroutineTimer.instance
-            indexerTimer = timer.schedule(delay = 0.0, repeat = Companion.POLLING_DURATION) {
+            indexerTimer = timer.schedule(delay = 1.0, repeat = Companion.POLLING_DURATION) {
                 if (readyToConnect) {
                     retrieveMegaVaultPnl()
                     retrieveVaultMarketPnls()
@@ -83,15 +84,19 @@ internal class VaultSupervisor(
             )
             stateMachine.onMegaVaultPnl(Json.encodeToString(mock))
         } else {
-            val url = helper.configs.publicApiUrl("vault/megavault/historicalPnl")
+            val url = helper.configs.publicApiUrl("vaultHistoricalPnl")
             if (url != null) {
                 helper.get(
                     url = url,
-                    params = null,
+                    params = mapOf("resolution" to "day"),
                     headers = null,
                 ) { _, response, httpCode, _ ->
                     if (helper.success(httpCode) && response != null) {
                         stateMachine.onMegaVaultPnl(response)
+                    } else {
+                        Logger.e {
+                            "Failed to retrieve mega vault pnl: $httpCode, $response"
+                        }
                     }
                 }
             }
@@ -124,15 +129,19 @@ internal class VaultSupervisor(
             )
             stateMachine.onVaultMarketPnls(Json.encodeToString(marketPnls))
         } else {
-            val url = helper.configs.publicApiUrl("vault/vaults/historicalPnl")
+            val url = helper.configs.publicApiUrl("vaultMarketPnls")
             if (url != null) {
                 helper.get(
                     url = url,
-                    params = null,
+                    params = mapOf("resolution" to "day"),
                     headers = null,
                 ) { _, response, httpCode, _ ->
                     if (helper.success(httpCode) && response != null) {
                         stateMachine.onVaultMarketPnls(response)
+                    } else {
+                        Logger.e {
+                            "Failed to retrieve vault market pnls: $httpCode, $response"
+                        }
                     }
                 }
             }
@@ -175,7 +184,7 @@ internal class VaultSupervisor(
             )
             stateMachine.onVaultMarketPositions(Json.encodeToString(megaVaultPosition))
         } else {
-            val url = helper.configs.publicApiUrl("vault/positions")
+            val url = helper.configs.publicApiUrl("vaultPositions")
             if (url != null) {
                 helper.get(
                     url = url,
@@ -184,6 +193,10 @@ internal class VaultSupervisor(
                 ) { _, response, httpCode, _ ->
                     if (helper.success(httpCode) && response != null) {
                         stateMachine.onVaultMarketPositions(response)
+                    } else {
+                        Logger.e {
+                            "Failed to retrieve vault market positions: $httpCode, $response"
+                        }
                     }
                 }
             }

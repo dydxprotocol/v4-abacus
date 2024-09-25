@@ -42,7 +42,7 @@ class V4VaultTests : V4BaseTests() {
 
     private fun testMegaVaultPnlReceived() {
         perp.rest(
-            url = AbUrl.fromString("$testRestUrl/v4/vault/megavault/historicalPnl"),
+            url = AbUrl.fromString("$testRestUrl/v4/vault/v1/megavault/historicalPnl"),
             payload = mock.vaultMocks.megaVaultPnlMocks,
             subaccountNumber = 0,
             height = null,
@@ -58,7 +58,7 @@ class V4VaultTests : V4BaseTests() {
 
     private fun testVaultMarketPnlsReceived() {
         perp.rest(
-            url = AbUrl.fromString("$testRestUrl/v4/vault/vaults/historicalPnl"),
+            url = AbUrl.fromString("$testRestUrl/v4/vault/v1/vaults/historicalPnl"),
             payload = mock.vaultMocks.vaultMarketPnlsMocks,
             subaccountNumber = 0,
             height = null,
@@ -74,7 +74,7 @@ class V4VaultTests : V4BaseTests() {
 
     private fun testVaultMarketPositionsReceived() {
         perp.rest(
-            url = AbUrl.fromString("$testRestUrl/v4/vault/positions"),
+            url = AbUrl.fromString("$testRestUrl/v4/vault/v1/megavault/positions"),
             payload = mock.vaultMocks.vaultMarketPositionsMocks,
             subaccountNumber = 0,
             height = null,
