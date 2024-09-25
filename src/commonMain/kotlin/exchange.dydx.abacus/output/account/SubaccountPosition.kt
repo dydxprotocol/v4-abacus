@@ -82,9 +82,9 @@ data class SubaccountPosition(
                         )
                     } else {
                         TradeStatesWithDoubleValues.create(
-                            existing?.entryPrice,
-                            parser,
-                            parser.asMap(data["entryPrice"]),
+                            existing = existing?.entryPrice,
+                            parser = parser,
+                            data = parser.asMap(data["entryPrice"]),
                         )
                     }
 
@@ -106,9 +106,9 @@ data class SubaccountPosition(
                         )
                     } else {
                         TradeStatesWithDoubleValues.create(
-                            existing?.realizedPnl,
-                            parser,
-                            parser.asMap(data["realizedPnl"]),
+                            existing = existing?.realizedPnl,
+                            parser = parser,
+                            data = parser.asMap(data["realizedPnl"]),
                         )
                     }
 
@@ -121,9 +121,9 @@ data class SubaccountPosition(
                             )
                         } else {
                             TradeStatesWithDoubleValues.create(
-                                existing?.realizedPnlPercent,
-                                parser,
-                                parser.asMap(data["realizedPnlPercent"]),
+                                existing = existing?.realizedPnlPercent,
+                                parser = parser,
+                                data = parser.asMap(data["realizedPnlPercent"]),
                             )
                         }
 
@@ -135,9 +135,9 @@ data class SubaccountPosition(
                         )
                     } else {
                         TradeStatesWithDoubleValues.create(
-                            existing?.unrealizedPnl,
-                            parser,
-                            parser.asMap(data["unrealizedPnl"]),
+                            existing = existing?.unrealizedPnl,
+                            parser = parser,
+                            data = parser.asMap(data["unrealizedPnl"]),
                         )
                     }
 
@@ -149,9 +149,9 @@ data class SubaccountPosition(
                         )
                     } else {
                         TradeStatesWithDoubleValues.create(
-                            existing?.unrealizedPnlPercent,
-                            parser,
-                            parser.asMap(data["unrealizedPnlPercent"]),
+                            existing = existing?.unrealizedPnlPercent,
+                            parser = parser,
+                            data = parser.asMap(data["unrealizedPnlPercent"]),
                         )
                     }
 
@@ -163,9 +163,9 @@ data class SubaccountPosition(
                         )
                     } else {
                         TradeStatesWithDoubleValues.create(
-                            existing?.size,
-                            parser,
-                            parser.asMap(data["size"]),
+                            existing = existing?.size,
+                            parser = parser,
+                            data = parser.asMap(data["size"]),
                         )
                     }
 
@@ -177,9 +177,9 @@ data class SubaccountPosition(
                         )
                     } else {
                         TradeStatesWithDoubleValues.create(
-                            existing?.notionalTotal,
-                            parser,
-                            parser.asMap(data["notionalTotal"]),
+                            existing = existing?.notionalTotal,
+                            parser = parser,
+                            data = parser.asMap(data["notionalTotal"]),
                         )
                     }
 
@@ -191,9 +191,9 @@ data class SubaccountPosition(
                         )
                     } else {
                         TradeStatesWithDoubleValues.create(
-                            existing?.valueTotal,
-                            parser,
-                            parser.asMap(data["valueTotal"]),
+                            existing = existing?.valueTotal,
+                            parser = parser,
+                            data = parser.asMap(data["valueTotal"]),
                         )
                     }
 
@@ -205,9 +205,9 @@ data class SubaccountPosition(
                         )
                     } else {
                         TradeStatesWithDoubleValues.create(
-                            existing?.initialRiskTotal,
-                            parser,
-                            parser.asMap(data["initialRiskTotal"]),
+                            existing = existing?.initialRiskTotal,
+                            parser = parser,
+                            data = parser.asMap(data["initialRiskTotal"]),
                         )
                     }
 
@@ -219,9 +219,9 @@ data class SubaccountPosition(
                         )
                     } else {
                         TradeStatesWithDoubleValues.create(
-                            existing?.adjustedImf,
-                            parser,
-                            parser.asMap(data["adjustedImf"]),
+                            existing = existing?.adjustedImf,
+                            parser = parser,
+                            data = parser.asMap(data["adjustedImf"]),
                         )
                     }
 
@@ -233,9 +233,9 @@ data class SubaccountPosition(
                         )
                     } else {
                         TradeStatesWithDoubleValues.create(
-                            existing?.adjustedMmf,
-                            parser,
-                            parser.asMap(data["adjustedMmf"]),
+                            existing = existing?.adjustedMmf,
+                            parser = parser,
+                            data = parser.asMap(data["adjustedMmf"]),
                         )
                     }
 
@@ -247,9 +247,9 @@ data class SubaccountPosition(
                         )
                     } else {
                         TradeStatesWithDoubleValues.create(
-                            existing?.leverage,
-                            parser,
-                            parser.asMap(data["leverage"]),
+                            existing = existing?.leverage,
+                            parser = parser,
+                            data = parser.asMap(data["leverage"]),
                         )
                     }
 
@@ -261,9 +261,9 @@ data class SubaccountPosition(
                         )
                     } else {
                         TradeStatesWithDoubleValues.create(
-                            existing?.leverage,
-                            parser,
-                            parser.asMap(data["maxLeverage"]),
+                            existing = existing?.leverage,
+                            parser = parser,
+                            data = parser.asMap(data["maxLeverage"]),
                         )
                     }
 
@@ -275,9 +275,9 @@ data class SubaccountPosition(
                         )
                     } else {
                         TradeStatesWithDoubleValues.create(
-                            existing?.leverage,
-                            parser,
-                            parser.asMap(data["buyingPower"]),
+                            existing = existing?.leverage,
+                            parser = parser,
+                            data = parser.asMap(data["buyingPower"]),
                         )
                     }
 
@@ -289,9 +289,9 @@ data class SubaccountPosition(
                         )
                     } else {
                         TradeStatesWithDoubleValues.create(
-                            existing?.liquidationPrice,
-                            parser,
-                            parser.asMap(data["liquidationPrice"]),
+                            existing = existing?.liquidationPrice,
+                            parser = parser,
+                            data = parser.asMap(data["liquidationPrice"]),
                         )
                     }
 
@@ -303,9 +303,9 @@ data class SubaccountPosition(
                         )
                     } else {
                         TradeStatesWithDoubleValues.create(
-                            null,
-                            parser,
-                            parser.asMap(data["freeCollateral"]),
+                            existing = null,
+                            parser = parser,
+                            data = parser.asMap(data["freeCollateral"]),
                         )
                     }
 
@@ -317,9 +317,9 @@ data class SubaccountPosition(
                         )
                     } else {
                         TradeStatesWithDoubleValues.create(
-                            null,
-                            parser,
-                            parser.asMap(data["marginUsage"]),
+                            existing = null,
+                            parser = parser,
+                            data = parser.asMap(data["marginUsage"]),
                         )
                     }
 
@@ -331,9 +331,9 @@ data class SubaccountPosition(
                         )
                     } else {
                         TradeStatesWithDoubleValues.create(
-                            null,
-                            parser,
-                            parser.asMap(data["quoteBalance"]),
+                            existing = null,
+                            parser = parser,
+                            data = parser.asMap(data["quoteBalance"]),
                         )
                     }
 
@@ -345,9 +345,9 @@ data class SubaccountPosition(
                         )
                     } else {
                         TradeStatesWithDoubleValues.create(
-                            null,
-                            parser,
-                            parser.asMap(data["equity"]),
+                            existing = null,
+                            parser = parser,
+                            data = parser.asMap(data["equity"]),
                         )
                     }
 
@@ -359,9 +359,9 @@ data class SubaccountPosition(
                         )
                     } else {
                         TradeStatesWithDoubleValues.create(
-                            null,
-                            parser,
-                            parser.asMap(data["marginValue"]),
+                            existing = null,
+                            parser = parser,
+                            data = parser.asMap(data["marginValue"]),
                         )
                     }
 

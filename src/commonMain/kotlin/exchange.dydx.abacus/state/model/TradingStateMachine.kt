@@ -14,6 +14,7 @@ import exchange.dydx.abacus.calculator.v2.AdjustIsolatedMarginInputCalculatorV2
 import exchange.dydx.abacus.calculator.v2.TransferInputCalculatorV2
 import exchange.dydx.abacus.calculator.v2.TriggerOrdersInputCalculatorV2
 import exchange.dydx.abacus.calculator.v2.tradeinput.TradeInputCalculatorV2
+import exchange.dydx.abacus.functional.vault.VaultCalculator
 import exchange.dydx.abacus.output.Asset
 import exchange.dydx.abacus.output.Configs
 import exchange.dydx.abacus.output.LaunchIncentive
@@ -26,6 +27,7 @@ import exchange.dydx.abacus.output.MarketTrade
 import exchange.dydx.abacus.output.PerpetualMarketSummary
 import exchange.dydx.abacus.output.PerpetualState
 import exchange.dydx.abacus.output.TransferStatus
+import exchange.dydx.abacus.output.Vault
 import exchange.dydx.abacus.output.Wallet
 import exchange.dydx.abacus.output.WithdrawalCapacity
 import exchange.dydx.abacus.output.account.Account
@@ -45,6 +47,7 @@ import exchange.dydx.abacus.processor.input.TradeInputProcessor
 import exchange.dydx.abacus.processor.launchIncentive.LaunchIncentiveProcessor
 import exchange.dydx.abacus.processor.markets.MarketsSummaryProcessor
 import exchange.dydx.abacus.processor.router.skip.SkipProcessor
+import exchange.dydx.abacus.processor.vault.VaultProcessor
 import exchange.dydx.abacus.processor.wallet.WalletProcessor
 import exchange.dydx.abacus.protocols.LocalizerProtocol
 import exchange.dydx.abacus.protocols.ParserProtocol
@@ -114,6 +117,7 @@ open class TradingStateMachine(
         processor
     }
     internal val walletProcessor = WalletProcessor(parser, localizer)
+    internal val vaultProcessor = VaultProcessor(parser, localizer)
     internal val configsProcessor = ConfigsProcessor(parser, localizer)
     internal val routerProcessor = SkipProcessor(
         parser = parser,
@@ -442,6 +446,7 @@ open class TradingStateMachine(
                 Changes.trackStatuses,
                 Changes.orderbook,
                 Changes.launchIncentive,
+                Changes.vault
                 -> true
 
                 Changes.wallet -> state?.wallet != wallet
@@ -937,6 +942,7 @@ open class TradingStateMachine(
         val restriction = state?.restriction
         var launchIncentive = state?.launchIncentive
         val geo = state?.compliance
+        var vault = state?.vault
 
         if (changes.changes.contains(Changes.markets)) {
             if (staticTyping) {
@@ -1358,6 +1364,17 @@ open class TradingStateMachine(
                 }
             }
         }
+        if (changes.changes.contains(Changes.vault) || changes.changes.contains(Changes.markets)) {
+            if (internalState.vault != null) {
+                val positions = VaultCalculator.calculateVaultPositionsInternal(
+                    vault = internalState.vault,
+                    markets = marketsSummary?.markets,
+                )
+                vault = Vault(details = internalState.vault?.details, positions = positions)
+            } else {
+                vault = null
+            }
+        }
         return PerpetualState(
             assets = assets,
             marketsSummary = marketsSummary,
@@ -1379,6 +1396,7 @@ open class TradingStateMachine(
             restriction = restriction,
             launchIncentive = launchIncentive,
             compliance = geo,
+            vault = vault,
         )
     }
 

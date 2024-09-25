@@ -16,6 +16,9 @@ import exchange.dydx.abacus.state.model.fills
 import exchange.dydx.abacus.state.model.historicalFundings
 import exchange.dydx.abacus.state.model.historicalPnl
 import exchange.dydx.abacus.state.model.onChainEquityTiers
+import exchange.dydx.abacus.state.model.onMegaVaultPnl
+import exchange.dydx.abacus.state.model.onVaultMarketPnls
+import exchange.dydx.abacus.state.model.onVaultMarketPositions
 import exchange.dydx.abacus.state.model.receivedBatchOrderbookChanges
 import exchange.dydx.abacus.state.model.receivedBatchSubaccountsChanges
 import exchange.dydx.abacus.state.model.receivedBatchedCandlesChanges
@@ -591,6 +594,18 @@ fun TradingStateMachine.rest(
                 parser.asInt(url.params?.firstOrNull { param -> param.key == "subaccountNumber" }?.value)
                     ?: 0
             changes = transfers(payload, subaccountNumber)
+        }
+
+        "/v4/vault/megavault/historicalPnl" -> {
+            changes = onMegaVaultPnl(payload)
+        }
+
+        "/v4/vault/positions" -> {
+            changes = onVaultMarketPositions(payload)
+        }
+
+        "/v4/vault/vaults/historicalPnl" -> {
+            changes = onVaultMarketPnls(payload)
         }
 
         "/configs/markets.json" -> {

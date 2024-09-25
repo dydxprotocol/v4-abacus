@@ -55,6 +55,7 @@ import exchange.dydx.abacus.state.v2.supervisor.MarketsSupervisor
 import exchange.dydx.abacus.state.v2.supervisor.NetworkHelper
 import exchange.dydx.abacus.state.v2.supervisor.OnboardingSupervisor
 import exchange.dydx.abacus.state.v2.supervisor.SystemSupervisor
+import exchange.dydx.abacus.state.v2.supervisor.VaultSupervisor
 import exchange.dydx.abacus.state.v2.supervisor.accountAddress
 import exchange.dydx.abacus.state.v2.supervisor.addressRestriction
 import exchange.dydx.abacus.state.v2.supervisor.adjustIsolatedMargin
@@ -173,6 +174,13 @@ internal class StateManagerAdaptorV2(
         helper = networkHelper,
         analyticsUtils = analyticsUtils,
         configs = appConfigs.marketConfigs,
+    )
+
+    private val vault = VaultSupervisor(
+        stateMachine = stateMachine,
+        helper = networkHelper,
+        analyticsUtils = analyticsUtils,
+        configs = appConfigs.vaultConfigs,
     )
 
     private val triggerOrderToastGenerator = TriggerOrderToastGenerator(
@@ -350,6 +358,7 @@ internal class StateManagerAdaptorV2(
         onboarding.readyToConnect = readyToConnect
         markets.readyToConnect = readyToConnect
         accounts.readyToConnect = readyToConnect
+        vault.readyToConnect = readyToConnect
         if (readyToConnect) {
             pollGeo()
         }
@@ -360,6 +369,7 @@ internal class StateManagerAdaptorV2(
         onboarding.indexerConnected = indexerConnected
         markets.indexerConnected = indexerConnected
         accounts.indexerConnected = indexerConnected
+        vault.indexerConnected = indexerConnected
     }
 
     private fun didSetSocketConnected(socketConnected: Boolean) {
@@ -368,6 +378,7 @@ internal class StateManagerAdaptorV2(
         onboarding.socketConnected = socketConnected
         markets.socketConnected = socketConnected
         accounts.socketConnected = socketConnected
+        vault.socketConnected = socketConnected
     }
 
     private fun didSetValidatorConnected(validatorConnected: Boolean) {
@@ -375,6 +386,7 @@ internal class StateManagerAdaptorV2(
         onboarding.validatorConnected = validatorConnected
         markets.validatorConnected = validatorConnected
         accounts.validatorConnected = validatorConnected
+        vault.validatorConnected = validatorConnected
     }
 
     internal fun dispose() {
@@ -682,29 +694,8 @@ internal class StateManagerAdaptorV2(
     }
 
     private fun didSetRestriction(restriction: UsageRestriction?) {
-        val state = stateMachine.state
-        stateMachine.state = PerpetualState(
-            assets = state?.assets,
-            marketsSummary = state?.marketsSummary,
-            orderbooks = state?.orderbooks,
-            candles = state?.candles,
-            trades = state?.trades,
-            historicalFundings = state?.historicalFundings,
-            wallet = state?.wallet,
-            account = state?.account,
-            historicalPnl = state?.historicalPnl,
-            fills = state?.fills,
-            transfers = state?.transfers,
-            fundingPayments = state?.fundingPayments,
-            configs = state?.configs,
-            input = state?.input,
-            availableSubaccountNumbers = state?.availableSubaccountNumbers ?: iListOf(),
-            transferStatuses = state?.transferStatuses,
-            trackStatuses = state?.trackStatuses,
-            restriction = restriction,
-            launchIncentive = state?.launchIncentive,
-            compliance = state?.compliance,
-        )
+        val state = stateMachine.state ?: PerpetualState.newState()
+        stateMachine.state = state.copy(restriction = restriction)
         ioImplementations.threading?.async(ThreadingType.main) {
             stateNotification?.stateChanged(
                 state = stateMachine.state,
@@ -716,32 +707,13 @@ internal class StateManagerAdaptorV2(
     }
 
     private fun didSetGeo(geo: String?) {
-        val state = stateMachine.state
-        stateMachine.state = PerpetualState(
-            assets = state?.assets,
-            marketsSummary = state?.marketsSummary,
-            orderbooks = state?.orderbooks,
-            candles = state?.candles,
-            trades = state?.trades,
-            historicalFundings = state?.historicalFundings,
-            wallet = state?.wallet,
-            account = state?.account,
-            historicalPnl = state?.historicalPnl,
-            fills = state?.fills,
-            transfers = state?.transfers,
-            fundingPayments = state?.fundingPayments,
-            configs = state?.configs,
-            input = state?.input,
-            availableSubaccountNumbers = state?.availableSubaccountNumbers ?: iListOf(),
-            transferStatuses = state?.transferStatuses,
-            trackStatuses = state?.trackStatuses,
-            restriction = state?.restriction,
-            launchIncentive = state?.launchIncentive,
+        val state = stateMachine.state ?: PerpetualState.newState()
+        stateMachine.state = state.copy(
             compliance = Compliance(
                 geo = geo,
-                status = state?.compliance?.status ?: ComplianceStatus.COMPLIANT,
-                updatedAt = state?.compliance?.updatedAt,
-                expiresAt = state?.compliance?.expiresAt,
+                status = state.compliance?.status ?: ComplianceStatus.COMPLIANT,
+                updatedAt = state.compliance?.updatedAt,
+                expiresAt = state.compliance?.expiresAt,
             ),
         )
         ioImplementations.threading?.async(ThreadingType.main) {

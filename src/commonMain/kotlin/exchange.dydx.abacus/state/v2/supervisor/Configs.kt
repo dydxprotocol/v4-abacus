@@ -187,6 +187,24 @@ data class OnboardingConfigs(
 }
 
 @JsExport
+data class VaultConfigs(
+    val retrieveVault: Boolean,
+    var useMocks: Boolean = true,
+) {
+    companion object {
+        val forApp = VaultConfigs(
+            retrieveVault = true,
+        )
+        val forWeb = VaultConfigs(
+            retrieveVault = false,
+        )
+        val forProgrammaticTraders = VaultConfigs(
+            retrieveVault = false,
+        )
+    }
+}
+
+@JsExport
 enum class NotificationProviderType {
     BlockReward,
     Fills,
@@ -200,6 +218,7 @@ data class AppConfigsV2(
     val marketConfigs: MarketsConfigs,
     val accountConfigs: AccountConfigs,
     var onboardingConfigs: OnboardingConfigs,
+    var vaultConfigs: VaultConfigs,
     var loadRemote: Boolean = true,
     var enableLogger: Boolean = false,
     var triggerOrderToast: Boolean = false,
@@ -211,6 +230,7 @@ data class AppConfigsV2(
             marketConfigs = MarketsConfigs.forApp,
             accountConfigs = AccountConfigs.forApp,
             onboardingConfigs = OnboardingConfigs.forApp,
+            vaultConfigs = VaultConfigs.forApp,
             loadRemote = true,
             triggerOrderToast = true,
         )
@@ -219,6 +239,7 @@ data class AppConfigsV2(
             marketConfigs = MarketsConfigs.forApp,
             accountConfigs = AccountConfigs.forAppWithIsolatedMargins,
             onboardingConfigs = OnboardingConfigs.forApp,
+            vaultConfigs = VaultConfigs.forApp,
             loadRemote = true,
             triggerOrderToast = true,
         )
@@ -227,6 +248,7 @@ data class AppConfigsV2(
             marketConfigs = MarketsConfigs.forApp,
             accountConfigs = AccountConfigs.forAppWithIsolatedMargins,
             onboardingConfigs = OnboardingConfigs.forApp,
+            vaultConfigs = VaultConfigs.forApp,
             loadRemote = false,
             enableLogger = true,
             triggerOrderToast = true,
@@ -236,6 +258,7 @@ data class AppConfigsV2(
             marketConfigs = MarketsConfigs.forWeb,
             accountConfigs = AccountConfigs.forApp,
             onboardingConfigs = OnboardingConfigs.forApp,
+            vaultConfigs = VaultConfigs.forWeb,
             loadRemote = true,
             triggerOrderToast = false,
         )
@@ -244,6 +267,7 @@ data class AppConfigsV2(
             marketConfigs = MarketsConfigs.forWeb,
             accountConfigs = AccountConfigs.forAppWithIsolatedMargins,
             onboardingConfigs = OnboardingConfigs.forApp,
+            vaultConfigs = VaultConfigs.forWeb,
             loadRemote = true,
             triggerOrderToast = false,
             enableLogger = true,
@@ -253,6 +277,7 @@ data class AppConfigsV2(
             marketConfigs = MarketsConfigs.forProgrammaticTraders,
             accountConfigs = AccountConfigs.forProgrammaticTraders,
             onboardingConfigs = OnboardingConfigs.forProgrammaticTraders,
+            vaultConfigs = VaultConfigs.forProgrammaticTraders,
             loadRemote = true,
             triggerOrderToast = false,
         )

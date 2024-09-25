@@ -7,7 +7,7 @@ import indexer.models.chain.OnChainWithdrawalAndTransferGatingStatusResponse
 import indexer.models.chain.OnChainWithdrawalCapacityResponse
 import kollections.iListOf
 
-fun TradingStateMachine.onChainWithdrawalGating(
+internal fun TradingStateMachine.onChainWithdrawalGating(
     payload: String
 ): StateChanges {
     if (staticTyping) {
@@ -35,7 +35,7 @@ fun TradingStateMachine.onChainWithdrawalGating(
     }
 }
 
-fun TradingStateMachine.onChainWithdrawalCapacity(payload: String): StateChanges {
+internal fun TradingStateMachine.onChainWithdrawalCapacity(payload: String): StateChanges {
     if (staticTyping) {
         val response = parser.asTypedObject<OnChainWithdrawalCapacityResponse>(payload)
         if (response != null) {
