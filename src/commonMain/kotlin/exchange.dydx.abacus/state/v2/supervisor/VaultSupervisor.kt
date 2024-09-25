@@ -30,7 +30,7 @@ internal class VaultSupervisor(
 ) : NetworkSupervisor(stateMachine, helper, analyticsUtils) {
 
     companion object {
-        private const val megaVaultPnlPollingDuration = 60.0
+        private const val POLLING_DURATION = 60.0
     }
 
     private var indexerTimer: LocalTimerProtocol? = null
@@ -50,13 +50,13 @@ internal class VaultSupervisor(
 
         if (indexerConnected) {
             val timer = helper.ioImplementations.timer ?: CoroutineTimer.instance
-            indexerTimer = timer.schedule(delay = 0.0, repeat = Companion.megaVaultPnlPollingDuration) {
+            indexerTimer = timer.schedule(delay = 0.0, repeat = Companion.POLLING_DURATION) {
                 if (readyToConnect) {
                     retrieveMegaVaultPnl()
                     retrieveVaultMarketPnls()
                     retrieveVaultMarketPositions()
                 }
-                true    // Repeat
+                true // Repeat
             }
         } else {
             indexerTimer = null
@@ -189,5 +189,4 @@ internal class VaultSupervisor(
             }
         }
     }
-
 }
