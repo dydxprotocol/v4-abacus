@@ -8,32 +8,10 @@ import indexer.codegen.IndexerTransferType.DEPOSIT
 import indexer.codegen.IndexerTransferType.TRANSFER_IN
 import indexer.codegen.IndexerTransferType.TRANSFER_OUT
 import indexer.codegen.IndexerTransferType.WITHDRAWAL
+import indexer.models.chain.OnChainAccountVaultResponse
 import kollections.toIList
 import kotlinx.serialization.Serializable
 import kotlin.js.JsExport
-
-@JsExport
-@Serializable
-data class ShareUnlock(
-    val shares: NumShares?,
-    val unlockBlockHeight: Double?,
-)
-
-@JsExport
-@Serializable
-data class NumShares(
-    val numShares: Double?,
-)
-
-@JsExport
-@Serializable
-data class AccountVaultResponse(
-    val address: String? = null,
-    val shares: NumShares? = null,
-    val shareUnlocks: Array<ShareUnlock>? = null,
-    val equity: Double? = null,
-    val withdrawableEquity: Double? = null,
-)
 
 @JsExport
 @Serializable
@@ -75,8 +53,8 @@ enum class VaultTransferType {
 object VaultAccountCalculator {
     private val parser = Parser()
 
-    fun getAccountVaultResponse(apiResponse: String): AccountVaultResponse? {
-        return parser.asTypedObject<AccountVaultResponse>(apiResponse)
+    fun getAccountVaultResponse(apiResponse: String): OnChainAccountVaultResponse? {
+        return parser.asTypedObject<OnChainAccountVaultResponse>(apiResponse)
     }
 
     fun getTransfersBetweenResponse(apiResponse: String): IndexerTransferBetweenResponse? {
@@ -84,7 +62,7 @@ object VaultAccountCalculator {
     }
 
     fun calculateUserVaultInfo(
-        vaultInfo: AccountVaultResponse,
+        vaultInfo: OnChainAccountVaultResponse,
         vaultTransfers: IndexerTransferBetweenResponse,
     ): VaultAccount {
         val presentValue = vaultInfo.equity?.let { it / 1_000_000 }
