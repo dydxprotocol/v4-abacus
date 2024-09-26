@@ -93,7 +93,15 @@ object VaultAccountCalculator {
         val allTimeReturn =
             if (presentValue != null && netTransfers != null) (presentValue - netTransfers) else null
 
-        val impliedShareValue: Double = if (vaultInfo.shares?.numShares != null && presentValue != null) presentValue / vaultInfo.shares.numShares else 0.0
+        val impliedShareValue: Double = if (
+            vaultInfo.shares?.numShares != null &&
+            vaultInfo.shares.numShares > 0 &&
+            presentValue != null
+        ) {
+            presentValue / vaultInfo.shares.numShares
+        } else {
+            0.0
+        }
 
         return VaultAccount(
             balanceUsdc = presentValue,
