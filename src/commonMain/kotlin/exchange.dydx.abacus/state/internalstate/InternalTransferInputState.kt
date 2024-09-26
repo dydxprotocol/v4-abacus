@@ -87,7 +87,7 @@ internal fun TransferInputSummary.Companion.safeCreate(existing: TransferInputSu
         filled = false,
         slippage = null,
         exchangeRate = null,
-        estimatedRouteDuration = null,
+        estimatedRouteDurationSeconds = null,
         bridgeFee = null,
         gasFee = null,
         toAmount = null,
