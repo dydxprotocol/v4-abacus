@@ -1,6 +1,8 @@
 package exchange.dydx.abacus.functional.vault
 
 import exchange.dydx.abacus.output.input.ValidationError
+import indexer.models.chain.OnChainNumShares
+import indexer.models.chain.OnChainVaultDepositWithdrawSlippageResponse
 import kollections.iListOf
 import kollections.toIList
 import kotlin.test.Test
@@ -85,8 +87,8 @@ class VaultFormTests {
                 withdrawableUsdc = 500.0,
                 balanceShares = 500.0,
             ),
-            slippageResponse = VaultDepositWithdrawSlippageResponse(
-                sharesToWithdraw = NumShares(numShares = 100.0),
+            slippageResponse = OnChainVaultDepositWithdrawSlippageResponse(
+                sharesToWithdraw = OnChainNumShares(numShares = 100.0),
                 expectedQuoteQuantums = 98.0 * 1_000_000,
             ),
         )
@@ -137,8 +139,8 @@ class VaultFormTests {
                 withdrawableUsdc = 500.0,
                 balanceShares = 500.0,
             ),
-            slippageResponse = VaultDepositWithdrawSlippageResponse(
-                sharesToWithdraw = NumShares(numShares = 120.0),
+            slippageResponse = OnChainVaultDepositWithdrawSlippageResponse(
+                sharesToWithdraw = OnChainNumShares(numShares = 120.0),
                 expectedQuoteQuantums = 98.0 * 1_000_000,
             ),
         )
@@ -182,8 +184,8 @@ class VaultFormTests {
                 withdrawableUsdc = 500.0,
                 balanceShares = 500.0,
             ),
-            slippageResponse = VaultDepositWithdrawSlippageResponse(
-                sharesToWithdraw = NumShares(numShares = 600.0),
+            slippageResponse = OnChainVaultDepositWithdrawSlippageResponse(
+                sharesToWithdraw = OnChainNumShares(numShares = 600.0),
                 expectedQuoteQuantums = 500.0 * 1_000_000,
             ),
         )
