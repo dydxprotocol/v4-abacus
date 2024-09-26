@@ -1,6 +1,5 @@
 package exchange.dydx.abacus.functional.vault
 
-import com.ionspin.kotlin.bignum.decimal.toBigDecimal
 import exchange.dydx.abacus.output.input.ValidationError
 import kollections.iListOf
 import kollections.toIList
@@ -49,7 +48,7 @@ class VaultFormTests {
                 submissionData = VaultDepositWithdrawSubmissionData(
                     deposit = VaultDepositData(
                         subaccountFrom = "0",
-                        quoteQuantums = "100000000",
+                        amount = 100.0,
                     ),
                     withdraw = null,
                 ),
@@ -86,8 +85,8 @@ class VaultFormTests {
                 balanceShares = 500.0,
             ),
             slippageResponse = VaultDepositWithdrawSlippageResponse(
-                shares = 100.0,
-                expectedAmount = 98.0,
+                sharesToWithdraw = NumShares(numShares = 100.0),
+                expectedQuoteQuantums = 98.0 * 1_000_000,
             ),
         )
 
@@ -100,8 +99,8 @@ class VaultFormTests {
                     deposit = null,
                     withdraw = VaultWithdrawData(
                         subaccountTo = "0",
-                        shares = "100",
-                        minQuoteQuantums = (98 * .99).toBigDecimal().times(1000000).toBigInteger().toString(),
+                        shares = 100.0,
+                        minAmount = 98 * .99,
                     ),
                 ),
                 summaryData = VaultFormSummaryData(
@@ -138,8 +137,8 @@ class VaultFormTests {
                 balanceShares = 500.0,
             ),
             slippageResponse = VaultDepositWithdrawSlippageResponse(
-                shares = 120.0,
-                expectedAmount = 98.0,
+                sharesToWithdraw = NumShares(numShares = 120.0),
+                expectedQuoteQuantums = 98.0 * 1_000_000,
             ),
         )
 
@@ -183,8 +182,8 @@ class VaultFormTests {
                 balanceShares = 500.0,
             ),
             slippageResponse = VaultDepositWithdrawSlippageResponse(
-                shares = 600.0,
-                expectedAmount = 500.0,
+                sharesToWithdraw = NumShares(numShares = 600.0),
+                expectedQuoteQuantums = 500.0 * 1_000_000,
             ),
         )
 

@@ -16,13 +16,13 @@ import kotlin.js.JsExport
 
 /**
  *
- * Values: TRANSFERIN,TRANSFEROUT,DEPOSIT,WITHDRAWAL
+ * Values: TRANSFER_IN,TRANSFER_OUT,DEPOSIT,WITHDRAWAL
  */
 @JsExport
 @Serializable
 enum class IndexerTransferType(val value: kotlin.String) {
-    TRANSFERIN("TRANSFER_IN"), // :/
-    TRANSFEROUT("TRANSFER_OUT"), // :/
+    TRANSFER_IN("TRANSFER_IN"), // :/
+    TRANSFER_OUT("TRANSFER_OUT"), // :/
     DEPOSIT("DEPOSIT"), // :/
     WITHDRAWAL("WITHDRAWAL"); // :/
 }

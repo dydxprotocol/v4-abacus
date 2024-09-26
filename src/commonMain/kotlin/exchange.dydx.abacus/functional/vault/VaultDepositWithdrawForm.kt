@@ -1,6 +1,5 @@
 package exchange.dydx.abacus.functional.vault
 
-import com.ionspin.kotlin.bignum.decimal.toBigDecimal
 import exchange.dydx.abacus.output.input.ErrorFormat
 import exchange.dydx.abacus.output.input.ErrorParam
 import exchange.dydx.abacus.output.input.ErrorResources
@@ -43,8 +42,8 @@ data class VaultFormAccountData(
 @JsExport
 @Serializable
 data class VaultDepositWithdrawSlippageResponse(
-    val shares: Double,
-    val expectedAmount: Double,
+    val sharesToWithdraw: NumShares,
+    val expectedQuoteQuantums: Double,
 )
 
 object VaultFormValidationErrors {
@@ -166,15 +165,15 @@ data class VaultDepositWithdrawSubmissionData(
 @Serializable
 data class VaultDepositData(
     val subaccountFrom: String,
-    val quoteQuantums: String
+    val amount: Double
 )
 
 @JsExport
 @Serializable
 data class VaultWithdrawData(
     val subaccountTo: String,
-    val shares: String,
-    val minQuoteQuantums: String,
+    val shares: Double,
+    val minAmount: Double
 )
 
 @JsExport
@@ -202,9 +201,7 @@ object VaultDepositWithdrawFormValidator {
 
     private const val SLIPPAGE_PERCENT_WARN = 0.01
     private const val SLIPPAGE_PERCENT_ACK = 0.04
-    private const val EXTRA_SLIPPAGE_TOLERANCE = 0.01
-
-    private const val QUANTUMS_MULTIPLIER = 1_000_000
+    private const val SLIPPAGE_TOLERANCE = 0.01
 
     fun getVaultDepositWithdrawSlippageResponse(apiResponse: String): VaultDepositWithdrawSlippageResponse? {
         return parser.asTypedObject<VaultDepositWithdrawSlippageResponse>(apiResponse)
@@ -234,14 +231,10 @@ object VaultDepositWithdrawFormValidator {
             null
         }
 
-        val withdrawnAmountIncludingSlippage = slippageResponse?.expectedAmount
-        val postOpVaultBalance = if (vaultAccount?.balanceUsdc != null) {
-            when (formData.action) {
-                VaultFormAction.DEPOSIT -> vaultAccount.balanceUsdc + amount
-                VaultFormAction.WITHDRAW -> vaultAccount.balanceUsdc - amount
-            }
-        } else {
-            null
+        val withdrawnAmountIncludingSlippage = slippageResponse?.expectedQuoteQuantums?.let { it / 1_000_000.0 }
+        val postOpVaultBalance = when (formData.action) {
+            VaultFormAction.DEPOSIT -> (vaultAccount?.balanceUsdc ?: 0.0) + amount
+            VaultFormAction.WITHDRAW -> (vaultAccount?.balanceUsdc ?: 0.0) - amount
         }
 
         val (postOpFreeCollateral, postOpMarginUsage) = if (accountData?.freeCollateral != null && accountData.marginUsage != null) {
@@ -314,7 +307,7 @@ object VaultDepositWithdrawFormValidator {
                 if (postOpVaultBalance != null && postOpVaultBalance >= 0 && amount > 0 && vaultAccount?.withdrawableUsdc != null && amount > vaultAccount.withdrawableUsdc) {
                     errors.add(VaultFormValidationErrors.withdrawingLockedBalance())
                 }
-                if (sharesToAttemptWithdraw != null && slippageResponse != null && sharesToAttemptWithdraw != slippageResponse.shares) {
+                if (sharesToAttemptWithdraw != null && slippageResponse != null && sharesToAttemptWithdraw != slippageResponse.sharesToWithdraw.numShares) {
                     errors.add(
                         VaultFormValidationErrors.slippageResponseWrongShares(),
                     )
@@ -334,19 +327,17 @@ object VaultDepositWithdrawFormValidator {
                 VaultFormAction.DEPOSIT -> VaultDepositWithdrawSubmissionData(
                     deposit = VaultDepositData(
                         subaccountFrom = "0",
-                        quoteQuantums = amount.toBigDecimal().times(QUANTUMS_MULTIPLIER).toBigInteger().toString(),
+                        amount = amount,
                     ),
                     withdraw = null,
                 )
                 VaultFormAction.WITHDRAW -> VaultDepositWithdrawSubmissionData(
                     deposit = null,
-                    withdraw = if (sharesToAttemptWithdraw != null && sharesToAttemptWithdraw > 0 && slippageResponse != null) {
+                    withdraw = if (sharesToAttemptWithdraw != null && sharesToAttemptWithdraw > 0 && slippageResponse != null && withdrawnAmountIncludingSlippage != null) {
                         VaultWithdrawData(
                             subaccountTo = "0",
-                            shares = sharesToAttemptWithdraw.toBigDecimal().toBigInteger().toString(),
-                            minQuoteQuantums = (slippageResponse.expectedAmount * (1 - EXTRA_SLIPPAGE_TOLERANCE)).toBigDecimal().times(
-                                QUANTUMS_MULTIPLIER,
-                            ).toBigInteger().toString(),
+                            shares = sharesToAttemptWithdraw,
+                            minAmount = withdrawnAmountIncludingSlippage * (1 - SLIPPAGE_TOLERANCE),
                         )
                     } else {
                         null
@@ -362,7 +353,7 @@ object VaultDepositWithdrawFormValidator {
             freeCollateral = postOpFreeCollateral,
             vaultBalance = postOpVaultBalance,
             estimatedSlippage = slippagePercent,
-            estimatedAmountReceived = if (formData.action === VaultFormAction.WITHDRAW) slippageResponse?.expectedAmount else null,
+            estimatedAmountReceived = if (formData.action === VaultFormAction.WITHDRAW && withdrawnAmountIncludingSlippage != null) withdrawnAmountIncludingSlippage else null,
         )
 
         return VaultFormValidationResult(

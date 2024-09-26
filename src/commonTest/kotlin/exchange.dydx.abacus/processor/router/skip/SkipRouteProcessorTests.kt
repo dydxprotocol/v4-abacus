@@ -7,6 +7,7 @@ import exchange.dydx.abacus.utils.DEFAULT_GAS_PRICE
 import exchange.dydx.abacus.utils.JsonEncoder
 import exchange.dydx.abacus.utils.Parser
 import exchange.dydx.abacus.utils.toJsonArray
+import exchange.dydx.abacus.utils.toJsonElement
 import kotlin.test.Test
 import kotlin.test.assertEquals
 
@@ -54,17 +55,20 @@ class SkipRouteProcessorTests {
         val expected = mapOf(
             "toAmountUSD" to 1498.18,
             "toAmount" to 1499.8,
+            "estimatedRouteDurationSeconds" to 25,
             "bridgeFee" to .2,
             "slippage" to "1",
             "requestPayload" to mapOf(
-                "data" to "mock-encoded-solana-tx",
                 "fromChainId" to "solana",
                 "fromAddress" to "98bVPZQCHZmCt9v3ni9kwtjKgLuzHBpstQkdPyAucBNx",
                 "toChainId" to "noble-1",
                 "toAddress" to "uusdc",
+                "data" to "mock-encoded-solana-tx",
             ),
         )
-        assertEquals(expected, result)
+//        Sometimes assertEquals behaves strangely where it insists on comparing the memory address.
+//        When this happens I need to serialize the objects first. This behavior appear to be non-deterministic.
+        assertEquals(expected.toJsonElement(), result.toJsonElement())
     }
 
     /**

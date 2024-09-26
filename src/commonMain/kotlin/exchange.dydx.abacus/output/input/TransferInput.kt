@@ -354,7 +354,7 @@ data class TransferInputSummary(
     val filled: Boolean,
     val slippage: Double?,
     val exchangeRate: Double?,
-    val estimatedRouteDuration: Double?,
+    val estimatedRouteDurationSeconds: Double?,
     val bridgeFee: Double?,
     val gasFee: Double?,
     val toAmount: Double?,
@@ -377,7 +377,7 @@ data class TransferInputSummary(
                 val filled = parser.asBool(data["filled"]) ?: false
                 val slippage = parser.asDouble(data["slippage"])
                 val exchangeRate = parser.asDouble(data["exchangeRate"])
-                val estimatedRouteDuration = parser.asDouble(data["estimatedRouteDuration"])
+                val estimatedRouteDurationSeconds = parser.asDouble(data["estimatedRouteDurationSeconds"])
                 val bridgeFee = parser.asDouble(data["bridgeFee"])
                 val gasFee = parser.asDouble(data["gasFee"])
                 val toAmount = parser.asDouble(data["toAmount"])
@@ -391,7 +391,7 @@ data class TransferInputSummary(
                     existing?.filled != filled ||
                     existing.slippage != slippage ||
                     existing.exchangeRate != exchangeRate ||
-                    existing.estimatedRouteDuration != estimatedRouteDuration ||
+                    existing.estimatedRouteDurationSeconds != estimatedRouteDurationSeconds ||
                     existing.bridgeFee != bridgeFee ||
                     existing.gasFee != gasFee ||
                     existing.toAmount != toAmount ||
@@ -406,7 +406,7 @@ data class TransferInputSummary(
                         filled,
                         slippage,
                         exchangeRate,
-                        estimatedRouteDuration,
+                        estimatedRouteDurationSeconds,
                         bridgeFee,
                         gasFee,
                         toAmount,

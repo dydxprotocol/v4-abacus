@@ -5,8 +5,8 @@ import exchange.dydx.abacus.utils.IList
 import exchange.dydx.abacus.utils.Parser
 import indexer.codegen.IndexerTransferBetweenResponse
 import indexer.codegen.IndexerTransferType.DEPOSIT
-import indexer.codegen.IndexerTransferType.TRANSFERIN
-import indexer.codegen.IndexerTransferType.TRANSFEROUT
+import indexer.codegen.IndexerTransferType.TRANSFER_IN
+import indexer.codegen.IndexerTransferType.TRANSFER_OUT
 import indexer.codegen.IndexerTransferType.WITHDRAWAL
 import kollections.toIList
 import kotlinx.serialization.Serializable
@@ -14,14 +14,25 @@ import kotlin.js.JsExport
 
 @JsExport
 @Serializable
+data class ShareUnlock(
+    val shares: NumShares?,
+    val unlockBlockHeight: Double?,
+)
+
+@JsExport
+@Serializable
+data class NumShares(
+    val numShares: Double?,
+)
+
+@JsExport
+@Serializable
 data class AccountVaultResponse(
     val address: String? = null,
-    val shares: Double? = null,
-    @Suppress("ConstructorParameterNaming")
-    val locked_shares: Double? = null,
+    val shares: NumShares? = null,
+    val shareUnlocks: Array<ShareUnlock>? = null,
     val equity: Double? = null,
-    @Suppress("ConstructorParameterNaming")
-    val withdrawable_amount: Double? = null,
+    val withdrawableEquity: Double? = null,
 )
 
 @JsExport
@@ -68,16 +79,16 @@ object VaultAccountCalculator {
         vaultInfo: AccountVaultResponse,
         vaultTransfers: IndexerTransferBetweenResponse
     ): VaultAccount {
-        val presentValue = vaultInfo.equity
+        val presentValue = vaultInfo.equity?.let { it / 1_000_000 }
         val netTransfers = parser.asDouble(vaultTransfers.totalNetTransfers)
-        val withdrawable = vaultInfo.withdrawable_amount
+        val withdrawable = vaultInfo.withdrawableEquity?.let { it / 1_000_000 }
         val allTimeReturn =
             if (presentValue != null && netTransfers != null) (presentValue - netTransfers) else null
 
         return VaultAccount(
             balanceUsdc = presentValue,
-            balanceShares = vaultInfo.shares,
-            lockedShares = vaultInfo.locked_shares,
+            balanceShares = vaultInfo.shares?.numShares,
+            lockedShares = vaultInfo.shareUnlocks?.sumOf { el -> el.shares?.numShares ?: 0.0 },
             withdrawableUsdc = withdrawable,
             allTimeReturnUsdc = allTimeReturn,
             totalVaultTransfersCount = vaultTransfers.totalResults,
@@ -86,8 +97,8 @@ object VaultAccountCalculator {
                     timestampMs = parser.asDatetime(el.createdAt)?.toEpochMilliseconds()?.toDouble(),
                     amountUsdc = parser.asDouble(el.size),
                     type = when (el.type) {
-                        TRANSFEROUT -> VaultTransferType.DEPOSIT
-                        TRANSFERIN -> VaultTransferType.WITHDRAWAL
+                        TRANSFER_OUT -> VaultTransferType.DEPOSIT
+                        TRANSFER_IN -> VaultTransferType.WITHDRAWAL
                         DEPOSIT, WITHDRAWAL, null -> null
                     },
                     id = el.id,

@@ -151,9 +151,9 @@ internal class TransferInputCalculator(val parser: ParserProtocol) {
                 val exchangeRate = parser.asDouble(parser.value(transfer, "route.exchangeRate"))
                 summary.safeSet("exchangeRate", exchangeRate)
 
-                val estimatedRouteDuration =
-                    parser.asDouble(parser.value(transfer, "route.estimatedRouteDuration"))
-                summary.safeSet("estimatedRouteDuration", estimatedRouteDuration)
+                val estimatedRouteDurationSeconds =
+                    parser.asDouble(parser.value(transfer, "route.estimatedRouteDurationSeconds"))
+                summary.safeSet("estimatedRouteDurationSeconds", estimatedRouteDurationSeconds)
 
                 if (usdcSize != null) {
                     summary.safeSet("usdcSize", usdcSize)
@@ -204,9 +204,9 @@ internal class TransferInputCalculator(val parser: ParserProtocol) {
                 val exchangeRate = parser.asDouble(parser.value(transfer, "route.exchangeRate"))
                 summary.safeSet("exchangeRate", exchangeRate)
 
-                val estimatedRouteDuration =
-                    parser.asDouble(parser.value(transfer, "route.estimatedRouteDuration"))
-                summary.safeSet("estimatedRouteDuration", estimatedRouteDuration)
+                val estimatedRouteDurationSeconds =
+                    parser.asDouble(parser.value(transfer, "route.estimatedRouteDurationSeconds"))
+                summary.safeSet("estimatedRouteDurationSeconds", estimatedRouteDurationSeconds)
 
                 val bridgeFee = parser.asDouble(parser.value(transfer, "route.bridgeFee"))
                 summary.safeSet("bridgeFee", bridgeFee)
