@@ -100,7 +100,7 @@ object VaultCalculator {
         }
 
         val vaultOfVaultsPnl =
-            historical!!.megavaultPnl!!.sortedByDescending { parser.asDouble(it.createdAt) }
+            historical!!.megavaultPnl!!.sortedByDescending { parser.asDatetime(it.createdAt)?.toEpochMilliseconds() ?: 0 }
 
         val history = vaultOfVaultsPnl.mapNotNull { entry ->
             parser.asDatetime(entry.createdAt)?.toEpochMilliseconds()?.toDouble()?.let { createdAt ->
@@ -265,7 +265,7 @@ object VaultCalculator {
             return null
         }
 
-        val sortedPnl = historicalPnl.sortedByDescending { it.createdAt }
+        val sortedPnl = historicalPnl.sortedByDescending { parser.asDatetime(it.createdAt)?.toEpochMilliseconds() ?: 0 }
         val latestEntry = sortedPnl.first()
         val latestTime = parser.asDatetime(latestEntry.createdAt)?.toEpochMilliseconds() ?: Clock.System.now().toEpochMilliseconds()
         val thirtyDaysAgoTime = latestTime - 30.days.inWholeMilliseconds
