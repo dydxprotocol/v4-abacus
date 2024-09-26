@@ -17,6 +17,7 @@ class VaultFormTests {
             totalVaultTransfersCount = null,
             withdrawableUsdc = withdrawableUsdc,
             balanceUsdc = balanceUsdc,
+            vaultShareUnlocks = null,
         )
     }
 

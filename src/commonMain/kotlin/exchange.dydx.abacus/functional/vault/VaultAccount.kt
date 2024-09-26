@@ -9,7 +9,6 @@ import indexer.codegen.IndexerTransferType.TRANSFER_IN
 import indexer.codegen.IndexerTransferType.TRANSFER_OUT
 import indexer.codegen.IndexerTransferType.WITHDRAWAL
 import kollections.toIList
-import kotlinx.datetime.Clock
 import kotlinx.serialization.Serializable
 import kotlin.js.JsExport
 
@@ -61,7 +60,7 @@ data class VaultTransfer(
 @JsExport
 @Serializable
 data class VaultShareUnlock(
-    val timestampMs: Double?,
+    val unlockBlockHeight: Double?,
     val amountUsdc: Double?,
 )
 
@@ -87,7 +86,6 @@ object VaultAccountCalculator {
     fun calculateUserVaultInfo(
         vaultInfo: AccountVaultResponse,
         vaultTransfers: IndexerTransferBetweenResponse,
-        latestBlockHeight: Double,
     ): VaultAccount {
         val presentValue = vaultInfo.equity?.let { it / 1_000_000 }
         val netTransfers = parser.asDouble(vaultTransfers.totalNetTransfers)
@@ -118,10 +116,10 @@ object VaultAccountCalculator {
             }?.toIList(),
             vaultShareUnlocks = vaultInfo.shareUnlocks?.map { el ->
                 VaultShareUnlock(
-                    timestampMs = if (el.unlockBlockHeight != null) Clock.System.now().toEpochMilliseconds() + (el.unlockBlockHeight - latestBlockHeight) * 1000 else null,
+                    unlockBlockHeight = el.unlockBlockHeight,
                     amountUsdc = el.shares?.numShares?.let { it * impliedShareValue },
                 )
-            }?.sortedBy { it.timestampMs }?.toIList(),
+            }?.sortedBy { it.unlockBlockHeight }?.toIList(),
         )
     }
 }
