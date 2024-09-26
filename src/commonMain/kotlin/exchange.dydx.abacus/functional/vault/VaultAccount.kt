@@ -45,6 +45,7 @@ data class VaultAccount(
     val allTimeReturnUsdc: Double?,
     val vaultTransfers: IList<VaultTransfer>?,
     val totalVaultTransfersCount: Int?,
+    val vaultShareUnlocks: IList<VaultShareUnlock>?,
 )
 
 @JsExport
@@ -54,6 +55,13 @@ data class VaultTransfer(
     val amountUsdc: Double?,
     val type: VaultTransferType?,
     val id: String?,
+)
+
+@JsExport
+@Serializable
+data class VaultShareUnlock(
+    val unlockBlockHeight: Double?,
+    val amountUsdc: Double?,
 )
 
 @JsExport
@@ -77,13 +85,23 @@ object VaultAccountCalculator {
 
     fun calculateUserVaultInfo(
         vaultInfo: AccountVaultResponse,
-        vaultTransfers: IndexerTransferBetweenResponse
+        vaultTransfers: IndexerTransferBetweenResponse,
     ): VaultAccount {
         val presentValue = vaultInfo.equity?.let { it / 1_000_000 }
         val netTransfers = parser.asDouble(vaultTransfers.totalNetTransfers)
         val withdrawable = vaultInfo.withdrawableEquity?.let { it / 1_000_000 }
         val allTimeReturn =
             if (presentValue != null && netTransfers != null) (presentValue - netTransfers) else null
+
+        val impliedShareValue: Double = if (
+            vaultInfo.shares?.numShares != null &&
+            vaultInfo.shares.numShares > 0 &&
+            presentValue != null
+        ) {
+            presentValue / vaultInfo.shares.numShares
+        } else {
+            0.0
+        }
 
         return VaultAccount(
             balanceUsdc = presentValue,
@@ -104,6 +122,12 @@ object VaultAccountCalculator {
                     id = el.id,
                 )
             }?.toIList(),
+            vaultShareUnlocks = vaultInfo.shareUnlocks?.map { el ->
+                VaultShareUnlock(
+                    unlockBlockHeight = el.unlockBlockHeight,
+                    amountUsdc = el.shares?.numShares?.let { it * impliedShareValue },
+                )
+            }?.sortedBy { it.unlockBlockHeight }?.toIList(),
         )
     }
 }

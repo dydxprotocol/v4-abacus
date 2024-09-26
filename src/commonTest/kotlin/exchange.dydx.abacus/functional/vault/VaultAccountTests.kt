@@ -64,6 +64,7 @@ class VaultAccountTests {
                     id = "2",
                 ),
             ),
+            vaultShareUnlocks = iListOf(VaultShareUnlock(unlockBlockHeight = 0.0, amountUsdc = 5000.0)),
         )
 
         assertEquals(expectedVaultAccount, vaultAccount)
