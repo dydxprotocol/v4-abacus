@@ -5,8 +5,8 @@ import exchange.dydx.abacus.utils.IList
 import exchange.dydx.abacus.utils.Parser
 import indexer.codegen.IndexerTransferBetweenResponse
 import indexer.codegen.IndexerTransferType.DEPOSIT
-import indexer.codegen.IndexerTransferType.TRANSFERIN
-import indexer.codegen.IndexerTransferType.TRANSFEROUT
+import indexer.codegen.IndexerTransferType.TRANSFER_IN
+import indexer.codegen.IndexerTransferType.TRANSFER_OUT
 import indexer.codegen.IndexerTransferType.WITHDRAWAL
 import kollections.toIList
 import kotlinx.serialization.Serializable
@@ -97,8 +97,8 @@ object VaultAccountCalculator {
                     timestampMs = parser.asDatetime(el.createdAt)?.toEpochMilliseconds()?.toDouble(),
                     amountUsdc = parser.asDouble(el.size),
                     type = when (el.type) {
-                        TRANSFEROUT -> VaultTransferType.DEPOSIT
-                        TRANSFERIN -> VaultTransferType.WITHDRAWAL
+                        TRANSFER_OUT -> VaultTransferType.DEPOSIT
+                        TRANSFER_IN -> VaultTransferType.WITHDRAWAL
                         DEPOSIT, WITHDRAWAL, null -> null
                     },
                     id = el.id,

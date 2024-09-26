@@ -30,13 +30,13 @@ class VaultAccountTests {
                     id = "1",
                     createdAt = Instant.fromEpochMilliseconds(1659465600000).toString(),
                     size = "6000.0",
-                    type = IndexerTransferType.TRANSFEROUT,
+                    type = IndexerTransferType.TRANSFER_OUT,
                 ),
                 IndexerTransferResponseObject(
                     id = "2",
                     createdAt = Instant.fromEpochMilliseconds(1659552000000).toString(),
                     size = "2000.0",
-                    type = IndexerTransferType.TRANSFERIN,
+                    type = IndexerTransferType.TRANSFER_IN,
                 ),
             ),
         )
