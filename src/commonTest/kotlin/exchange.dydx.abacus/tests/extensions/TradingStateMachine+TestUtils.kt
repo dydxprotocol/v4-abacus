@@ -596,15 +596,15 @@ fun TradingStateMachine.rest(
             changes = transfers(payload, subaccountNumber)
         }
 
-        "/v4/vault/megavault/historicalPnl" -> {
+        "/v4/vault/v1/megavault/historicalPnl" -> {
             changes = onMegaVaultPnl(payload)
         }
 
-        "/v4/vault/positions" -> {
+        "/v4/vault/v1/megavault/positions" -> {
             changes = onVaultMarketPositions(payload)
         }
 
-        "/v4/vault/vaults/historicalPnl" -> {
+        "/v4/vault/v1/vaults/historicalPnl" -> {
             changes = onVaultMarketPnls(payload)
         }
 

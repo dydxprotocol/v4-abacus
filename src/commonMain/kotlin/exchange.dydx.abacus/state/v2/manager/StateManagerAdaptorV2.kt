@@ -291,6 +291,7 @@ internal class StateManagerAdaptorV2(
         }
         set(value) {
             accounts.accountAddress = value
+            vault.accountAddress = value
         }
 
     internal var walletConnectionType: WalletConnectionType?

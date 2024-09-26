@@ -2,6 +2,7 @@ package exchange.dydx.abacus.state.internalstate
 
 import com.ionspin.kotlin.bignum.decimal.BigDecimal
 import exchange.dydx.abacus.calculator.CalculationPeriod
+import exchange.dydx.abacus.functional.vault.AccountVaultResponse
 import exchange.dydx.abacus.functional.vault.ThirtyDayPnl
 import exchange.dydx.abacus.functional.vault.VaultDetails
 import exchange.dydx.abacus.output.Asset
@@ -48,6 +49,7 @@ import indexer.codegen.IndexerHistoricalBlockTradingReward
 import indexer.codegen.IndexerHistoricalTradingRewardAggregation
 import indexer.codegen.IndexerPerpetualPositionStatus
 import indexer.codegen.IndexerPositionSide
+import indexer.codegen.IndexerTransferBetweenResponse
 import kotlinx.datetime.Instant
 
 internal data class InternalState(
@@ -240,6 +242,8 @@ internal data class InternalVaultState(
     val details: VaultDetails? = null,
     val positions: List<InternalVaultPositionState>? = null,
     val pnls: MutableMap<String, ThirtyDayPnl> = mutableMapOf(),
+    val transfers: IndexerTransferBetweenResponse? = null,
+    val account: AccountVaultResponse? = null,
 )
 
 internal data class InternalVaultPositionState(

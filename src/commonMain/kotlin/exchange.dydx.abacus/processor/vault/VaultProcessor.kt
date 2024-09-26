@@ -11,6 +11,7 @@ import exchange.dydx.abacus.state.internalstate.InternalVaultPositionState
 import exchange.dydx.abacus.state.internalstate.InternalVaultState
 import indexer.codegen.IndexerMegavaultHistoricalPnlResponse
 import indexer.codegen.IndexerMegavaultPositionResponse
+import indexer.codegen.IndexerTransferBetweenResponse
 import indexer.codegen.IndexerVaultsHistoricalPnlResponse
 
 internal class VaultProcessor(
@@ -81,6 +82,21 @@ internal class VaultProcessor(
 
         return if (positions != existing?.positions) {
             existing?.copy(positions = positions) ?: InternalVaultState(positions = positions)
+        } else {
+            existing
+        }
+    }
+
+    fun processTransferBetween(
+        existing: InternalVaultState?,
+        payload: IndexerTransferBetweenResponse?,
+    ): InternalVaultState? {
+        if (payload == null) {
+            return existing
+        }
+
+        return if (payload != existing?.transfers) {
+            existing?.copy(transfers = payload) ?: InternalVaultState(transfers = payload)
         } else {
             existing
         }
