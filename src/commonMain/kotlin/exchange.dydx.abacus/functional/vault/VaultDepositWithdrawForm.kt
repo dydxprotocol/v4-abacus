@@ -10,6 +10,7 @@ import exchange.dydx.abacus.protocols.asTypedObject
 import exchange.dydx.abacus.utils.IList
 import exchange.dydx.abacus.utils.Parser
 import exchange.dydx.abacus.utils.format
+import indexer.models.chain.OnChainVaultDepositWithdrawSlippageResponse
 import kollections.toIList
 import kotlinx.serialization.Serializable
 import kotlin.js.JsExport
@@ -37,13 +38,6 @@ data class VaultFormAccountData(
     val marginUsage: Double?,
     val freeCollateral: Double?,
     val canViewAccount: Boolean?,
-)
-
-@JsExport
-@Serializable
-data class VaultDepositWithdrawSlippageResponse(
-    val sharesToWithdraw: NumShares,
-    val expectedQuoteQuantums: Double,
 )
 
 object VaultFormValidationErrors {
@@ -203,15 +197,15 @@ object VaultDepositWithdrawFormValidator {
     private const val SLIPPAGE_PERCENT_ACK = 0.04
     private const val SLIPPAGE_TOLERANCE = 0.01
 
-    fun getVaultDepositWithdrawSlippageResponse(apiResponse: String): VaultDepositWithdrawSlippageResponse? {
-        return parser.asTypedObject<VaultDepositWithdrawSlippageResponse>(apiResponse)
+    fun getVaultDepositWithdrawSlippageResponse(apiResponse: String): OnChainVaultDepositWithdrawSlippageResponse? {
+        return parser.asTypedObject<OnChainVaultDepositWithdrawSlippageResponse>(apiResponse)
     }
 
     fun validateVaultForm(
         formData: VaultFormData,
         accountData: VaultFormAccountData?,
         vaultAccount: VaultAccount?,
-        slippageResponse: VaultDepositWithdrawSlippageResponse?
+        slippageResponse: OnChainVaultDepositWithdrawSlippageResponse?
     ): VaultFormValidationResult {
         val errors = mutableListOf<ValidationError>()
         var submissionData: VaultDepositWithdrawSubmissionData? = null

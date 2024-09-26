@@ -4,6 +4,9 @@ import exchange.dydx.abacus.functional.vault.VaultAccountCalculator.calculateUse
 import indexer.codegen.IndexerTransferBetweenResponse
 import indexer.codegen.IndexerTransferResponseObject
 import indexer.codegen.IndexerTransferType
+import indexer.models.chain.OnChainAccountVaultResponse
+import indexer.models.chain.OnChainNumShares
+import indexer.models.chain.OnChainShareUnlock
 import kollections.iListOf
 import kotlinx.datetime.Instant
 import kotlin.test.Test
@@ -14,10 +17,10 @@ class VaultAccountTests {
 
     @Test
     fun calculateUserVaultInfo_basic() {
-        val vaultInfo = AccountVaultResponse(
+        val vaultInfo = OnChainAccountVaultResponse(
             address = "0x123",
-            shares = NumShares(numShares = 100.0),
-            shareUnlocks = arrayOf(ShareUnlock(unlockBlockHeight = 0.0, shares = NumShares(numShares = 50.0))),
+            shares = OnChainNumShares(numShares = 100.0),
+            shareUnlocks = arrayOf(OnChainShareUnlock(unlockBlockHeight = 0.0, shares = OnChainNumShares(numShares = 50.0))),
             equity = 10000.0 * 1_000_000,
             withdrawableEquity = 5000.0 * 1_000_000,
         )
