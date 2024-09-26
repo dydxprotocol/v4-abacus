@@ -1,13 +1,14 @@
 package exchange.dydx.abacus.processor.wallet.account
 
-import exchange.dydx.abacus.output.SubaccountOrder
-import exchange.dydx.abacus.output.SubaccountOrderResources
+import exchange.dydx.abacus.output.account.SubaccountOrder
+import exchange.dydx.abacus.output.account.SubaccountOrderResources
 import exchange.dydx.abacus.output.input.MarginMode
 import exchange.dydx.abacus.output.input.OrderSide
 import exchange.dydx.abacus.output.input.OrderStatus
 import exchange.dydx.abacus.output.input.OrderTimeInForce
 import exchange.dydx.abacus.output.input.OrderType
 import exchange.dydx.abacus.processor.base.BaseProcessor
+import exchange.dydx.abacus.processor.utils.MarketId
 import exchange.dydx.abacus.processor.utils.OrderTypeProcessor
 import exchange.dydx.abacus.protocols.LocalizerProtocol
 import exchange.dydx.abacus.protocols.ParserProtocol
@@ -90,6 +91,10 @@ internal interface OrderProcessorProtocol {
         existing: SubaccountOrder,
         height: BlockAndTime?,
     ): Pair<SubaccountOrder, Boolean>
+
+    fun canceled(
+        existing: SubaccountOrder,
+    ): SubaccountOrder
 }
 
 @Suppress("UNCHECKED_CAST")
@@ -143,6 +148,7 @@ internal class OrderProcessor(
             "id" to "id",
             "clientId" to "clientId",
             "market" to "marketId",
+            "displayId" to "displayId",
             "side" to "side",
             "type" to "type",
             "status" to "status",
@@ -202,6 +208,7 @@ internal class OrderProcessor(
         val side = OrderSide.invoke(payload.side?.value) ?: return null
         val status = OrderStatus.invoke(payload.status?.value) ?: return null
         val marketId = payload.ticker ?: return null
+        val displayId = MarketId.getDisplayId(marketId)
         val price = parser.asDouble(payload.price) ?: return null
         val size = parser.asDouble(payload.size) ?: return null
 
@@ -252,12 +259,13 @@ internal class OrderProcessor(
         val order = SubaccountOrder(
             subaccountNumber = orderSubaccountNumber,
             id = id,
-            clientId = parser.asInt(payload.clientId),
+            clientId = parser.asString(payload.clientId),
             type = type,
             side = side,
             status = modifiedStatus,
             timeInForce = timeInForce,
             marketId = marketId,
+            displayId = displayId,
             clobPairId = parser.asInt(payload.clobPairId),
             orderFlags = orderFlags,
             price = price,
@@ -293,9 +301,12 @@ internal class OrderProcessor(
         existing: SubaccountOrder?,
         payload: IndexerCompositeOrderObject,
     ): Boolean {
-        val updatedAt = existing?.updatedAtMilliseconds?.let {
+        if (existing == null) {
+            return true
+        }
+        val updatedAt = existing.updatedAtMilliseconds?.let {
             Instant.fromEpochMilliseconds(it.toLong())
-        } ?: existing?.createdAtMilliseconds?.let {
+        } ?: existing.createdAtMilliseconds?.let {
             Instant.fromEpochMilliseconds(it.toLong())
         }
         val incomingUpdatedAt = parser.asDatetime(payload.updatedAt)
@@ -329,7 +340,7 @@ internal class OrderProcessor(
                 listOf(
                     IndexerAPIOrderStatus.FILLED,
                     IndexerAPIOrderStatus.CANCELED,
-                    IndexerAPIOrderStatus.BESTEFFORTCANCELED,
+                    IndexerAPIOrderStatus.BEST_EFFORT_CANCELED,
                 ).contains(payload.status)
             }
 
@@ -386,9 +397,15 @@ internal class OrderProcessor(
     ): Map<String, Any>? {
         return if (shouldUpdateDeprecated(existing, payload)) {
             val modified = transform(existing, payload, orderKeyMap)
-            if (modified["marketId"] == null) {
-                modified.safeSet("marketId", payload["ticker"])
+
+            parser.asString(payload["ticker"])?.let { marketId ->
+                modified.safeSet("displayId", MarketId.getDisplayId(marketId))
+
+                if (modified["marketId"] == null) {
+                    modified.safeSet("marketId", payload["ticker"])
+                }
             }
+
             if (modified["id"] == null) {
                 modified.safeSet("id", payload["clientId"])
             }
@@ -589,7 +606,30 @@ internal class OrderProcessor(
         }
     }
 
-    internal fun canceled(
+    override fun canceled(
+        existing: SubaccountOrder,
+    ): SubaccountOrder {
+        var modified = existing
+        if (!existing.status.isFinalized) {
+            modified = modified.copy(
+                status = OrderStatus.Canceling,
+            )
+        }
+        modified = modified.copy(
+            cancelReason = "USER_CANCELED",
+        )
+        val resources = createResources(
+            side = modified.side,
+            type = modified.type,
+            status = modified.status,
+            timeInForce = modified.timeInForce,
+        )
+        return modified.copy(
+            resources = resources,
+        )
+    }
+
+    internal fun canceledDeprecated(
         existing: Map<String, Any>,
     ): Map<String, Any> {
         val modified = existing.mutable()

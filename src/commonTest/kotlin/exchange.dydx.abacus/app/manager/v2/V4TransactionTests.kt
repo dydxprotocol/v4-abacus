@@ -156,7 +156,8 @@ class V4TransactionTests : NetworkTests() {
         subaccountSupervisor?.commitPlaceOrder(0, transactionCallback)
         assertTransactionQueueStarted()
         tradeInput(false, "0.02")
-        subaccountSupervisor?.commitPlaceOrder(0, transactionCallback)
+        val placeOrderPayload = subaccountSupervisor?.commitPlaceOrder(0, transactionCallback)
+        assertEquals("size.size", placeOrderPayload?.sizeInput)
         subaccountSupervisor?.commitPlaceOrder(0, transactionCallback)
         assertEquals(2, transactionQueue?.size)
 
@@ -205,6 +206,65 @@ class V4TransactionTests : NetworkTests() {
         testChain?.simulateTransactionResponse(testChain!!.dummySuccess)
         assertEquals(4, transactionCalledCount)
         assertTransactionQueueEmpty()
+    }
+
+    @Test
+    fun testCancelAllOrders() {
+        setStateMachineConnected(stateManager)
+        testWebSocket?.simulateReceived(mock.accountsChannel.v4_channel_data_with_orders)
+
+        var statefulCancelCalledCount = 0
+        val callback: TransactionCallback = { _, _, _ -> statefulCancelCalledCount++ }
+        val cancelPayloads = testChain!!.canceldOrderPayloads
+
+        subaccountSupervisor?.cancelAllOrders(null, callback)
+        // there are 2 short term orders and 4 stateful orders
+        // hence 2 stateful orders should be queued
+        assertEquals(3, cancelPayloads.size)
+        assertEquals(2, subaccountSupervisor?.transactionQueue?.size)
+        repeat(4) {
+            testChain?.simulateTransactionResponse(testChain!!.dummySuccess)
+        }
+
+        assertEquals(4, statefulCancelCalledCount)
+        assertEquals(5, cancelPayloads.size)
+    }
+
+    @Test
+    fun testCancelAllOrdersUnderMarket() {
+        setStateMachineConnected(stateManager)
+        testWebSocket?.simulateReceived(mock.accountsChannel.v4_channel_data_with_orders)
+
+        var statefulCancelCalledCount = 0
+        val callback: TransactionCallback = { _, _, _ -> statefulCancelCalledCount++ }
+        val cancelPayloads = testChain!!.canceldOrderPayloads
+
+        subaccountSupervisor?.cancelAllOrders("ETH-USD", callback)
+        // there are 1 short term order and 3 stateful orders in "ETH"
+        // hence 2 stateful orders should be queued
+        assertEquals(2, cancelPayloads.size)
+        assertEquals(2, subaccountSupervisor?.transactionQueue?.size)
+        repeat(3) {
+            testChain?.simulateTransactionResponse(testChain!!.dummySuccess)
+        }
+        assertTransactionQueueEmpty()
+        assertEquals(3, statefulCancelCalledCount)
+        assertEquals(4, cancelPayloads.size)
+    }
+
+    @Test
+    fun testCloseAllPositions() {
+        setStateMachineConnected(stateManager)
+        testWebSocket?.simulateReceived(mock.accountsChannel.v4_parent_subaccounts_subscribed_with_trigger_orders_and_open_positions)
+
+        var orderPlacedCallCount = 0
+        val callback: TransactionCallback = { _, _, _ -> orderPlacedCallCount++ }
+        val closePositionPayloads = testChain!!.placeOrderPayloads
+
+        subaccountSupervisor?.closeAllPositions(0, callback)
+        assertTransactionQueueEmpty()
+        // there are 3 open positions
+        assertEquals(3, closePositionPayloads.size)
     }
 
     @Test

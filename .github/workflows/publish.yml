@@ -1,0 +1,91 @@
+name: Publish packages
+
+on:
+  push:
+    branches:
+      - main
+  workflow_dispatch:
+
+
+jobs:
+  check-version:
+    name: Check if version has changed
+    runs-on: ubuntu-latest
+    outputs:
+      new_version: ${{ steps.check.outputs.new_version }}
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 2 # need current commit and previous commit
+      - id: check
+        run: |
+          currentVersion=$(grep '^version = ' build.gradle.kts | sed 's/version = //g' | tr -d '"')
+          echo "Current version is $currentVersion"
+          
+          previousVersion=$(git show HEAD^:build.gradle.kts | grep '^version = ' | sed 's/version = //g' | tr -d '"')
+          echo "Previous version is $previousVersion"
+          
+          if [ "$currentVersion" != "$previousVersion" ]; then
+            echo "Version changed -- continuing workflow"
+            echo "new_version=$currentVersion" >> "$GITHUB_OUTPUT"
+          else
+            echo "Version not changed -- aborting workflow"
+            exit 1
+          fi
+          
+  create-tag:
+    runs-on: ubuntu-latest
+    needs: check-version
+    permissions:
+      contents: write
+    steps:
+      - uses: jaywcjlove/create-tag-action@v2.2.0
+        with:
+          version: ${{ needs.check-version.outputs.new_version }}
+          release: true
+          test: '^v\d+\.\d+\.\d+$'
+
+  publish-jvm:
+    name: Publish JVM Package
+    runs-on: ubuntu-latest
+    needs: check-version
+    permissions:
+      # not sure why "contents: read" is needed, but it is specified explicitly in the guide here:
+      # https://docs.github.com/en/actions/use-cases-and-examples/publishing-packages/publishing-java-packages-with-gradle#publishing-packages-to-github-packages
+      contents: read
+      packages: write
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-java@v4
+        with:
+          distribution: 'adopt'
+          java-version: '17'
+      - uses: gradle/actions/setup-gradle@v4
+
+      - name: Publish to Github Packages
+        run: ./gradlew publishJvmPublicationToGitHubPackagesRepository
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+  publish-js:
+    name: Publish JS Package
+    runs-on: ubuntu-latest
+    needs: check-version
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-java@v4
+        with:
+          distribution: 'adopt'
+          java-version: '17'
+      - uses: gradle/actions/setup-gradle@v4
+
+      - name: Publish to NPM
+        run: |
+          ./gradlew assembleJsPackage
+          cp "LICENSE" "build/packages/js/LICENSE"
+          ./gradlew publishJsPackageToNpmjsRegistry
+        env:
+          npm_token: ${{ secrets.NPM_TOKEN }}
+        
+  
+

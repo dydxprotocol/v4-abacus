@@ -15,7 +15,9 @@ import exchange.dydx.abacus.state.manager.ApiData
 import exchange.dydx.abacus.state.manager.BlockAndTime
 import exchange.dydx.abacus.state.manager.HistoricalPnlPeriod
 import exchange.dydx.abacus.state.manager.HistoricalTradingRewardsPeriod
+import exchange.dydx.abacus.state.manager.HumanReadableCancelAllOrdersPayload
 import exchange.dydx.abacus.state.manager.HumanReadableCancelOrderPayload
+import exchange.dydx.abacus.state.manager.HumanReadableCloseAllPositionsPayload
 import exchange.dydx.abacus.state.manager.HumanReadableDepositPayload
 import exchange.dydx.abacus.state.manager.HumanReadablePlaceOrderPayload
 import exchange.dydx.abacus.state.manager.HumanReadableSubaccountTransferPayload
@@ -26,6 +28,7 @@ import exchange.dydx.abacus.state.model.ClosePositionInputField
 import exchange.dydx.abacus.state.model.TradeInputField
 import exchange.dydx.abacus.state.model.TradingStateMachine
 import exchange.dydx.abacus.state.model.TriggerOrdersInputField
+import exchange.dydx.abacus.state.model.WalletConnectionType
 import exchange.dydx.abacus.utils.AnalyticsUtils
 import exchange.dydx.abacus.utils.IMap
 import exchange.dydx.abacus.utils.iMapOf
@@ -38,6 +41,9 @@ internal class AccountsSupervisor(
     internal val configs: AccountConfigs,
 ) : NetworkSupervisor(stateMachine, helper, analyticsUtils) {
     internal val accounts = mutableMapOf<String, AccountSupervisor>()
+
+    private var pushNotificationToken: String? = null
+    private var pushNotificationLanguageCode: String? = null
 
     internal var historicalPnlPeriod: HistoricalPnlPeriod
         get() {
@@ -87,6 +93,9 @@ internal class AccountsSupervisor(
             newAccountSupervisor.socketConnected = socketConnected
             newAccountSupervisor.validatorConnected = validatorConnected
             accounts[address] = newAccountSupervisor
+            pushNotificationToken?.let {
+                newAccountSupervisor.registerPushNotification(it, pushNotificationLanguageCode)
+            }
         }
     }
 
@@ -153,6 +162,14 @@ internal class AccountsSupervisor(
         )
     }
 
+    internal fun registerPushNotification(token: String, languageCode: String?) {
+        pushNotificationToken = token
+        pushNotificationLanguageCode = languageCode
+        for (account in accounts.values) {
+            account.registerPushNotification(token, pushNotificationLanguageCode)
+        }
+    }
+
     private fun splitAddressAndSubaccountNumber(id: String?): Pair<String, Int> {
         if (id == null) {
             throw ParsingException(
@@ -208,12 +225,12 @@ internal var AccountsSupervisor.accountAddress: String?
         }
     }
 
-internal var AccountsSupervisor.cosmosWalletConnected: Boolean?
+internal var AccountsSupervisor.walletConnectionType: WalletConnectionType?
     get() {
-        return account?.cosmosWalletConnected
+        return account?.walletConnectionType
     }
     set(value) {
-        account?.cosmosWalletConnected = value
+        account?.walletConnectionType = value
     }
 
 internal var AccountsSupervisor.sourceAddress: String?
@@ -273,6 +290,14 @@ internal fun AccountsSupervisor.triggerOrdersPayload(currentHeight: Int?): Human
 
 internal fun AccountsSupervisor.cancelOrderPayload(orderId: String): HumanReadableCancelOrderPayload? {
     return account?.cancelOrderPayload(orderId)
+}
+
+internal fun AccountsSupervisor.cancelAllOrdersPayload(marketId: String?): HumanReadableCancelAllOrdersPayload? {
+    return account?.cancelAllOrdersPayload(marketId)
+}
+
+internal fun AccountsSupervisor.closeAllPositionsPayload(currentHeight: Int?): HumanReadableCloseAllPositionsPayload? {
+    return account?.closeAllPositionsPayload(currentHeight)
 }
 
 internal fun AccountsSupervisor.depositPayload(): HumanReadableDepositPayload? {
@@ -335,6 +360,14 @@ internal fun AccountsSupervisor.faucet(amount: Double, callback: TransactionCall
 
 internal fun AccountsSupervisor.cancelOrder(orderId: String, callback: TransactionCallback) {
     account?.cancelOrder(orderId, callback)
+}
+
+internal fun AccountsSupervisor.cancelAllOrders(marketId: String?, callback: TransactionCallback) {
+    account?.cancelAllOrders(marketId, callback)
+}
+
+internal fun AccountsSupervisor.closeAllPositions(currentHeight: Int?, callback: TransactionCallback): HumanReadableCloseAllPositionsPayload? {
+    return account?.closeAllPositions(currentHeight, callback)
 }
 
 internal fun AccountsSupervisor.orderCanceled(orderId: String) {

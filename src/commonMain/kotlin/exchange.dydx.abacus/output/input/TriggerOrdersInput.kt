@@ -1,6 +1,8 @@
 package exchange.dydx.abacus.output.input
 
 import exchange.dydx.abacus.protocols.ParserProtocol
+import exchange.dydx.abacus.state.internalstate.InternalTriggerOrderState
+import exchange.dydx.abacus.state.internalstate.InternalTriggerOrdersInputState
 import exchange.dydx.abacus.utils.Logger
 import kollections.JsExport
 import kotlinx.serialization.Serializable
@@ -88,6 +90,23 @@ data class TriggerOrder(
 ) {
     companion object {
         internal fun create(
+            state: InternalTriggerOrderState?
+        ): TriggerOrder? {
+            return if (state != null) {
+                TriggerOrder(
+                    orderId = state.orderId,
+                    size = state.size,
+                    type = state.type,
+                    side = state.side,
+                    price = state.price,
+                    summary = state.summary,
+                )
+            } else {
+                null
+            }
+        }
+
+        internal fun create(
             existing: TriggerOrder?,
             parser: ParserProtocol,
             data: Map<*, *>?,
@@ -143,6 +162,21 @@ data class TriggerOrdersInput(
     val takeProfitOrder: TriggerOrder?,
 ) {
     companion object {
+        internal fun create(
+            state: InternalTriggerOrdersInputState?
+        ): TriggerOrdersInput? {
+            return if (state != null) {
+                TriggerOrdersInput(
+                    marketId = state.marketId,
+                    size = state.size,
+                    stopLossOrder = TriggerOrder.create(state.stopLossOrder),
+                    takeProfitOrder = TriggerOrder.create(state.takeProfitOrder),
+                )
+            } else {
+                null
+            }
+        }
+
         internal fun create(
             existing: TriggerOrdersInput?,
             parser: ParserProtocol,

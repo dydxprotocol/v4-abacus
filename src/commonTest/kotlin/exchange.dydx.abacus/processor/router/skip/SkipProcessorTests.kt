@@ -9,6 +9,7 @@ import exchange.dydx.abacus.tests.payloads.RpcMock
 import exchange.dydx.abacus.tests.payloads.SkipChainsMock
 import exchange.dydx.abacus.tests.payloads.SkipRouteMock
 import exchange.dydx.abacus.tests.payloads.SkipTokensMock
+import exchange.dydx.abacus.tests.payloads.SkipVenuesMock
 import exchange.dydx.abacus.utils.DEFAULT_GAS_LIMIT
 import exchange.dydx.abacus.utils.DEFAULT_GAS_PRICE
 import exchange.dydx.abacus.utils.Parser
@@ -27,7 +28,7 @@ class SkipProcessorTests {
 
     internal val internalState = InternalTransferInputState()
     internal val parser = Parser()
-    internal val skipProcessor = SkipProcessor(parser = parser, internalState = internalState)
+    internal val skipProcessor = SkipProcessor(parser = parser, internalState = internalState, staticTyping = false)
     internal val skipChainsMock = SkipChainsMock()
     internal val skipTokensMock = SkipTokensMock()
     internal val skipRouteMock = SkipRouteMock()
@@ -224,12 +225,8 @@ class SkipProcessorTests {
             payload = payload,
         )
         val expectedChains = listOf(
+            SelectionOption(stringKey = "Arbitrum", string = "Arbitrum", type = "42161", iconUrl = "https://raw.githubusercontent.com/trustwallet/assets/master/blockchains/arbitrum/info/logo.png"),
             SelectionOption(stringKey = "Ethereum", string = "Ethereum", type = "1", iconUrl = "https://raw.githubusercontent.com/trustwallet/assets/master/blockchains/ethereum/info/logo.png"),
-            SelectionOption(stringKey = "aura", string = "aura", type = "xstaxy-1", iconUrl = "https://raw.githubusercontent.com/chainapsis/keplr-chain-registry/main/images/xstaxy/chain.png"),
-            SelectionOption(stringKey = "cheqd", string = "cheqd", type = "cheqd-mainnet-1", iconUrl = "https://raw.githubusercontent.com/chainapsis/keplr-chain-registry/main/images/cheqd-mainnet/chain.png"),
-            SelectionOption(stringKey = "kujira", string = "kujira", type = "kaiyo-1", iconUrl = "https://raw.githubusercontent.com/chainapsis/keplr-chain-registry/main/images/kaiyo/chain.png"),
-            SelectionOption(stringKey = "osmosis", string = "osmosis", type = "osmosis-1", iconUrl = "https://raw.githubusercontent.com/chainapsis/keplr-chain-registry/main/images/osmosis/chain.png"),
-            SelectionOption(stringKey = "stride", string = "stride", type = "stride-1", iconUrl = "https://raw.githubusercontent.com/chainapsis/keplr-chain-registry/main/images/stride/chain.png"),
         )
         val expectedChainResources = mapOf(
             "1" to TransferInputChainResource(
@@ -279,6 +276,12 @@ class SkipProcessorTests {
         )
         val expectedTokens = listOf(
             SelectionOption(
+                stringKey = "ZEthereum",
+                string = "ZEthereum",
+                type = "0xEeeeeEeeeEeEeeEeEeEeeEEEeeeeEeeeeeeeEEeE",
+                iconUrl = "https://raw.githubusercontent.com/cosmos/chain-registry/master/_non-cosmos/ethereum/images/eth-blue.svg",
+            ),
+            SelectionOption(
                 stringKey = "Euro Coin",
                 string = "Euro Coin",
                 type = "0x1aBaEA1f7C830bD89Acc67eC4af516284b1bC33c",
@@ -299,7 +302,7 @@ class SkipProcessorTests {
         )
         val expectedModified = mapOf(
             "transfer" to mapOf(
-                "token" to "0x97e6E0a40a3D02F12d1cEC30ebfbAE04e37C119E",
+                "token" to "0xEeeeeEeeeEeEeeEeEeEeeEEEeeeeEeeeeeeeEEeE",
                 "depositOptions" to mapOf(
                     "tokens" to expectedTokens,
                 ),
@@ -329,6 +332,13 @@ class SkipProcessorTests {
                 symbol = "UMEE",
                 decimals = 6,
                 iconUrl = "https://raw.githubusercontent.com/axelarnetwork/axelar-configs/main/images/tokens/umee.svg",
+            ),
+            "0xEeeeeEeeeEeEeeEeEeEeeEEEeeeeEeeeeeeeEEeE" to TransferInputTokenResource(
+                name = "ZEthereum",
+                address = "0xEeeeeEeeeEeEeeEeEeEeeEEEeeeeEeeeeeeeEEeE",
+                symbol = "ETH",
+                decimals = 18,
+                iconUrl = "https://raw.githubusercontent.com/cosmos/chain-registry/master/_non-cosmos/ethereum/images/eth-blue.svg",
             ),
         )
 
@@ -405,6 +415,57 @@ class SkipProcessorTests {
             ),
             "is_testnet" to false,
         ).toJsonObject()
+        assertEquals(expected, result)
+    }
+
+    @Test
+    fun receivedEvmSwapVenuesEvmSwaps() {
+        skipProcessor.receivedEvmSwapVenues(
+            existing = mapOf(),
+            payload = templateToMap(SkipVenuesMock.venues),
+        )
+
+        val result = internalState.evmSwapVenues
+
+        val expected =
+            listOf(
+                mapOf(
+                    "name" to "ethereum-uniswap",
+                    "chain_id" to "1",
+                ),
+                mapOf(
+                    "name" to "binance-uniswap",
+                    "chain_id" to "56",
+                ),
+                mapOf(
+                    "name" to "polygon-uniswap",
+                    "chain_id" to "137",
+                ),
+                mapOf(
+                    "name" to "optimism-uniswap",
+                    "chain_id" to "10",
+                ),
+                mapOf(
+                    "name" to "arbitrum-uniswap",
+                    "chain_id" to "42161",
+                ),
+                mapOf(
+                    "name" to "base-uniswap",
+                    "chain_id" to "8453",
+                ),
+                mapOf(
+                    "name" to "celo-uniswap",
+                    "chain_id" to "42220",
+                ),
+                mapOf(
+                    "name" to "avalanche-uniswap",
+                    "chain_id" to "43114",
+                ),
+                mapOf(
+                    "name" to "blast-uniswap",
+                    "chain_id" to "81457",
+                ),
+            )
         assertEquals(expected, result)
     }
 }

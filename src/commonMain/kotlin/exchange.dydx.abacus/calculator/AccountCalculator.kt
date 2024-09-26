@@ -202,9 +202,11 @@ class AccountCalculator(val parser: ParserProtocol, private val useParentSubacco
         for ((marketId, pending) in pendingByMarketId) {
             val market = parser.asMap(markets?.get(marketId)) ?: continue
             val assetId = parser.asString(market["assetId"]) ?: continue
+            val displayId = parser.asString(market["displayId"]) ?: continue
 
             val modifiedPendingPosition = mutableMapOf<String, Any>()
             modifiedPendingPosition.safeSet("assetId", assetId)
+            modifiedPendingPosition.safeSet("displayId", displayId)
             modifiedPendingPosition.safeSet("marketId", marketId)
             modifiedPendingPosition.safeSet(
                 "firstOrderId",

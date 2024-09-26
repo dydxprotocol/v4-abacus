@@ -1,8 +1,20 @@
 package exchange.dydx.abacus.payload.v4
 
+import com.ionspin.kotlin.bignum.decimal.toBigDecimal
+import exchange.dydx.abacus.calculator.CalculationPeriod
+import exchange.dydx.abacus.output.EquityTier
+import exchange.dydx.abacus.output.account.FillLiquidity
+import exchange.dydx.abacus.output.account.TransferRecordType
+import exchange.dydx.abacus.output.input.OrderSide
+import exchange.dydx.abacus.output.input.OrderStatus
+import exchange.dydx.abacus.output.input.OrderTimeInForce
+import exchange.dydx.abacus.output.input.OrderType
 import exchange.dydx.abacus.responses.StateResponse
 import exchange.dydx.abacus.state.app.adaptors.AbUrl
+import exchange.dydx.abacus.state.changes.Changes
+import exchange.dydx.abacus.state.internalstate.InternalAccountBalanceState
 import exchange.dydx.abacus.state.manager.BlockAndTime
+import exchange.dydx.abacus.state.manager.HistoricalTradingRewardsPeriod
 import exchange.dydx.abacus.state.manager.notification.NotificationsProvider
 import exchange.dydx.abacus.state.model.historicalTradingRewards
 import exchange.dydx.abacus.state.model.onChainAccountBalances
@@ -12,13 +24,18 @@ import exchange.dydx.abacus.tests.extensions.loadv4SubaccountSubscribed
 import exchange.dydx.abacus.tests.extensions.loadv4SubaccountWithOrdersAndFillsChanged
 import exchange.dydx.abacus.tests.extensions.loadv4SubaccountsWithPositions
 import exchange.dydx.abacus.tests.extensions.log
+import exchange.dydx.abacus.tests.extensions.parseOnChainEquityTiers
+import exchange.dydx.abacus.tests.extensions.rest
+import exchange.dydx.abacus.tests.extensions.socket
 import exchange.dydx.abacus.utils.JsonEncoder
 import exchange.dydx.abacus.utils.Parser
 import exchange.dydx.abacus.utils.ServerTime
+import indexer.codegen.IndexerPerpetualPositionStatus
 import kotlinx.datetime.Clock
 import kotlin.test.Test
 import kotlin.test.assertEquals
 import kotlin.test.assertNotNull
+import kotlin.test.assertTrue
 
 class V4AccountTests : V4BaseTests() {
     @Test
@@ -66,11 +83,23 @@ class V4AccountTests : V4BaseTests() {
     }
 
     private fun testSubaccountsReceived() {
-        test(
-            {
-                perp.loadv4SubaccountsWithPositions(mock, "$testRestUrl/v4/addresses/cosmo")
-            },
-            """
+        if (perp.staticTyping) {
+            perp.loadv4SubaccountsWithPositions(mock, "$testRestUrl/v4/addresses/cosmo")
+
+            val account = perp.internalState.wallet.account
+            assertEquals(2800.8, account.tradingRewards.total)
+
+            val subaccount = account.subaccounts[0]
+            val calculated = subaccount?.calculated?.get(CalculationPeriod.current)!!
+            assertEquals(108116.7318528828, calculated.equity)
+            assertEquals(106640.3767269893, calculated.freeCollateral)
+            assertEquals(99872.368956, calculated.quoteBalance)
+        } else {
+            test(
+                {
+                    perp.loadv4SubaccountsWithPositions(mock, "$testRestUrl/v4/addresses/cosmo")
+                },
+                """
             {
                 "wallet": {
                     "account": {
@@ -93,16 +122,35 @@ class V4AccountTests : V4BaseTests() {
                     }
                 }
             }
-            """.trimIndent(),
-        )
+                """.trimIndent(),
+            )
+        }
     }
 
     private fun testSubaccountSubscribed() {
-        test(
-            {
-                perp.loadv4SubaccountSubscribed(mock, testWsUrl)
-            },
-            """
+        if (perp.staticTyping) {
+            perp.loadv4SubaccountSubscribed(mock, testWsUrl)
+
+            val account = perp.internalState.wallet.account
+            assertEquals(2800.8, account.tradingRewards.total)
+
+            val subaccount = account.subaccounts[0]
+            val calculated = subaccount?.calculated?.get(CalculationPeriod.current)!!
+            assertEquals(122034.20090508368, calculated.equity)
+            assertEquals(100728.9107212275, calculated.freeCollateral)
+            assertEquals(68257.215192, calculated.quoteBalance)
+
+            val orders = subaccount.orders
+            assertEquals(2, orders?.size)
+
+            val openPositions = subaccount.openPositions
+            assertEquals(2, openPositions?.size)
+        } else {
+            test(
+                {
+                    perp.loadv4SubaccountSubscribed(mock, testWsUrl)
+                },
+                """
                 {
                     "wallet": {
                         "account": {
@@ -249,63 +297,97 @@ class V4AccountTests : V4BaseTests() {
                         }
                     }
                 }
-            """.trimIndent(),
-        )
+                """.trimIndent(),
+            )
+        }
     }
 
     private fun testSubaccountFillsReceived() {
-        test(
-            {
-                perp.rest(
-                    AbUrl.fromString("$testRestUrl/v4/fills?subaccountNumber=0"),
-                    mock.fillsChannel.v4_rest,
-                    0,
-                    null,
-                )
-            },
-            """
-                {
-                    "wallet": {
-                        "account": {
-                            "subaccounts": {
-                                "0": {
-                                    "fills": [
-                                        {
-                                            "id": "dad7abeb-4c04-58d3-8dda-fd0bc0528deb",
-                                            "side": "BUY",
-                                            "liquidity": "TAKER",
-                                            "type": "LIMIT",
-                                            "marketId": "BTC-USD",
-                                            "orderId": "4f2a6f7d-a897-5c4e-986f-d48f5760102a",
-                                            "createdAt": "2022-12-14T18:32:21.298Z",
-                                            "price": 18275.31,
-                                            "size" : 4.41E-6,
-                                            "fee": 0.0,
-                                            "resources": {
+        if (perp.staticTyping) {
+            perp.rest(
+                url = AbUrl.fromString("$testRestUrl/v4/fills?subaccountNumber=0"),
+                payload = mock.fillsChannel.v4_rest,
+                subaccountNumber = 0,
+                height = null,
+            )
+
+            val fills = perp.internalState.wallet.account.subaccounts[0]?.fills
+            assertEquals(100, fills?.size)
+        } else {
+            test(
+                load = {
+                    perp.rest(
+                        AbUrl.fromString("$testRestUrl/v4/fills?subaccountNumber=0"),
+                        mock.fillsChannel.v4_rest,
+                        0,
+                        null,
+                    )
+                },
+                expected = """
+                            {
+                                "wallet": {
+                                    "account": {
+                                        "subaccounts": {
+                                            "0": {
+                                                "fills": [
+                                                    {
+                                                        "id": "dad7abeb-4c04-58d3-8dda-fd0bc0528deb",
+                                                        "side": "BUY",
+                                                        "liquidity": "TAKER",
+                                                        "type": "LIMIT",
+                                                        "marketId": "BTC-USD",
+                                                        "orderId": "4f2a6f7d-a897-5c4e-986f-d48f5760102a",
+                                                        "createdAt": "2022-12-14T18:32:21.298Z",
+                                                        "price": 18275.31,
+                                                        "size" : 4.41E-6,
+                                                        "fee": 0.0,
+                                                        "resources": {
+                                                        }
+                                                    }
+                                                ]
                                             }
                                         }
-                                    ]
+                                    }
                                 }
                             }
-                        }
-                    }
-                }
-            """.trimIndent(),
-            {
-                val fills =
-                    parser.asList(parser.value(perp.data, "wallet.account.subaccounts.0.fills"))
-                assertEquals(
-                    100,
-                    fills?.size,
-                )
-            },
-        )
+                """.trimIndent(),
+                moreVerification = {
+                    val fills =
+                        parser.asList(
+                            parser.value(
+                                perp.data,
+                                "wallet.account.subaccounts.0.fills",
+                            ),
+                        )
+                    assertEquals(
+                        100,
+                        fills?.size,
+                    )
+                },
+            )
+        }
 
-        test(
-            {
-                perp.socket(testWsUrl, mock.fillsChannel.v4_subscribed, 0, null)
-            },
-            """
+        if (perp.staticTyping) {
+            perp.socket(testWsUrl, mock.fillsChannel.v4_subscribed, 0, null)
+
+            val fills = perp.internalState.wallet.account.subaccounts[0]?.fills
+            assertEquals(100, fills?.size)
+            val fill = fills?.first()!!
+            assertEquals("dad7abeb-4c04-58d3-8dda-fd0bc0528deb", fill.id)
+            assertEquals(OrderSide.Buy, fill.side)
+            assertEquals(FillLiquidity.taker, fill.liquidity)
+            assertEquals(OrderType.Limit, fill.type)
+            assertEquals("BTC-USD", fill.marketId)
+            assertEquals("4f2a6f7d-a897-5c4e-986f-d48f5760102a", fill.orderId)
+            assertEquals(18275.31, fill.price)
+            assertEquals(4.41E-6, fill.size)
+            assertEquals(0.0, fill.fee)
+        } else {
+            test(
+                {
+                    perp.socket(testWsUrl, mock.fillsChannel.v4_subscribed, 0, null)
+                },
+                """
                 {
                     "wallet": {
                         "account": {
@@ -341,23 +423,47 @@ class V4AccountTests : V4BaseTests() {
                         }
                     }
                 }
-            """.trimIndent(),
-            {
-            },
-        )
+                """.trimIndent(),
+                {
+                },
+            )
+        }
     }
 
     private fun testSubaccountTransfersReceived() {
-        test(
-            {
-                perp.rest(
-                    AbUrl.fromString("$testRestUrl/v4/transfers?subaccountNumber=0"),
-                    mock.transfersMock.transfer_data,
-                    0,
-                    null,
-                )
-            },
-            """
+        if (perp.staticTyping) {
+            perp.rest(
+                url = AbUrl.fromString("$testRestUrl/v4/transfers?subaccountNumber=0"),
+                payload = mock.transfersMock.transfer_data,
+                subaccountNumber = 0,
+                height = null,
+            )
+
+            val transfers = perp.internalState.wallet.account.subaccounts[0]?.transfers
+            val transfer = transfers?.first()!!
+            assertEquals("89586775-0646-582e-9b36-4f131715644d", transfer.id)
+            assertEquals(TransferRecordType.TRANSFER_OUT, transfer.type)
+            assertEquals("USDC", transfer.asset)
+            assertEquals(
+                parser.asDatetime("2023-08-21T21:37:53.373Z")?.toEpochMilliseconds()?.toDouble(),
+                transfer.updatedAtMilliseconds,
+            )
+            assertEquals(404014, transfer.updatedAtBlock)
+            assertEquals(419.98472, transfer.amount)
+            assertEquals("dydx1sxdvx2kzgdykutxfv06ka9gt0klu8wctfwskhg", transfer.fromAddress)
+            assertEquals("dydx1vvjr376v4hfpy5r6m3dmu4u3mu6yl6sjds3gz8", transfer.toAddress)
+            assertEquals("MOCKHASH1", transfer.transactionHash)
+        } else {
+            test(
+                {
+                    perp.rest(
+                        AbUrl.fromString("$testRestUrl/v4/transfers?subaccountNumber=0"),
+                        mock.transfersMock.transfer_data,
+                        0,
+                        null,
+                    )
+                },
+                """
                 {
                     "wallet": {
                         "account": {
@@ -387,16 +493,25 @@ class V4AccountTests : V4BaseTests() {
                         }
                     }
                 }
-            """.trimIndent(),
-            {
-            },
-        )
+                """.trimIndent(),
+                {
+                },
+            )
+        }
 
-        test(
-            {
-                perp.socket(testWsUrl, mock.transfersMock.channel_data, 0, null)
-            },
-            """
+        if (perp.staticTyping) {
+            perp.socket(testWsUrl, mock.transfersMock.channel_data, 0, null)
+
+            val transfers = perp.internalState.wallet.account.subaccounts[0]?.transfers
+            val transfer = transfers?.first()!!
+            assertEquals("A9758D092415E36F4E0D80D323BC4EE472644548392489309333CA55E963431B", transfer.id)
+            assertEquals("A9758D092415E36F4E0D80D323BC4EE472644548392489309333CA55E963431B", transfer.transactionHash)
+        } else {
+            test(
+                {
+                    perp.socket(testWsUrl, mock.transfersMock.channel_data, 0, null)
+                },
+                """
                 {
                     "wallet": {
                         "account": {
@@ -419,16 +534,59 @@ class V4AccountTests : V4BaseTests() {
                         }
                     }
                 }
-            """.trimIndent(),
-        )
+                """.trimIndent(),
+            )
+        }
     }
 
     private fun testSubaccountFillsChannelData() {
-        test(
-            {
-                perp.socket(testWsUrl, mock.fillsChannel.v4_channel_data, 0, null)
-            },
-            """
+        if (perp.staticTyping) {
+            perp.socket(testWsUrl, mock.fillsChannel.v4_channel_data, 0, null)
+
+            val account = perp.internalState.wallet.account
+            val blockReward = account.tradingRewards.blockRewards[0]
+            assertEquals("0.02", blockReward.tradingReward)
+            assertEquals("2422", blockReward.createdAtHeight)
+            val blockReward2 = account.tradingRewards.blockRewards[1]
+            assertEquals("0.01", blockReward2.tradingReward)
+            assertEquals("2501", blockReward2.createdAtHeight)
+
+            val subaccount = account.subaccounts[0]
+            val calculated = subaccount?.calculated?.get(CalculationPeriod.current)!!
+            assertEquals(122034.20090508368, calculated.equity)
+            assertEquals(100728.9107212275, calculated.freeCollateral)
+            assertEquals(68257.215192, calculated.quoteBalance)
+
+            val fills = subaccount.fills
+            assertEquals(101, fills?.size)
+            val fill = fills?.firstOrNull { it.id == "0cf41e16-036e-534d-bbaf-cf318b44b840" }
+            assertEquals("0cf41e16-036e-534d-bbaf-cf318b44b840", fill?.id)
+            assertEquals(OrderSide.Sell, fill?.side)
+            assertEquals(FillLiquidity.taker, fill?.liquidity)
+            assertEquals(OrderType.Limit, fill?.type)
+            assertEquals("f5d440b9-6e93-535a-a5d6-fbb74852c6d8", fill?.orderId)
+            assertEquals(1570.19, fill?.price)
+            assertEquals(0.003, fill?.size)
+
+            val orders = subaccount.orders
+            assertEquals(3, orders?.size)
+            val order = orders?.firstOrNull { it.id == "b812bea8-29d3-5841-9549-caa072f6f8a8" }
+            assertEquals("b812bea8-29d3-5841-9549-caa072f6f8a8", order?.id)
+            assertEquals(OrderSide.Sell, order?.side)
+            assertEquals(OrderType.Limit, order?.type)
+            assertEquals(OrderTimeInForce.GTT, order?.timeInForce)
+            assertEquals(1255.927, order?.price)
+            assertEquals(1.653451, order?.size)
+            assertEquals(false, order?.postOnly)
+            assertEquals(false, order?.reduceOnly)
+            assertEquals(0.970818, order?.remainingSize)
+            assertEquals(0.682633, order?.totalFilled)
+        } else {
+            test(
+                {
+                    perp.socket(testWsUrl, mock.fillsChannel.v4_channel_data, 0, null)
+                },
+                """
                 {
                     "wallet": {
                         "account": {
@@ -501,7 +659,6 @@ class V4AccountTests : V4BaseTests() {
                                             "side": "BUY",
                                             "liquidity": "TAKER",
                                             "type": "LIMIT",
-                                            "marketId": "BTC-USD",
                                             "orderId": "4f2a6f7d-a897-5c4e-986f-d48f5760102a",
                                             "createdAt": "2022-12-14T18:32:21.298Z",
                                             "price": 18275.31,
@@ -516,24 +673,77 @@ class V4AccountTests : V4BaseTests() {
                         }
                     }
                 }
-            """.trimIndent(),
-            {
-                val fills =
-                    parser.asList(parser.value(perp.data, "wallet.account.subaccounts.0.fills"))
-                assertEquals(
-                    101,
-                    fills?.size,
-                )
-            },
-        )
+                """.trimIndent(),
+                {
+                    val fills =
+                        parser.asList(
+                            parser.value(
+                                perp.data,
+                                "wallet.account.subaccounts.0.fills",
+                            ),
+                        )
+                    assertEquals(
+                        101,
+                        fills?.size,
+                    )
+                },
+            )
+        }
     }
 
     private fun testSubaccountChanged() {
-        test(
-            {
-                perp.loadv4SubaccountWithOrdersAndFillsChanged(mock, testWsUrl)
-            },
-            """
+        if (perp.staticTyping) {
+            perp.loadv4SubaccountWithOrdersAndFillsChanged(mock, testWsUrl)
+
+            val subaccount = perp.internalState.wallet.account.subaccounts[0]!!
+
+            val calculated = subaccount.calculated[CalculationPeriod.current]!!
+            assertEquals(-161020.048352526628, calculated.equity)
+            assertEquals(-172483.91152975295, calculated.freeCollateral)
+            assertEquals(68257.215192, calculated.quoteBalance)
+
+            val order = subaccount.orders?.firstOrNull { it.id == "b812bea8-29d3-5841-9549-caa072f6f8a8" }
+            assertEquals("b812bea8-29d3-5841-9549-caa072f6f8a8", order?.id)
+            assertEquals(OrderSide.Sell, order?.side)
+            assertEquals(OrderType.Limit, order?.type)
+            assertEquals(OrderTimeInForce.GTT, order?.timeInForce)
+            assertEquals(1255.927, order?.price)
+            assertEquals(1.653451, order?.size)
+            assertEquals(false, order?.postOnly)
+            assertEquals(false, order?.reduceOnly)
+
+            val transfers = subaccount.transfers
+            assertTrue {
+                transfers?.any { it.id == "A9758D092415E36F4E0D80D323BC4EE472644548392489309333CA55E963431B" } == true
+            }
+            val transfer = transfers?.first { it.id == "89586775-0646-582e-9b36-4f131715644d" }!!
+            assertEquals("89586775-0646-582e-9b36-4f131715644d", transfer.id)
+            assertEquals(TransferRecordType.TRANSFER_OUT, transfer.type)
+            assertEquals("USDC", transfer.asset)
+            assertEquals(419.98472, transfer.amount)
+            assertEquals("dydx1sxdvx2kzgdykutxfv06ka9gt0klu8wctfwskhg", transfer.fromAddress)
+            assertEquals("dydx1vvjr376v4hfpy5r6m3dmu4u3mu6yl6sjds3gz8", transfer.toAddress)
+            assertEquals("MOCKHASH1", transfer.transactionHash)
+
+            val fills = subaccount.fills
+            assertEquals(102, fills?.size)
+
+            val ethPosition = subaccount.openPositions?.get("ETH-USD")!!
+            assertEquals("ETH-USD", ethPosition.market)
+            assertEquals(IndexerPerpetualPositionStatus.OPEN, ethPosition.status)
+            assertEquals(106.180627, ethPosition.maxSize)
+            assertEquals(0.0, ethPosition.netFunding)
+            assertEquals(-102.716895, ethPosition.realizedPnl)
+            assertEquals(-51730.736277242424, ethPosition.calculated[CalculationPeriod.current]?.unrealizedPnl)
+            assertEquals(parser.asDatetime("2022-12-11T17:29:39.792Z"), ethPosition.createdAt)
+            assertEquals(1266.094016, ethPosition.entryPrice)
+            assertEquals(-106.17985, ethPosition.size)
+        } else {
+            test(
+                {
+                    perp.loadv4SubaccountWithOrdersAndFillsChanged(mock, testWsUrl)
+                },
+                """
                 {
                     "wallet": {
                         "account": {
@@ -606,7 +816,7 @@ class V4AccountTests : V4BaseTests() {
                                             "resources": {
                                             },
                                             "unrealizedPnlPercent": {
-                                                "current": 0.4066
+                                                "current": 0.7995
                                             },
                                             "valueTotal": {
                                                 "current": -43112.854562506596
@@ -648,7 +858,7 @@ class V4AccountTests : V4BaseTests() {
                                                 "current": -7.640711804814775E-4
                                             },
                                             "unrealizedPnlPercent": {
-                                                "current": -0.3848
+                                                "current": -0.587
                                             },
                                             "valueTotal": {
                                                 "current": -186164.40898202002
@@ -673,27 +883,46 @@ class V4AccountTests : V4BaseTests() {
                         }
                     }
                 }
-            """.trimIndent(),
-            {
-                val fills =
-                    parser.asList(parser.value(perp.data, "wallet.account.subaccounts.0.fills"))
-                assertEquals(
-                    102,
-                    fills?.size,
-                )
-            },
-        )
+                """.trimIndent(),
+                {
+                    val fills =
+                        parser.asList(
+                            parser.value(
+                                perp.data,
+                                "wallet.account.subaccounts.0.fills",
+                            ),
+                        )
+                    assertEquals(
+                        102,
+                        fills?.size,
+                    )
+                },
+            )
+        }
 
-        test(
-            {
-                perp.socket(
-                    testWsUrl,
-                    mock.accountsChannel.v4_best_effort_cancelled,
-                    0,
-                    BlockAndTime(16940, Clock.System.now()),
-                )
-            },
-            """
+        if (perp.staticTyping) {
+            perp.socket(
+                url = testWsUrl,
+                jsonString = mock.accountsChannel.v4_best_effort_cancelled,
+                subaccountNumber = 0,
+                height = BlockAndTime(16940, Clock.System.now()),
+            )
+
+            val order = perp.internalState.wallet.account.subaccounts[0]?.orders?.firstOrNull {
+                it.id == "80133551-6d61-573b-9788-c1488e11027a"
+            }
+            assertEquals(OrderStatus.Pending, order?.status)
+        } else {
+            test(
+                {
+                    perp.socket(
+                        testWsUrl,
+                        mock.accountsChannel.v4_best_effort_cancelled,
+                        0,
+                        BlockAndTime(16940, Clock.System.now()),
+                    )
+                },
+                """
                 {
                     "wallet": {
                         "account": {
@@ -710,19 +939,33 @@ class V4AccountTests : V4BaseTests() {
                         }
                     }
                 }
-            """.trimIndent(),
-        )
+                """.trimIndent(),
+            )
+        }
 
-        test(
-            {
-                perp.socket(
-                    testWsUrl,
-                    mock.accountsChannel.v4_best_effort_cancelled,
-                    0,
-                    BlockAndTime(16960, Clock.System.now()),
-                )
-            },
-            """
+        if (perp.staticTyping) {
+            perp.socket(
+                url = testWsUrl,
+                jsonString = mock.accountsChannel.v4_best_effort_cancelled,
+                subaccountNumber = 0,
+                height = BlockAndTime(16960, Clock.System.now()),
+            )
+
+            val order = perp.internalState.wallet.account.subaccounts[0]?.orders?.firstOrNull {
+                it.id == "80133551-6d61-573b-9788-c1488e11027a"
+            }
+            assertEquals(OrderStatus.Canceled, order?.status)
+        } else {
+            test(
+                {
+                    perp.socket(
+                        testWsUrl,
+                        mock.accountsChannel.v4_best_effort_cancelled,
+                        0,
+                        BlockAndTime(16960, Clock.System.now()),
+                    )
+                },
+                """
                 {
                     "wallet": {
                         "account": {
@@ -739,14 +982,23 @@ class V4AccountTests : V4BaseTests() {
                         }
                     }
                 }
-            """.trimIndent(),
-        )
+                """.trimIndent(),
+            )
+        }
 
-        test(
-            {
-                perp.updateHeight(BlockAndTime(16960, Clock.System.now()))
-            },
-            """
+        if (perp.staticTyping) {
+            perp.updateHeight(BlockAndTime(16960, Clock.System.now()))
+
+            val order = perp.internalState.wallet.account.subaccounts[0]?.orders?.firstOrNull {
+                it.id == "80133551-6d61-573b-9788-c1488e11027a"
+            }
+            assertEquals(OrderStatus.Canceled, order?.status)
+        } else {
+            test(
+                {
+                    perp.updateHeight(BlockAndTime(16960, Clock.System.now()))
+                },
+                """
                 {
                     "wallet": {
                         "account": {
@@ -763,21 +1015,40 @@ class V4AccountTests : V4BaseTests() {
                         }
                     }
                 }
-            """.trimIndent(),
-        )
+                """.trimIndent(),
+            )
+        }
     }
 
     private fun testBatchedSubaccountChanged() {
-        test(
-            {
-                perp.socket(
-                    testWsUrl,
-                    mock.accountsChannel.v4_batched,
-                    0,
-                    BlockAndTime(16960, Clock.System.now()),
-                )
-            },
-            """
+        if (perp.staticTyping) {
+            perp.socket(
+                url = testWsUrl,
+                jsonString = mock.accountsChannel.v4_batched,
+                subaccountNumber = 0,
+                height = BlockAndTime(16960, Clock.System.now()),
+            )
+
+            val subaccount = perp.internalState.wallet.account.subaccounts[0]!!
+            val calculated = subaccount.calculated[CalculationPeriod.current]!!
+            assertEquals(-41124.184464506594, calculated.equity)
+
+            val order = subaccount.orders?.firstOrNull { it.id == "1118c548-1715-5a72-9c41-f4388518c6e2" }
+            assertEquals(OrderStatus.PartiallyFilled, order?.status)
+
+            val fills = subaccount.fills
+            assertEquals(112, fills?.size)
+        } else {
+            test(
+                {
+                    perp.socket(
+                        testWsUrl,
+                        mock.accountsChannel.v4_batched,
+                        0,
+                        BlockAndTime(16960, Clock.System.now()),
+                    )
+                },
+                """
                 {
                     "wallet": {
                         "account": {
@@ -803,92 +1074,181 @@ class V4AccountTests : V4BaseTests() {
                         }
                     }
                 }
-            """.trimIndent(),
-            {
-                val fills =
-                    parser.asList(parser.value(perp.data, "wallet.account.subaccounts.0.fills"))
-                assertEquals(
-                    112,
-                    fills?.size,
-                )
-            },
-        )
-
-        test(
-            {
-                perp.socket(
-                    testWsUrl,
-                    mock.accountsChannel.v4_position_closed,
-                    0,
-                    BlockAndTime(16961, Clock.System.now()),
-                )
-            },
-            """
+                """.trimIndent(),
                 {
-                    "wallet": {
-                        "account": {
-                            "subaccounts": {
-                                "0": {
-                                    "equity": {
-                                        "current": -41281.9808525066
-                                    },
-                                    "openPositions": {
-                                        "BTC-USD": {
-                                            "size": {
-                                                "current": -1.792239322
+                    val fills =
+                        parser.asList(
+                            parser.value(
+                                perp.data,
+                                "wallet.account.subaccounts.0.fills",
+                            ),
+                        )
+                    assertEquals(
+                        112,
+                        fills?.size,
+                    )
+                },
+            )
+        }
+
+        if (perp.staticTyping) {
+            perp.socket(
+                url = testWsUrl,
+                jsonString = mock.accountsChannel.v4_position_closed,
+                subaccountNumber = 0,
+                height = BlockAndTime(16961, Clock.System.now()),
+            )
+
+            val subaccount = perp.internalState.wallet.account.subaccounts[0]!!
+            val calculated = subaccount.calculated[CalculationPeriod.current]!!
+            assertEquals(-41281.9808525066, calculated.equity)
+            val btcPosition = subaccount.openPositions?.get("BTC-USD")!!
+            val positionCalculated = btcPosition.calculated[CalculationPeriod.current]!!
+            assertEquals(-1.792239322, btcPosition.size)
+
+            val ioImplementations = testIOImplementations()
+            val localizer = testLocalizer(ioImplementations)
+            val uiImplementations = testUIImplementations(localizer)
+            val notificationsProvider =
+                NotificationsProvider(
+                    stateMachine = perp,
+                    uiImplementations = uiImplementations,
+                    environment = mock.v4Environment,
+                    parser = Parser(),
+                    jsonEncoder = JsonEncoder(),
+                )
+            val notifications = notificationsProvider.buildNotifications(0)
+            assertEquals(
+                6,
+                notifications.size,
+            )
+            val order = notifications["order:1118c548-1715-5a72-9c41-f4388518c6e2"]
+            assertNotNull(order)
+            assertEquals(
+                "NOTIFICATIONS.ORDER_PARTIAL_FILL.TITLE",
+                order.title,
+            )
+            val position = notifications["position:ETH-USD"]
+            assertNotNull(position)
+            assertEquals(
+                "NOTIFICATIONS.POSITION_CLOSED.TITLE",
+                position.title,
+            )
+        } else {
+            test(
+                load = {
+                    perp.socket(
+                        testWsUrl,
+                        mock.accountsChannel.v4_position_closed,
+                        0,
+                        BlockAndTime(16961, Clock.System.now()),
+                    )
+                },
+                expected = """
+                            {
+                                "wallet": {
+                                    "account": {
+                                        "subaccounts": {
+                                            "0": {
+                                                "equity": {
+                                                    "current": -41281.9808525066
+                                                },
+                                                "openPositions": {
+                                                    "BTC-USD": {
+                                                        "size": {
+                                                            "current": -1.792239322
+                                                        }
+                                                    }
+                                                }
                                             }
                                         }
                                     }
                                 }
                             }
-                        }
-                    }
-                }
-            """.trimIndent(),
-            {
-                val ioImplementations = testIOImplementations()
-                val localizer = testLocalizer(ioImplementations)
-                val uiImplementations = testUIImplementations(localizer)
-                val notificationsProvider =
-                    NotificationsProvider(
-                        perp,
-                        uiImplementations,
-                        environment = mock.v4Environment,
-                        Parser(),
-                        JsonEncoder(),
+                """.trimIndent(),
+                moreVerification = {
+                    val ioImplementations = testIOImplementations()
+                    val localizer = testLocalizer(ioImplementations)
+                    val uiImplementations = testUIImplementations(localizer)
+                    val notificationsProvider =
+                        NotificationsProvider(
+                            perp,
+                            uiImplementations,
+                            environment = mock.v4Environment,
+                            Parser(),
+                            JsonEncoder(),
+                        )
+                    val notifications = notificationsProvider.buildNotifications(0)
+                    assertEquals(
+                        6,
+                        notifications.size,
                     )
-                val notifications = notificationsProvider.buildNotifications(0)
-                assertEquals(
-                    6,
-                    notifications.size,
-                )
-                val order = notifications["order:1118c548-1715-5a72-9c41-f4388518c6e2"]
-                assertNotNull(order)
-                assertEquals(
-                    "NOTIFICATIONS.ORDER_PARTIAL_FILL.TITLE",
-                    order.title,
-                )
-                val position = notifications["position:ETH-USD"]
-                assertNotNull(position)
-                assertEquals(
-                    "NOTIFICATIONS.POSITION_CLOSED.TITLE",
-                    position.title,
-                )
-            },
-        )
+                    val order = notifications["order:1118c548-1715-5a72-9c41-f4388518c6e2"]
+                    assertNotNull(order)
+                    assertEquals(
+                        "NOTIFICATIONS.ORDER_PARTIAL_FILL.TITLE",
+                        order.title,
+                    )
+                    val position = notifications["position:ETH-USD"]
+                    assertNotNull(position)
+                    assertEquals(
+                        "NOTIFICATIONS.POSITION_CLOSED.TITLE",
+                        position.title,
+                    )
+                },
+            )
+        }
     }
 
     private fun testPartiallyFilledAndCanceledOrders() {
-        test(
-            {
-                perp.socket(
-                    testWsUrl,
-                    mock.accountsChannel.v4_parent_subaccounts_partially_filled_and_canceled_orders,
-                    0,
-                    BlockAndTime(14689438, Clock.System.now()),
+        if (perp.staticTyping) {
+            perp.socket(
+                url = testWsUrl,
+                jsonString = mock.accountsChannel.v4_parent_subaccounts_partially_filled_and_canceled_orders,
+                subaccountNumber = 0,
+                height = BlockAndTime(14689438, Clock.System.now()),
+            )
+
+            val subaccount = perp.internalState.wallet.account.subaccounts[0]!!
+            val orders = subaccount.orders
+            val order1 = orders?.firstOrNull { it.id == "3a8c6f8f-d8dd-54b5-a3a1-d318f586a80c" }
+            assertEquals(OrderStatus.PartiallyCanceled, order1?.status)
+            val order2 = orders?.firstOrNull { it.id == "a4586c75-c3f5-5bf5-877a-b3f2c8ff32a7" }
+            assertEquals(OrderStatus.PartiallyFilled, order2?.status)
+
+            val ioImplementations = testIOImplementations()
+            val localizer = testLocalizer(ioImplementations)
+            val uiImplementations = testUIImplementations(localizer)
+            val notificationsProvider =
+                NotificationsProvider(
+                    stateMachine = perp,
+                    uiImplementations = uiImplementations,
+                    environment = mock.v4Environment,
+                    parser = Parser(),
+                    jsonEncoder = JsonEncoder(),
                 )
-            },
-            """
+            val notifications = notificationsProvider.buildNotifications(0)
+            assertEquals(
+                8,
+                notifications.size,
+            )
+            val order = notifications["order:3a8c6f8f-d8dd-54b5-a3a1-d318f586a80c"]
+            assertNotNull(order)
+            assertEquals(
+                "NOTIFICATIONS.ORDER_PARTIAL_FILL.TITLE",
+                order.title,
+            )
+        } else {
+            test(
+                {
+                    perp.socket(
+                        testWsUrl,
+                        mock.accountsChannel.v4_parent_subaccounts_partially_filled_and_canceled_orders,
+                        0,
+                        BlockAndTime(14689438, Clock.System.now()),
+                    )
+                },
+                """
                 {
                     "wallet": {
                         "account": {
@@ -907,40 +1267,84 @@ class V4AccountTests : V4BaseTests() {
                         }
                     }
                 }
-            """.trimIndent(),
-            {
-                val ioImplementations = testIOImplementations()
-                val localizer = testLocalizer(ioImplementations)
-                val uiImplementations = testUIImplementations(localizer)
-                val notificationsProvider =
-                    NotificationsProvider(
-                        perp,
-                        uiImplementations,
-                        environment = mock.v4Environment,
-                        Parser(),
-                        JsonEncoder(),
+                """.trimIndent(),
+                {
+                    val ioImplementations = testIOImplementations()
+                    val localizer = testLocalizer(ioImplementations)
+                    val uiImplementations = testUIImplementations(localizer)
+                    val notificationsProvider =
+                        NotificationsProvider(
+                            perp,
+                            uiImplementations,
+                            environment = mock.v4Environment,
+                            Parser(),
+                            JsonEncoder(),
+                        )
+                    val notifications = notificationsProvider.buildNotifications(0)
+                    assertEquals(
+                        8,
+                        notifications.size,
                     )
-                val notifications = notificationsProvider.buildNotifications(0)
-                assertEquals(
-                    8,
-                    notifications.size,
-                )
-                val order = notifications["order:3a8c6f8f-d8dd-54b5-a3a1-d318f586a80c"]
-                assertNotNull(order)
-                assertEquals(
-                    "NOTIFICATIONS.ORDER_PARTIAL_FILL.TITLE",
-                    order.title,
-                )
-            },
-        )
+                    val order = notifications["order:3a8c6f8f-d8dd-54b5-a3a1-d318f586a80c"]
+                    assertNotNull(order)
+                    assertEquals(
+                        "NOTIFICATIONS.ORDER_PARTIAL_FILL.TITLE",
+                        order.title,
+                    )
+                },
+            )
+        }
     }
 
     private fun testEquityTiers() {
-        test(
-            {
-                perp.parseOnChainEquityTiers(mock.v4OnChainMock.equity_tiers)
-            },
-            """
+        if (perp.staticTyping) {
+            perp.parseOnChainEquityTiers(mock.v4OnChainMock.equity_tiers)
+            assertEquals(
+                perp.internalState.configs.equityTiers?.shortTermOrderEquityTiers?.size,
+                6,
+            )
+            assertEquals(
+                perp.internalState.configs.equityTiers?.statefulOrderEquityTiers?.size,
+                6,
+            )
+            assertEquals(
+                perp.internalState.configs.equityTiers?.shortTermOrderEquityTiers?.get(0),
+                EquityTier(
+                    requiredTotalNetCollateralUSD = 0.0,
+                    nextLevelRequiredTotalNetCollateralUSD = 20.0,
+                    maxOrders = 0,
+                ),
+            )
+            assertEquals(
+                perp.internalState.configs.equityTiers?.shortTermOrderEquityTiers?.get(1),
+                EquityTier(
+                    requiredTotalNetCollateralUSD = 20.0,
+                    nextLevelRequiredTotalNetCollateralUSD = 100.0,
+                    maxOrders = 1,
+                ),
+            )
+            assertEquals(
+                perp.internalState.configs.equityTiers?.statefulOrderEquityTiers?.get(0),
+                EquityTier(
+                    requiredTotalNetCollateralUSD = 0.0,
+                    nextLevelRequiredTotalNetCollateralUSD = 20.0,
+                    maxOrders = 0,
+                ),
+            )
+            assertEquals(
+                perp.internalState.configs.equityTiers?.statefulOrderEquityTiers?.get(1),
+                EquityTier(
+                    requiredTotalNetCollateralUSD = 20.0,
+                    nextLevelRequiredTotalNetCollateralUSD = 100.0,
+                    maxOrders = 1,
+                ),
+            )
+        } else {
+            test(
+                {
+                    perp.parseOnChainEquityTiers(mock.v4OnChainMock.equity_tiers)
+                },
+                """
                 {
                     "configs": {
                         "equityTiers": {
@@ -999,19 +1403,24 @@ class V4AccountTests : V4BaseTests() {
                         }
                     }
                 }
-            """.trimIndent(),
-            {
-            },
-        )
+                """.trimIndent(),
+                {
+                },
+            )
+        }
     }
 
     private fun testFeeTiers() {
-        val maxLong: Long = 9223372036854775807
-        test(
-            {
-                perp.parseOnChainFeeTiers(mock.v4OnChainMock.fee_tiers)
-            },
-            """
+        if (perp.staticTyping) {
+            perp.parseOnChainFeeTiers(mock.v4OnChainMock.fee_tiers)
+            assertEquals(perp.internalState.configs.feeTiers?.size, 9)
+            assertEquals(perp.internalState.configs.feeTiers?.get(0)?.tier, "1")
+        } else {
+            test(
+                {
+                    perp.parseOnChainFeeTiers(mock.v4OnChainMock.fee_tiers)
+                },
+                """
                 {
                     "configs": {
                         "feeTiers": [
@@ -1025,18 +1434,25 @@ class V4AccountTests : V4BaseTests() {
                         ]
                     }
                 }
-            """.trimIndent(),
-            {
-            },
-        )
+                """.trimIndent(),
+                {
+                },
+            )
+        }
     }
 
     private fun testUserFeeTier() {
-        test(
-            {
-                perp.parseOnChainUserFeeTier(mock.v4OnChainMock.user_fee_tier)
-            },
-            """
+        if (perp.staticTyping) {
+            perp.parseOnChainUserFeeTier(mock.v4OnChainMock.user_fee_tier)
+            assertEquals(perp.internalState.wallet.user?.feeTierId, "1")
+            assertEquals(perp.internalState.wallet.user?.makerFeeRate, 0.0)
+            assertEquals(perp.internalState.wallet.user?.takerFeeRate, 0.0)
+        } else {
+            test(
+                {
+                    perp.parseOnChainUserFeeTier(mock.v4OnChainMock.user_fee_tier)
+                },
+                """
                 {
                     "wallet": {
                         "user": {
@@ -1046,18 +1462,24 @@ class V4AccountTests : V4BaseTests() {
                         }
                     }
                 }
-            """.trimIndent(),
-            {
-            },
-        )
+                """.trimIndent(),
+                {
+                },
+            )
+        }
     }
 
     private fun testUserStats() {
-        test(
-            {
-                perp.parseOnChainUserStats(mock.v4OnChainMock.user_stats)
-            },
-            """
+        if (perp.staticTyping) {
+            perp.parseOnChainUserStats(mock.v4OnChainMock.user_stats)
+            assertEquals(perp.internalState.wallet.user?.makerVolume30D, 1.0)
+            assertEquals(perp.internalState.wallet.user?.takerVolume30D, 1.0)
+        } else {
+            test(
+                {
+                    perp.parseOnChainUserStats(mock.v4OnChainMock.user_stats)
+                },
+                """
                 {
                     "wallet": {
                         "user": {
@@ -1066,21 +1488,41 @@ class V4AccountTests : V4BaseTests() {
                         }
                     }
                 }
-            """.trimIndent(),
-            {
-            },
-        )
+                """.trimIndent(),
+                {
+                },
+            )
+        }
     }
 
     @Test
     fun testAccountBalances() {
-        test(
-            {
-                val changes = perp.onChainAccountBalances(mock.v4OnChainMock.account_balances)
-                perp.update(changes)
-                return@test StateResponse(perp.state, changes)
-            },
-            """
+        if (perp.staticTyping) {
+            val changes = perp.onChainAccountBalances(mock.v4OnChainMock.account_balances)
+            perp.updateStateChanges(changes)
+            assertEquals(perp.internalState.wallet.account.balances?.size, 2)
+            assertEquals(
+                perp.internalState.wallet.account.balances?.get("ibc/8E27BA2D5493AF5636760E354E46004562C46AB7EC0CC4C1CA14E9E20E2545B5"),
+                InternalAccountBalanceState(
+                    "ibc/8E27BA2D5493AF5636760E354E46004562C46AB7EC0CC4C1CA14E9E20E2545B5",
+                    110.0.toBigDecimal(),
+                ),
+            )
+            assertEquals(
+                perp.internalState.wallet.account.balances?.get("dv4tnt"),
+                InternalAccountBalanceState(
+                    "dv4tnt",
+                    1220.0.toBigDecimal(),
+                ),
+            )
+        } else {
+            test(
+                {
+                    val changes = perp.onChainAccountBalances(mock.v4OnChainMock.account_balances)
+                    perp.updateStateChanges(changes)
+                    return@test StateResponse(perp.state, changes)
+                },
+                """
                 {
                     "wallet": {
                         "account": {
@@ -1097,21 +1539,34 @@ class V4AccountTests : V4BaseTests() {
                         }
                     }
                 }
-            """.trimIndent(),
-            {
-            },
-        )
+                """.trimIndent(),
+                {
+                },
+            )
+        }
     }
 
     @Test
     fun testAccountStakingBalances() {
-        test(
-            {
-                val changes = perp.onChainDelegations(mock.v4OnChainMock.account_delegations)
-                perp.update(changes)
-                return@test StateResponse(perp.state, changes)
-            },
-            """
+        if (perp.staticTyping) {
+            val changes = perp.onChainDelegations(mock.v4OnChainMock.account_delegations)
+            assertEquals(perp.internalState.wallet.account.stakingBalances?.size, 1)
+            assertEquals(
+                perp.internalState.wallet.account.stakingBalances?.get("dv4tnt"),
+                InternalAccountBalanceState(
+                    "dv4tnt",
+                    2001000.0.toBigDecimal(),
+                ),
+            )
+            assertTrue { changes.changes.contains(Changes.accountBalances) }
+        } else {
+            test(
+                {
+                    val changes = perp.onChainDelegations(mock.v4OnChainMock.account_delegations)
+                    perp.updateStateChanges(changes)
+                    return@test StateResponse(perp.state, changes)
+                },
+                """
                 {
                     "wallet": {
                         "account": {
@@ -1124,25 +1579,73 @@ class V4AccountTests : V4BaseTests() {
                         }
                     }
                 }
-            """.trimIndent(),
-            {
-            },
-        )
+                """.trimIndent(),
+                {
+                },
+            )
+        }
     }
 
     @Test
     fun testAccountHistoricalTradingRewards() {
+        reset()
         setup()
-        test(
-            {
-                val changes = perp.historicalTradingRewards(
-                    mock.historicalTradingRewards.weeklyCall,
-                    "WEEKLY",
-                )
-                perp.update(changes)
-                return@test StateResponse(perp.state, changes)
-            },
-            """
+
+        if (perp.staticTyping) {
+            var changes = perp.historicalTradingRewards(
+                payload = mock.historicalTradingRewards.weeklyCall,
+                period = HistoricalTradingRewardsPeriod.WEEKLY,
+            )
+            perp.updateStateChanges(changes)
+            assertEquals(perp.internalState.wallet.account.tradingRewards.historical.size, 1)
+            assertEquals(
+                perp.internalState.wallet.account.tradingRewards.historical[HistoricalTradingRewardsPeriod.WEEKLY]?.size,
+                2,
+            )
+
+            changes = perp.historicalTradingRewards(
+                payload = mock.historicalTradingRewards.dailyCall,
+                period = HistoricalTradingRewardsPeriod.DAILY,
+            )
+            perp.updateStateChanges(changes)
+            assertEquals(perp.internalState.wallet.account.tradingRewards.historical.size, 2)
+            assertEquals(
+                perp.internalState.wallet.account.tradingRewards.historical[HistoricalTradingRewardsPeriod.DAILY]?.size,
+                2,
+            )
+
+            changes = perp.historicalTradingRewards(
+                payload = mock.historicalTradingRewards.monthlyCall,
+                period = HistoricalTradingRewardsPeriod.MONTHLY,
+            )
+            perp.updateStateChanges(changes)
+            assertEquals(perp.internalState.wallet.account.tradingRewards.historical.size, 3)
+            assertEquals(
+                perp.internalState.wallet.account.tradingRewards.historical[HistoricalTradingRewardsPeriod.MONTHLY]?.size,
+                2,
+            )
+
+            changes = perp.historicalTradingRewards(
+                payload = mock.historicalTradingRewards.monthlySecondCall,
+                period = HistoricalTradingRewardsPeriod.MONTHLY,
+            )
+            perp.updateStateChanges(changes)
+            assertEquals(perp.internalState.wallet.account.tradingRewards.historical.size, 3)
+            assertEquals(
+                perp.internalState.wallet.account.tradingRewards.historical[HistoricalTradingRewardsPeriod.MONTHLY]?.size,
+                3,
+            )
+        } else {
+            test(
+                {
+                    val changes = perp.historicalTradingRewards(
+                        mock.historicalTradingRewards.weeklyCall,
+                        HistoricalTradingRewardsPeriod.WEEKLY,
+                    )
+                    perp.updateStateChanges(changes)
+                    return@test StateResponse(perp.state, changes)
+                },
+                """
                 {
                     "wallet": {
                         "account": {
@@ -1166,21 +1669,21 @@ class V4AccountTests : V4BaseTests() {
                         }
                     }
                 }
-            """.trimIndent(),
-            {
-            },
-        )
+                """.trimIndent(),
+                {
+                },
+            )
 
-        test(
-            {
-                val changes = perp.historicalTradingRewards(
-                    mock.historicalTradingRewards.dailyCall,
-                    "DAILY",
-                )
-                perp.update(changes)
-                return@test StateResponse(perp.state, changes)
-            },
-            """
+            test(
+                {
+                    val changes = perp.historicalTradingRewards(
+                        mock.historicalTradingRewards.dailyCall,
+                        HistoricalTradingRewardsPeriod.DAILY,
+                    )
+                    perp.updateStateChanges(changes)
+                    return@test StateResponse(perp.state, changes)
+                },
+                """
                 {
                     "wallet": {
                         "account": {
@@ -1213,21 +1716,21 @@ class V4AccountTests : V4BaseTests() {
                         }
                     }
                 }
-            """.trimIndent(),
-            {
-            },
-        )
+                """.trimIndent(),
+                {
+                },
+            )
 
-        test(
-            {
-                val changes = perp.historicalTradingRewards(
-                    mock.historicalTradingRewards.monthlyCall,
-                    "MONTHLY",
-                )
-                perp.update(changes)
-                return@test StateResponse(perp.state, changes)
-            },
-            """
+            test(
+                {
+                    val changes = perp.historicalTradingRewards(
+                        mock.historicalTradingRewards.monthlyCall,
+                        HistoricalTradingRewardsPeriod.MONTHLY,
+                    )
+                    perp.updateStateChanges(changes)
+                    return@test StateResponse(perp.state, changes)
+                },
+                """
                 {
                     "wallet": {
                         "account": {
@@ -1267,21 +1770,21 @@ class V4AccountTests : V4BaseTests() {
                         }
                     }
                 }
-            """.trimIndent(),
-            {
-            },
-        )
+                """.trimIndent(),
+                {
+                },
+            )
 
-        test(
-            {
-                val changes = perp.historicalTradingRewards(
-                    mock.historicalTradingRewards.monthlySecondCall,
-                    "MONTHLY",
-                )
-                perp.update(changes)
-                return@test StateResponse(perp.state, changes)
-            },
-            """
+            test(
+                {
+                    val changes = perp.historicalTradingRewards(
+                        mock.historicalTradingRewards.monthlySecondCall,
+                        HistoricalTradingRewardsPeriod.MONTHLY,
+                    )
+                    perp.updateStateChanges(changes)
+                    return@test StateResponse(perp.state, changes)
+                },
+                """
                 {
                     "wallet": {
                         "account": {
@@ -1319,9 +1822,10 @@ class V4AccountTests : V4BaseTests() {
                         }
                     }
                 }
-            """.trimIndent(),
-            {
-            },
-        )
+                """.trimIndent(),
+                {
+                },
+            )
+        }
     }
 }

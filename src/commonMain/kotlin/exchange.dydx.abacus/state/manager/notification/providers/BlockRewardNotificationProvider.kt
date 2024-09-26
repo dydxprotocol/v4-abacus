@@ -1,9 +1,9 @@
 package exchange.dydx.abacus.state.manager.notification.providers
 
-import exchange.dydx.abacus.output.BlockReward
 import exchange.dydx.abacus.output.Notification
 import exchange.dydx.abacus.output.NotificationPriority
 import exchange.dydx.abacus.output.NotificationType
+import exchange.dydx.abacus.output.account.BlockReward
 import exchange.dydx.abacus.state.manager.V4Environment
 import exchange.dydx.abacus.state.manager.notification.NotificationsProviderProtocol
 import exchange.dydx.abacus.state.model.TradingStateMachine
@@ -72,15 +72,15 @@ class BlockRewardNotificationProvider(
 
         val notificationId = "blockReward:$blockHeight"
         return Notification(
-            notificationId,
-            NotificationType.INFO,
-            NotificationPriority.NORMAL,
-            null,
-            title,
-            text,
-            null,
-            paramsAsJson,
-            blockReward.createdAtMilliseconds,
+            id = notificationId,
+            type = NotificationType.INFO,
+            priority = NotificationPriority.NORMAL,
+            image = null,
+            title = title,
+            text = text,
+            link = null,
+            data = paramsAsJson,
+            updateTimeInMilliseconds = blockReward.createdAtMilliseconds,
         )
     }
 }

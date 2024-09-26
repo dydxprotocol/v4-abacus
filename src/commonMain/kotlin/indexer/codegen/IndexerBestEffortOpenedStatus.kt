@@ -12,11 +12,13 @@
 package indexer.codegen
 
 import kotlinx.serialization.Serializable
+import kotlin.js.JsExport
 
 /**
  *
  * Values: BESTEFFORTOPENED
  */
+@JsExport
 @Serializable
 enum class IndexerBestEffortOpenedStatus(val value: kotlin.String) {
     BESTEFFORTOPENED("BEST_EFFORT_OPENED"); // :/

@@ -12,11 +12,13 @@
 package indexer.codegen
 
 import kotlinx.serialization.Serializable
+import kotlin.js.JsExport
 
 /**
  *
  * Values: COMPLIANT,FIRSTSTRIKECLOSEONLY,FIRSTSTRIKE,CLOSEONLY,BLOCKED
  */
+@JsExport
 @Serializable
 enum class IndexerComplianceStatus(val value: kotlin.String) {
     COMPLIANT("COMPLIANT"), // :/

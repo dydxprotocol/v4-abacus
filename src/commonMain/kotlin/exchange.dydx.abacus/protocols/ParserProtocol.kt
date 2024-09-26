@@ -49,7 +49,13 @@ interface ParserProtocol {
     fun decodeJsonArray(text: String?): IList<Any>?
 }
 
-inline fun <reified T> ParserProtocol.asTypedList(list: Any?): List<T>? {
+private val jsonCoder = Json {
+    ignoreUnknownKeys = true
+    coerceInputValues = true
+    explicitNulls = false
+}
+
+internal inline fun <reified T> ParserProtocol.asTypedList(list: Any?): List<T>? {
     val payload = asNativeList(list) ?: return null
     return payload.mapNotNull { item ->
         if (item is T) {
@@ -57,17 +63,18 @@ inline fun <reified T> ParserProtocol.asTypedList(list: Any?): List<T>? {
         } else {
             val itemString: String? = asString(item)
             if (itemString != null) {
+                if (itemString is T) {
+                    return@mapNotNull itemString
+                }
                 try {
-                    val json = Json {
-                        ignoreUnknownKeys = true;
-                        coerceInputValues = true
-                    }
-                    json.decodeFromString<T>(itemString)
+                    jsonCoder.decodeFromString<T>(itemString)
                 } catch (e: SerializationException) {
-                    Logger.e { "Failed to parse item: $item" }
+                    val className = (T::class).simpleName
+                    Logger.e { "Failed to parse item: $item as $className: ${e.message}" }
                     null
                 } catch (e: IllegalArgumentException) {
-                    Logger.e { "Failed to parse item: $item" }
+                    val className = (T::class).simpleName
+                    Logger.e { "Failed to parse item: $item as $className: ${e.message}" }
                     null
                 }
             } else {
@@ -77,7 +84,7 @@ inline fun <reified T> ParserProtocol.asTypedList(list: Any?): List<T>? {
     }
 }
 
-inline fun <reified T> ParserProtocol.asTypedObject(item: Any?): T? {
+internal inline fun <reified T> ParserProtocol.asTypedObject(item: Any?): T? {
     if (item is T) {
         return item
     }
@@ -87,17 +94,18 @@ inline fun <reified T> ParserProtocol.asTypedObject(item: Any?): T? {
         asString(item)
     }
     return if (itemString != null) {
+        if (itemString is T) {
+            itemString
+        }
         try {
-            val json = Json {
-                ignoreUnknownKeys = true;
-                coerceInputValues = true
-            }
-            json.decodeFromString<T>(itemString)
+            jsonCoder.decodeFromString<T>(itemString)
         } catch (e: SerializationException) {
-            Logger.e { "Failed to parse item: $item" }
+            val className = (T::class).simpleName
+            Logger.e { "Failed to parse item: $item as $className: ${e.message}\"" }
             null
         } catch (e: IllegalArgumentException) {
-            Logger.e { "Failed to parse item: $item" }
+            val className = (T::class).simpleName
+            Logger.e { "Failed to parse item: $item as $className: ${e.message}\"" }
             null
         }
     } else {
@@ -105,13 +113,27 @@ inline fun <reified T> ParserProtocol.asTypedObject(item: Any?): T? {
     }
 }
 
-inline fun <reified T> ParserProtocol.asTypedStringMap(payload: Map<String, Any>?): Map<String, T>? {
+internal inline fun <reified T> ParserProtocol.asTypedStringMap(payload: Map<String, Any>?): Map<String, T>? {
     if (payload == null) {
         return null
     }
     val result = mutableMapOf<String, T>()
     for ((key, value) in payload) {
         val typedValue = asTypedObject<T>(value)
+        if (typedValue != null) {
+            result[key] = typedValue
+        }
+    }
+    return result
+}
+
+internal inline fun <reified T> ParserProtocol.asTypedStringMapOfList(payload: Map<String, List<T>>?): Map<String, List<T>>? {
+    if (payload == null) {
+        return null
+    }
+    val result = mutableMapOf<String, List<T>>()
+    for ((key, value) in payload) {
+        val typedValue = asTypedList<T>(value)
         if (typedValue != null) {
             result[key] = typedValue
         }

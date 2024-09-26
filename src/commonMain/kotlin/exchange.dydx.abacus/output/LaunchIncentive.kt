@@ -9,7 +9,10 @@ import kotlinx.serialization.Serializable
 
 @JsExport
 @Serializable
-data class LaunchIncentiveSeason(val label: String, val startTimeInMilliseconds: Double) {
+data class LaunchIncentiveSeason(
+    val label: String,
+    val startTimeInMilliseconds: Double
+) {
     companion object {
         internal fun create(
             existing: LaunchIncentiveSeason?,
@@ -39,7 +42,9 @@ data class LaunchIncentiveSeason(val label: String, val startTimeInMilliseconds:
 
 @JsExport
 @Serializable
-data class LaunchIncentiveSeasons(val seasons: IList<LaunchIncentiveSeason>) {
+data class LaunchIncentiveSeasons(
+    val seasons: IList<LaunchIncentiveSeason>
+) {
     companion object {
         internal fun create(
             existing: LaunchIncentiveSeasons?,
@@ -62,7 +67,9 @@ data class LaunchIncentiveSeasons(val seasons: IList<LaunchIncentiveSeason>) {
 
 @JsExport
 @Serializable
-data class LaunchIncentive(val seasons: LaunchIncentiveSeasons) {
+data class LaunchIncentive(
+    val seasons: LaunchIncentiveSeasons
+) {
     companion object {
         internal fun create(
             existing: LaunchIncentive?,

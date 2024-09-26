@@ -12,6 +12,7 @@
 package indexer.codegen
 
 import kotlinx.serialization.Serializable
+import kotlin.js.JsExport
 
 /**
  *
@@ -39,6 +40,7 @@ import kotlinx.serialization.Serializable
  * @param updatedAtHeight
  * @param subaccountNumber
  */
+@JsExport
 @Serializable
 data class IndexerOrderResponseObject(
 
@@ -64,5 +66,5 @@ data class IndexerOrderResponseObject(
     val ticker: kotlin.String? = null,
     val updatedAt: IndexerIsoString? = null,
     val updatedAtHeight: kotlin.String? = null,
-    val subaccountNumber: kotlin.Double? = null
+    val subaccountNumber: kotlin.Int? = null
 )

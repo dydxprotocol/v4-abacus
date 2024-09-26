@@ -124,8 +124,12 @@ internal class SystemSupervisor(
             val oldState = stateMachine.state
             update(stateMachine.onChainRewardsParams(rewardsParams), oldState)
 
-            val json = helper.parser.decodeJsonObject(rewardsParams)
-            val marketId = helper.parser.asString(helper.parser.value(json, "params.marketId"))
+            val marketId = if (stateMachine.staticTyping) {
+                stateMachine.internalState.rewardsParams?.marketId
+            } else {
+                val json = helper.parser.decodeJsonObject(rewardsParams)
+                helper.parser.asString(helper.parser.value(json, "params.marketId"))
+            }
             val params = iMapOf("marketId" to marketId)
             val paramsInJson = helper.jsonEncoder.encode(params)
 

@@ -4,8 +4,8 @@ import exchange.dydx.abacus.output.Notification
 import exchange.dydx.abacus.output.NotificationPriority
 import exchange.dydx.abacus.output.NotificationType
 import exchange.dydx.abacus.output.PerpetualMarket
-import exchange.dydx.abacus.output.SubaccountFill
-import exchange.dydx.abacus.output.SubaccountOrder
+import exchange.dydx.abacus.output.account.SubaccountFill
+import exchange.dydx.abacus.output.account.SubaccountOrder
 import exchange.dydx.abacus.output.input.OrderStatus
 import exchange.dydx.abacus.output.input.OrderType
 import exchange.dydx.abacus.protocols.ParserProtocol
@@ -99,6 +99,7 @@ class FillsNotificationProvider(
         val fill = fillsForOrder.firstOrNull() ?: return null
         val orderId = order.id
         val marketId = fill.marketId
+        val displayId = fill.displayId
         val market = market(stateMachine, marketId) ?: return null
         val tickSize = market.configs?.tickSize ?: return null
         val asset = stateMachine.state?.assetOfMarket(marketId)
@@ -114,7 +115,7 @@ class FillsNotificationProvider(
         val orderTypeText = text(orderType)
         val params = (
             iMapOf(
-                "MARKET" to marketId,
+                "MARKET" to displayId,
                 "ASSET" to assetText,
                 "SIDE" to sideText,
                 "AMOUNT" to amountText,
@@ -133,15 +134,15 @@ class FillsNotificationProvider(
 
         val notificationId = "order:$orderId"
         return Notification(
-            notificationId,
-            NotificationType.INFO,
-            NotificationPriority.NORMAL,
-            marketImageUrl,
-            title,
-            text,
-            "/orders/$orderId",
-            paramsAsJson,
-            fill.createdAtMilliseconds,
+            id = notificationId,
+            type = NotificationType.INFO,
+            priority = NotificationPriority.NORMAL,
+            image = marketImageUrl,
+            title = title,
+            text = text,
+            link = "/orders/$orderId",
+            data = paramsAsJson,
+            updateTimeInMilliseconds = fill.createdAtMilliseconds,
         )
     }
 
@@ -151,6 +152,7 @@ class FillsNotificationProvider(
     ): Notification? {
         val fillId = fill.id
         val marketId = fill.marketId
+        val displayId = fill.displayId
         val asset = stateMachine.state?.assetOfMarket(marketId) ?: return null
         val assetText = asset.name
         val marketImageUrl = asset.resources?.imageUrl
@@ -162,7 +164,7 @@ class FillsNotificationProvider(
         val fillTypeText = text(fillType)
         val params = (
             iMapOf(
-                "MARKET" to marketId,
+                "MARKET" to displayId,
                 "ASSET" to assetText,
                 "SIDE" to sideText,
                 "AMOUNT" to amountText,
@@ -219,15 +221,15 @@ class FillsNotificationProvider(
 
         val notificationId = "fill:$fillId"
         return Notification(
-            notificationId,
-            NotificationType.INFO,
-            NotificationPriority.NORMAL,
-            marketImageUrl,
-            title,
-            text,
-            null,
-            paramsAsJson,
-            fill.createdAtMilliseconds,
+            id = notificationId,
+            type = NotificationType.INFO,
+            priority = NotificationPriority.NORMAL,
+            image = marketImageUrl,
+            title = title,
+            text = text,
+            link = null,
+            data = paramsAsJson,
+            updateTimeInMilliseconds = fill.createdAtMilliseconds,
         )
     }
 

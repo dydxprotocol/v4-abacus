@@ -33,6 +33,7 @@ data class PerpetualMarket(
 &emsp;val id: String,  
 &emsp;val assetId: String,  
 &emsp;val market: String?,  
+&emsp;val displayId: String?,
 &emsp;val indexPrice: Double?,  
 &emsp;val oraclePrice: Double? = null,  
 &emsp;val marketCaps: Double?,  
@@ -54,6 +55,10 @@ ID of the associated Asset
 ## market
 
 Name of the market
+
+## displayId
+
+Displayable market ID.
 
 ## indexPrice
 

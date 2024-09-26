@@ -131,6 +131,7 @@ An array of [SubaccountPosition](#SubaccountPosition)
 data class SubaccountPosition(  
 &emsp;val id: String,  
 &emsp;val assetId: String,  
+&emsp;val displayId: String,
 &emsp;val side: TradeStatesWithPositionSides,  
 &emsp;val entryPrice: TradeStatesWithDoubleValues?,  
 &emsp;val exitPrice: Double?,  
@@ -160,6 +161,10 @@ ID of the position, it should be the same as marketId
 ## assetId
 
 Asset ID, such as "ETH"
+
+## displayId
+
+Displayable market ID.
 
 ## side
 
@@ -261,12 +266,13 @@ An array of [SubaccountOrder](#SubaccountOrder)
 data class SubaccountOrder(
 &emsp;val subaccountNumber: Int,
 &emsp;val id: String,  
-&emsp;val clientId: Int?,  
+&emsp;val clientId: String?,  
 &emsp;val type: OrderType,  
 &emsp;val side: OrderSide,  
 &emsp;val status: OrderStatus,  
 &emsp;val timeInForce: OrderTimeInForce?,  
-&emsp;val marketId: String,  
+&emsp;val marketId: String,
+&emsp;val displayId: String,
 &emsp;val clobPairId: Int?,  
 &emsp;val price: Double,  
 &emsp;val triggerPrice: Double?,  
@@ -331,6 +337,10 @@ Time in force, GTT (Good Til Time) or  IOC (Immediate or Cancel)
 ## marketId
 
 Market ID
+
+## displayId
+
+Displayable market ID.
 
 ## clobPairId
 

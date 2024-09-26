@@ -1,19 +1,45 @@
 package exchange.dydx.abacus.processor.markets
 
+import exchange.dydx.abacus.output.MarketConfigs
+import exchange.dydx.abacus.output.MarketConfigsV4
+import exchange.dydx.abacus.output.MarketPerpetual
+import exchange.dydx.abacus.output.MarketStatus
+import exchange.dydx.abacus.output.PerpetualMarket
+import exchange.dydx.abacus.output.PerpetualMarketType
 import exchange.dydx.abacus.processor.base.BaseProcessor
+import exchange.dydx.abacus.processor.base.BaseProcessorProtocol
 import exchange.dydx.abacus.processor.utils.MarketId
 import exchange.dydx.abacus.protocols.ParserProtocol
+import exchange.dydx.abacus.utils.IndexerResponseParsingException
+import exchange.dydx.abacus.utils.Logger
 import exchange.dydx.abacus.utils.Numeric
 import exchange.dydx.abacus.utils.ServerTime
 import exchange.dydx.abacus.utils.mutable
+import exchange.dydx.abacus.utils.parseException
 import exchange.dydx.abacus.utils.safeSet
+import indexer.codegen.IndexerPerpetualMarketStatus
+import indexer.codegen.IndexerPerpetualMarketType
+import indexer.codegen.IndexerSparklineTimePeriod
+import indexer.models.IndexerCompositeMarketObject
+import indexer.models.IndexerWsMarketOraclePriceObject
+import kollections.toIList
+import numberOfDecimals
 import kotlin.math.max
 import kotlin.math.min
 import kotlin.time.Duration.Companion.seconds
 
+internal interface MarketProcessorProtocol : BaseProcessorProtocol {
+    fun process(marketId: String, payload: IndexerCompositeMarketObject): PerpetualMarket?
+    fun processOraclePrice(marketId: String, payload: IndexerWsMarketOraclePriceObject): PerpetualMarket?
+    fun processSparklines(marketId: String, payload: List<String>, period: IndexerSparklineTimePeriod): PerpetualMarket?
+    fun clearCachedOraclePrice(marketId: String)
+}
+
 @Suppress("UNCHECKED_CAST")
-internal class MarketProcessor(parser: ParserProtocol, private val calculateSparklines: Boolean) :
-    BaseProcessor(parser) {
+internal class MarketProcessor(
+    parser: ParserProtocol,
+    private val calculateSparklines: Boolean,
+) : BaseProcessor(parser), MarketProcessorProtocol {
     private val tradesProcessor = TradesProcessor(parser)
     private val orderbookProcessor = OrderbookProcessor(parser)
     private val candlesProcessor = CandlesProcessor(parser)
@@ -125,6 +151,203 @@ internal class MarketProcessor(parser: ParserProtocol, private val calculateSpar
         ),
     )
 
+    private var cachedIndexerMarketResponses: MutableMap<String, IndexerCompositeMarketObject> = mutableMapOf()
+    private var cachedIndexerOraclePrices: MutableMap<String, IndexerWsMarketOraclePriceObject> = mutableMapOf()
+    private var cachedIndexerSparklines: MutableMap<String, List<Double>> = mutableMapOf()
+    private var cachedIsNew: MutableMap<String, Boolean> = mutableMapOf()
+
+    override fun process(
+        marketId: String,
+        payload: IndexerCompositeMarketObject,
+    ): PerpetualMarket? {
+        val cached = cachedIndexerMarketResponses[marketId]
+        if (cached != null) {
+            cachedIndexerMarketResponses[marketId] = cached.copyNotNulls(payload)
+        } else {
+            cachedIndexerMarketResponses[marketId] = payload
+        }
+        return createPerpetualMarket(marketId)
+    }
+
+    override fun processOraclePrice(
+        marketId: String,
+        payload: IndexerWsMarketOraclePriceObject
+    ): PerpetualMarket? {
+        cachedIndexerOraclePrices[marketId] = payload
+        return createPerpetualMarket(marketId)
+    }
+
+    override fun processSparklines(
+        marketId: String,
+        payload: List<String>,
+        period: IndexerSparklineTimePeriod,
+    ): PerpetualMarket? {
+        when (period) {
+            IndexerSparklineTimePeriod.ONEDAY -> {
+                cachedIndexerSparklines[marketId] = payload.mapNotNull { parser.asDouble(it) }.reversed()
+                return createPerpetualMarket(marketId)
+            }
+            IndexerSparklineTimePeriod.SEVENDAYS -> {
+                val sevenDaySparklineEntries = 42
+                cachedIsNew[marketId] = payload.size < sevenDaySparklineEntries
+                return createPerpetualMarket(marketId)
+            }
+        }
+    }
+
+    override fun clearCachedOraclePrice(
+        marketId: String,
+    ) {
+        cachedIndexerOraclePrices.remove(marketId)
+    }
+
+    private fun createPerpetualMarket(
+        marketId: String,
+    ): PerpetualMarket? {
+        val cachedIndexerMarketResponse = cachedIndexerMarketResponses[marketId]
+        val cachedIndexerOraclePrice = cachedIndexerOraclePrices[marketId]
+        val payload = cachedIndexerMarketResponse ?: return null
+        val name = parser.asString(payload.ticker) ?: return null
+        val oraclePrice = parser.asDouble(cachedIndexerOraclePrice?.oraclePrice) ?: parser.asDouble(payload.oraclePrice)
+        val status = createStatus(payload.status)
+        try {
+            val newValue = PerpetualMarket(
+                id = name,
+                assetId = MarketId.getAssetId(name) ?: parseException(payload),
+                oraclePrice = oraclePrice,
+                market = name,
+                displayId = MarketId.getDisplayId(name),
+                marketCaps = null,
+                priceChange24H = parser.asDouble(payload.priceChange24H),
+                priceChange24HPercent = calculatePriceChange24HPercent(
+                    priceChange24H = parser.asDouble(payload.priceChange24H),
+                    oraclePrice = oraclePrice,
+                ),
+                status = status,
+                configs = createConfigs(payload),
+                perpetual = createMarketPerpetual(
+                    payload = payload,
+                    oraclePrice = oraclePrice,
+                    line = cachedIndexerSparklines[marketId],
+                    isNew = cachedIsNew[marketId] ?: false,
+                ),
+            )
+            return newValue
+        } catch (e: IndexerResponseParsingException) {
+            Logger.e { "${e.message}" }
+            return null
+        }
+    }
+
+    private fun createStatus(
+        indexerStatus: IndexerPerpetualMarketStatus?
+    ): MarketStatus? {
+        return when (indexerStatus) {
+            IndexerPerpetualMarketStatus.ACTIVE -> MarketStatus(
+                canTrade = true,
+                canReduce = true,
+            )
+            IndexerPerpetualMarketStatus.CANCELONLY -> MarketStatus(
+                canTrade = false,
+                canReduce = true,
+            )
+            null -> null
+            else -> MarketStatus(
+                canTrade = false,
+                canReduce = false,
+            )
+        }
+    }
+
+    private fun createConfigs(
+        payload: IndexerCompositeMarketObject,
+    ): MarketConfigs {
+        val stepSize = parser.asDouble(payload.stepSize)
+        val tickSize = parser.asDouble(payload.tickSize)
+        return MarketConfigs(
+            clobPairId = payload.clobPairId,
+            largeSize = null,
+            stepSize = stepSize,
+            tickSize = tickSize,
+            stepSizeDecimals = stepSize?.numberOfDecimals(),
+            tickSizeDecimals = tickSize?.numberOfDecimals(),
+            displayStepSize = stepSize,
+            displayTickSize = tickSize,
+            displayStepSizeDecimals = stepSize?.numberOfDecimals(),
+            displayTickSizeDecimals = tickSize?.numberOfDecimals(),
+            effectiveInitialMarginFraction = calculateEffectiveInitialMarginFraction(
+                baseIMF = parser.asDouble(payload.initialMarginFraction),
+                openInterest = parser.asDouble(payload.openInterest),
+                openInterestLowerCap = parser.asDouble(payload.openInterestLowerCap),
+                openInterestUpperCap = parser.asDouble(payload.openInterestUpperCap),
+                oraclePrice = parser.asDouble(payload.oraclePrice),
+            ),
+            minOrderSize = stepSize,
+            initialMarginFraction = parser.asDouble(payload.initialMarginFraction),
+            maintenanceMarginFraction = parser.asDouble(payload.maintenanceMarginFraction),
+            incrementalInitialMarginFraction = parser.asDouble(payload.incrementalInitialMarginFraction),
+            incrementalPositionSize = parser.asDouble(payload.incrementalPositionSize),
+            maxPositionSize = parser.asDouble(payload.maxPositionSize),
+            basePositionNotional = null,
+            baselinePositionSize = parser.asDouble(payload.basePositionSize),
+            candleOptions = null,
+            perpetualMarketType = when (payload.marketType) {
+                IndexerPerpetualMarketType.CROSS -> PerpetualMarketType.CROSS
+                IndexerPerpetualMarketType.ISOLATED -> PerpetualMarketType.ISOLATED
+                else -> PerpetualMarketType.CROSS
+            },
+            v4 = createConfigsV4(payload),
+        )
+    }
+
+    private fun createConfigsV4(
+        payload: IndexerCompositeMarketObject,
+    ): MarketConfigsV4? {
+        val clobPairId = parser.asInt(payload.clobPairId)
+        val atomicResolution = parser.asInt(payload.atomicResolution)
+        val stepBaseQuantums = parser.asInt(payload.stepBaseQuantums)
+        val quantumConversionExponent = parser.asInt(payload.quantumConversionExponent)
+        val subticksPerTick = parser.asInt(payload.subticksPerTick)
+        return if (clobPairId != null && atomicResolution != null && stepBaseQuantums != null && quantumConversionExponent != null && subticksPerTick != null) {
+            MarketConfigsV4(
+                clobPairId = clobPairId,
+                atomicResolution = atomicResolution,
+                stepBaseQuantums = stepBaseQuantums,
+                quantumConversionExponent = quantumConversionExponent,
+                subticksPerTick = subticksPerTick,
+            )
+        } else {
+            null
+        }
+    }
+
+    private fun createMarketPerpetual(
+        payload: IndexerCompositeMarketObject,
+        oraclePrice: Double?,
+        line: List<Double>?,
+        isNew: Boolean,
+    ): MarketPerpetual? {
+        val nextFundingRate = parser.asDouble(payload.nextFundingRate)
+        val openInterest = parser.asDouble(payload.openInterest)
+        return if (openInterest != null) {
+            MarketPerpetual(
+                volume24H = parser.asDouble(payload.volume24H),
+                trades24H = parser.asDouble(payload.trades24H),
+                volume24HUSDC = null,
+                nextFundingRate = nextFundingRate,
+                nextFundingAtMilliseconds = null,
+                openInterest = openInterest,
+                openInterestUSDC = oraclePrice?.let { openInterest * it } ?: 0.0,
+                openInterestLowerCap = parser.asDouble(payload.openInterestLowerCap),
+                openInterestUpperCap = parser.asDouble(payload.openInterestUpperCap),
+                line = line?.toIList(),
+                isNew = isNew,
+            )
+        } else {
+            null
+        }
+    }
+
     override fun received(
         existing: Map<String, Any>?,
         payload: Map<String, Any>,
@@ -139,7 +362,8 @@ internal class MarketProcessor(parser: ParserProtocol, private val calculateSpar
 
         if (name != null) {
             output["id"] = name
-            output.safeSet("assetId", MarketId.assetid(name))
+            output.safeSet("assetId", MarketId.getAssetId(name))
+            output.safeSet("displayId", MarketId.getDisplayId(name))
         }
         output["status"] = status(payload)
         output["configs"] = configs(parser.asNativeMap(existing?.get("configs")), payload)
@@ -151,14 +375,22 @@ internal class MarketProcessor(parser: ParserProtocol, private val calculateSpar
         return calculate(output)
     }
 
-    internal fun effectiveInitialMarginFraction(output: Map<String, Any>, oraclePrice: Double?): Double? {
+    private fun effectiveInitialMarginFraction(output: Map<String, Any>, oraclePrice: Double?): Double? {
         val baseIMF = parser.asDouble(parser.value(output, "configs.initialMarginFraction"))
         val openInterest = parser.asDouble(parser.value(output, "perpetual.openInterest"))
         val openInterestLowerCap = parser.asDouble(parser.value(output, "perpetual.openInterestLowerCap"))
         val openInterestUpperCap = parser.asDouble(parser.value(output, "perpetual.openInterestUpperCap"))
 
-        // need nully checks because all properties are optional in the websocket message
-        // clean up after https://linear.app/dydx/issue/OTE-301/audit-websocket-message-types-in-indexer is done
+        return calculateEffectiveInitialMarginFraction(baseIMF, openInterest, openInterestLowerCap, openInterestUpperCap, oraclePrice)
+    }
+
+    private fun calculateEffectiveInitialMarginFraction(
+        baseIMF: Double?,
+        openInterest: Double?,
+        openInterestLowerCap: Double?,
+        openInterestUpperCap: Double?,
+        oraclePrice: Double?,
+    ): Double? {
         if (baseIMF === null) return null
         if (oraclePrice == null || openInterest == null || openInterestLowerCap == null || openInterestUpperCap == null) return baseIMF
         // if these are equal we can throw an error from dividing by zero
@@ -171,7 +403,7 @@ internal class MarketProcessor(parser: ParserProtocol, private val calculateSpar
         return effectiveIMF
     }
 
-    internal fun receivedDelta(
+    internal fun receivedDeltaDeprecated(
         market: Map<String, Any>?,
         payload: Map<String, Any>,
     ): Map<String, Any> {
@@ -191,18 +423,25 @@ internal class MarketProcessor(parser: ParserProtocol, private val calculateSpar
         val modified = market.mutable()
         modified.safeSet(
             "priceChange24HPercent",
-            if (priceChange24H != null && oraclePrice != null && oraclePrice > priceChange24H) {
-                val basePrice = (oraclePrice - priceChange24H)
-                if (basePrice > Numeric.double.ZERO) (priceChange24H / basePrice) else null
-            } else {
-                null
-            },
+            calculatePriceChange24HPercent(priceChange24H, oraclePrice),
         )
 
         return modified
     }
 
-    internal fun receivedConfigurations(
+    private fun calculatePriceChange24HPercent(
+        priceChange24H: Double?,
+        oraclePrice: Double?,
+    ): Double? {
+        return if (priceChange24H != null && oraclePrice != null && oraclePrice > priceChange24H) {
+            val basePrice = (oraclePrice - priceChange24H)
+            if (basePrice > Numeric.double.ZERO) (priceChange24H / basePrice) else null
+        } else {
+            null
+        }
+    }
+
+    internal fun receivedConfigurationsDeprecated(
         market: Map<String, Any>?,
         payload: Map<String, Any>,
     ): Map<String, Any> {
@@ -271,23 +510,25 @@ internal class MarketProcessor(parser: ParserProtocol, private val calculateSpar
         return perpetual
     }
 
-    internal fun receivedTrades(
+    @Deprecated("static-typing")
+    internal fun receivedTradesDeprecated(
         market: Map<String, Any>,
         payload: Map<String, Any>,
     ): Map<String, Any> {
         val modified = market.toMutableMap()
-        val trades = tradesProcessor.subscribed(payload)
+        val trades = tradesProcessor.subscribedDeprecated(payload)
         modified.safeSet("trades", trades)
         return modified
     }
 
-    internal fun receivedTradesChanges(
+    @Deprecated("static-typing")
+    internal fun receivedTradesChangesDeprecated(
         market: Map<String, Any>,
         payload: Map<String, Any>,
     ): Map<String, Any> {
         val modified = market.toMutableMap()
         val trades =
-            tradesProcessor.channel_data(market["trades"] as? List<Map<String, Any>>, payload)
+            tradesProcessor.channel_dataDeprecated(market["trades"] as? List<Map<String, Any>>, payload)
         modified.safeSet("trades", trades)
         return modified
     }
@@ -299,19 +540,19 @@ internal class MarketProcessor(parser: ParserProtocol, private val calculateSpar
         val modified = market.toMutableMap()
         var trades = market["trades"] as? List<Any>
         for (partialPayload in payload) {
-            parser.asNativeMap(partialPayload)?.let { it ->
-                trades = tradesProcessor.channel_data(trades, it)
+            parser.asNativeMap(partialPayload)?.let {
+                trades = tradesProcessor.channel_dataDeprecated(trades, it)
             }
         }
         modified.safeSet("trades", trades)
         return modified
     }
 
-    internal fun receivedOrderbook(
+    internal fun receivedOrderbookDeprecated(
         market: Map<String, Any>,
         payload: Map<String, Any>,
     ): Map<String, Any> {
-        val orderbookRaw = orderbookProcessor.subscribed(payload)
+        val orderbookRaw = orderbookProcessor.subscribedDeprecated(payload)
         return processRawOrderbook(market, orderbookRaw)
     }
 
@@ -372,7 +613,7 @@ internal class MarketProcessor(parser: ParserProtocol, private val calculateSpar
         }
     }
 
-    internal fun receivedSparklines(
+    internal fun receivedSparklinesDeprecated(
         market: Map<String, Any>,
         payload: List<Any>,
     ): Map<String, Any> {
@@ -426,7 +667,7 @@ internal class MarketProcessor(parser: ParserProtocol, private val calculateSpar
         val modified = market.toMutableMap()
         var candles = parser.asNativeMap(market["candles"])
         for (partialPayload in payload) {
-            parser.asNativeMap(partialPayload)?.let { it ->
+            parser.asNativeMap(partialPayload)?.let {
                 candles = candlesProcessor.channel_data(candles, resolution, it)
             }
         }

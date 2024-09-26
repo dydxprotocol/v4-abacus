@@ -12,16 +12,18 @@
 package indexer.codegen
 
 import kotlinx.serialization.Serializable
+import kotlin.js.JsExport
 
 /**
  *
- * Values: OPEN,FILLED,CANCELED,BESTEFFORTCANCELED,UNTRIGGERED
+ * Values: OPEN,FILLED,CANCELED,BEST_EFFORT_CANCELED,UNTRIGGERED
  */
+@JsExport
 @Serializable
 enum class IndexerOrderStatus(val value: kotlin.String) {
     OPEN("OPEN"), // :/
     FILLED("FILLED"), // :/
     CANCELED("CANCELED"), // :/
-    BESTEFFORTCANCELED("BEST_EFFORT_CANCELED"), // :/
+    BEST_EFFORT_CANCELED("BEST_EFFORT_CANCELED"), // :/
     UNTRIGGERED("UNTRIGGERED"); // :/
 }

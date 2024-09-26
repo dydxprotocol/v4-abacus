@@ -4,7 +4,9 @@ import exchange.dydx.abacus.processor.base.BaseProcessor
 import exchange.dydx.abacus.protocols.ParserProtocol
 import exchange.dydx.abacus.utils.mutable
 
-internal class LaunchIncentivePointsProcessor(parser: ParserProtocol) : BaseProcessor(parser) {
+internal class LaunchIncentivePointsProcessor(
+    parser: ParserProtocol
+) : BaseProcessor(parser) {
     private val itemProcessor = LaunchIncentivePointProcessor(parser = parser)
 
     fun received(

@@ -3,6 +3,7 @@
 data class SubaccountFill(  
 &emsp;val id: String,  
 &emsp;val marketId: String,  
+&emsp;val displayId: String,
 &emsp;val orderId: String?,  
 &emsp;val side: OrderSide,  
 &emsp;val type: OrderType,  
@@ -21,6 +22,10 @@ Fill ID
 ## marketId
 
 Market ID
+
+## displayId
+
+Displayable market ID.
 
 ## orderId
 

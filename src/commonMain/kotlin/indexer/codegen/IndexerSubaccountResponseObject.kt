@@ -12,6 +12,7 @@
 package indexer.codegen
 
 import kotlinx.serialization.Serializable
+import kotlin.js.JsExport
 
 /**
  *
@@ -25,15 +26,16 @@ import kotlinx.serialization.Serializable
  * @param updatedAtHeight
  * @param latestProcessedBlockHeight
  */
+@JsExport
 @Serializable
 data class IndexerSubaccountResponseObject(
 
     val address: kotlin.String? = null,
-    val subaccountNumber: kotlin.Double? = null,
+    val subaccountNumber: kotlin.Int? = null,
     val equity: kotlin.String? = null,
     val freeCollateral: kotlin.String? = null,
-    val openPerpetualPositions: IndexerPerpetualPositionsMap? = null,
-    val assetPositions: IndexerAssetPositionsMap? = null,
+    val openPerpetualPositions: Map<String, IndexerPerpetualPositionResponseObject>? = null,
+    val assetPositions: Map<String, IndexerAssetPositionResponseObject>? = null,
     val marginEnabled: kotlin.Boolean? = null,
     val updatedAtHeight: kotlin.String? = null,
     val latestProcessedBlockHeight: kotlin.String? = null

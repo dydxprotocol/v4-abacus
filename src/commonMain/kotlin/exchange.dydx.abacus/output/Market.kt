@@ -6,19 +6,20 @@ import exchange.dydx.abacus.protocols.LocalizerProtocol
 import exchange.dydx.abacus.protocols.ParserProtocol
 import exchange.dydx.abacus.state.changes.Changes
 import exchange.dydx.abacus.state.changes.StateChanges
+import exchange.dydx.abacus.state.internalstate.InternalMarketSummaryState
 import exchange.dydx.abacus.state.manager.OrderbookGrouping
 import exchange.dydx.abacus.utils.IList
 import exchange.dydx.abacus.utils.IMap
-import exchange.dydx.abacus.utils.IMutableMap
 import exchange.dydx.abacus.utils.Logger
+import exchange.dydx.abacus.utils.Numeric
 import exchange.dydx.abacus.utils.ParsingHelper
 import exchange.dydx.abacus.utils.mutable
 import exchange.dydx.abacus.utils.typedSafeSet
 import kollections.JsExport
-import kollections.iMapOf
 import kollections.iMutableListOf
 import kollections.iMutableMapOf
 import kollections.toIList
+import kollections.toIMap
 import kotlinx.serialization.Serializable
 import numberOfDecimals
 
@@ -50,6 +51,9 @@ data class MarketStatus(
             }
         }
     }
+
+    val canDisplay: Boolean
+        get() = canTrade || canReduce
 }
 
 /* for V4 only */
@@ -229,6 +233,19 @@ data class MarketConfigs(
             }
         }
     }
+
+    internal val maxMarketLeverage: Double
+        get() {
+            val imf = initialMarginFraction ?: Numeric.double.ZERO
+            val effectiveImf = effectiveInitialMarginFraction ?: Numeric.double.ZERO
+            return if (effectiveImf > Numeric.double.ZERO) {
+                Numeric.double.ONE / effectiveImf
+            } else if (imf > Numeric.double.ZERO) {
+                Numeric.double.ONE / imf
+            } else {
+                Numeric.double.ONE
+            }
+        }
 }
 
 @JsExport
@@ -296,6 +313,7 @@ data class MarketPerpetual(
     val openInterestLowerCap: Double? = null,
     val openInterestUpperCap: Double? = null,
     val line: IList<Double>?,
+    val isNew: Boolean = false,
 ) {
     companion object {
         internal fun create(
@@ -491,7 +509,6 @@ data class MarketCandle(
 /*
     "1MIN", "5MINS", "15MINS", "30MINS", "1HOUR", "4HOURS", "1DAY"
  */
-@Suppress("UNCHECKED_CAST")
 @JsExport
 @Serializable
 data class MarketCandles(
@@ -653,7 +670,6 @@ data class MarketTrade(
     }
 }
 
-@Suppress("UNCHECKED_CAST")
 @JsExport
 @Serializable
 data class OrderbookLine(
@@ -704,7 +720,7 @@ Under extreme conditions, orderbook may be obsent, or one-sided
 */
 
 @JsExport
-@kotlinx.serialization.Serializable
+@Serializable
 data class MarketOrderbookGrouping(val multiplier: OrderbookGrouping, val tickSize: Double?) {
     companion object {
         internal fun create(
@@ -836,13 +852,13 @@ data class MarketOrderbook(
 depending on the timing of v3_markets socket channel and /config/markets.json,
 the object may contain empty fields until both payloads are received and processed
 */
-@Suppress("UNCHECKED_CAST")
 @JsExport
 @Serializable
 data class PerpetualMarket(
     val id: String,
     val assetId: String,
     val market: String?,
+    val displayId: String?,
     val oraclePrice: Double? = null,
     val marketCaps: Double?,
     val priceChange24H: Double?,
@@ -869,7 +885,7 @@ data class PerpetualMarket(
             val id = parser.asString(data["id"]) ?: return null
             val assetId = parser.asString(data["assetId"]) ?: return null
             val market = parser.asString(data["market"])
-
+            val displayId = parser.asString(data["displayId"]) ?: return null
             val oraclePrice = parser.asDouble(data["oraclePrice"])
             val marketCaps = parser.asDouble(data["marketCaps"])
             val priceChange24H = parser.asDouble(data["priceChange24H"])
@@ -885,6 +901,7 @@ data class PerpetualMarket(
             val significantChange = existing?.id != id ||
                 existing.assetId != assetId ||
                 existing.market != market ||
+                existing.displayId != displayId ||
                 existing.oraclePrice != oraclePrice ||
                 existing.marketCaps != marketCaps ||
                 existing.priceChange24H != priceChange24H ||
@@ -899,6 +916,7 @@ data class PerpetualMarket(
                     id,
                     assetId,
                     market,
+                    displayId,
                     oraclePrice,
                     marketCaps,
                     priceChange24H,
@@ -942,70 +960,60 @@ data class PerpetualMarketSummary(
     val markets: IMap<String, PerpetualMarket>?,
 ) {
     companion object {
-        internal fun create(
-            existing: PerpetualMarketSummary?,
-            parser: ParserProtocol,
-            data: Map<String, Any>,
-            assets: Map<String, Any>?
-        ): PerpetualMarketSummary? {
-            Logger.d { "creating Perpetual Market Summary\n" }
-
-            val markets: IMutableMap<String, PerpetualMarket> =
-                iMutableMapOf()
-            val marketsData = parser.asMap(data["markets"]) ?: return null
-
-            for ((key, value) in marketsData) {
-                val marketData = parser.asMap(value) ?: iMapOf()
-                PerpetualMarket.create(
-                    existing?.markets?.get(key),
-                    parser,
-                    marketData,
-                    assets,
-                    false,
-                    false,
-                )
-                    ?.let { market ->
-                        markets[key] = market
-                    }
-            }
-
-            return perpetualMarketSummary(existing, parser, data, markets)
-        }
-
         internal fun apply(
             existing: PerpetualMarketSummary?,
             parser: ParserProtocol,
             data: Map<String, Any>,
             assets: Map<String, Any>?,
+            staticTyping: Boolean,
+            marketSummaryState: InternalMarketSummaryState,
             changes: StateChanges,
         ): PerpetualMarketSummary? {
-            val marketsData = parser.asMap(data["markets"]) ?: return null
-            val changedMarkets = changes.markets ?: marketsData.keys
-
-            val markets = existing?.markets?.mutable() ?: iMutableMapOf()
-            for (marketId in changedMarkets) {
-                val marketData = parser.asMap(marketsData[marketId]) ?: continue
-//                val marketData = parser.asMap(configDataMap["configs"]) ?: continue
-                val existingMarket = existing?.markets?.get(marketId)
-
-                val perpMarket = PerpetualMarket.create(
-                    existingMarket,
-                    parser,
-                    marketData,
-                    assets,
-                    changes.changes.contains(Changes.orderbook),
-                    changes.changes.contains(Changes.trades),
+            if (staticTyping) {
+                if (marketSummaryState.markets.isEmpty()) {
+                    return null
+                }
+                val markets: MutableMap<String, PerpetualMarket> = mutableMapOf()
+                for ((marketId, market) in marketSummaryState.markets) {
+                    market.perpetualMarket?.let {
+                        markets[marketId] = it
+                    }
+                }
+                return PerpetualMarketSummary(
+                    volume24HUSDC = marketSummaryState.volume24HUSDC,
+                    openInterestUSDC = marketSummaryState.openInterestUSDC,
+                    trades24H = marketSummaryState.trades24H,
+                    markets = markets.toIMap(),
                 )
-                markets.typedSafeSet(marketId, perpMarket)
+            } else {
+                val marketsData = parser.asMap(data["markets"]) ?: return null
+                val changedMarkets = changes.markets ?: marketsData.keys
+
+                val markets = existing?.markets?.mutable() ?: iMutableMapOf()
+                for (marketId in changedMarkets) {
+                    val marketData = parser.asMap(marketsData[marketId]) ?: continue
+//                  val marketData = parser.asMap(configDataMap["configs"]) ?: continue
+                    val existingMarket = existing?.markets?.get(marketId)
+
+                    val perpMarket = PerpetualMarket.create(
+                        existing = existingMarket,
+                        parser = parser,
+                        data = marketData,
+                        assets = assets,
+                        resetOrderbook = changes.changes.contains(Changes.orderbook),
+                        resetTrades = changes.changes.contains(Changes.trades),
+                    )
+                    markets.typedSafeSet(marketId, perpMarket)
+                }
+                return createPerpetualMarketSummary(existing, parser, data, markets)
             }
-            return perpetualMarketSummary(existing, parser, data, markets)
         }
 
-        private fun perpetualMarketSummary(
+        private fun createPerpetualMarketSummary(
             existing: PerpetualMarketSummary?,
             parser: ParserProtocol,
             data: Map<String, Any>,
-            newMarkets: IMutableMap<String, PerpetualMarket>,
+            newMarkets: Map<String, PerpetualMarket>,
         ): PerpetualMarketSummary? {
             val volume24HUSDC = parser.asDouble(data["volume24HUSDC"])
             val openInterestUSDC = parser.asDouble(data["openInterestUSDC"])
@@ -1020,10 +1028,10 @@ data class PerpetualMarketSummary(
                 existing
             } else {
                 PerpetualMarketSummary(
-                    volume24HUSDC,
-                    openInterestUSDC,
-                    trades24H,
-                    newMarkets,
+                    volume24HUSDC = volume24HUSDC,
+                    openInterestUSDC = openInterestUSDC,
+                    trades24H = trades24H,
+                    markets = newMarkets.toIMap(),
                 )
             }
         }

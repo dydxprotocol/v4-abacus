@@ -1,6 +1,6 @@
 package exchange.dydx.abacus.processor.wallet.account
 
-import exchange.dydx.abacus.output.SubaccountFill
+import exchange.dydx.abacus.output.account.SubaccountFill
 import exchange.dydx.abacus.tests.mock.LocalizerProtocolMock
 import exchange.dydx.abacus.tests.mock.processor.wallet.account.FillProcessorMock
 import exchange.dydx.abacus.utils.Parser

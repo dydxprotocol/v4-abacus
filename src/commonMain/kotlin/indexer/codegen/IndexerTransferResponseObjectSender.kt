@@ -12,15 +12,17 @@
 package indexer.codegen
 
 import kotlinx.serialization.Serializable
+import kotlin.js.JsExport
 
 /**
  *
  * @param subaccountNumber
  * @param address
  */
+@JsExport
 @Serializable
 data class IndexerTransferResponseObjectSender(
 
-    val subaccountNumber: kotlin.Double? = null,
+    val subaccountNumber: kotlin.Int? = null,
     val address: kotlin.String? = null
 )

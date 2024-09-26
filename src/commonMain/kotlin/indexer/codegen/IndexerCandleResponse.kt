@@ -12,11 +12,13 @@
 package indexer.codegen
 
 import kotlinx.serialization.Serializable
+import kotlin.js.JsExport
 
 /**
  *
  * @param candles
  */
+@JsExport
 @Serializable
 data class IndexerCandleResponse(
 

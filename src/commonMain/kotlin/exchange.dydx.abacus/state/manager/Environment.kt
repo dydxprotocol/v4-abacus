@@ -77,10 +77,11 @@ data class EnvironmentLinks(
     val feedback: String?,
     val blogs: String?,
     val help: String?,
+    val vaultLearnMore: String?,
     val launchIncentive: String?,
     val statusPage: String?,
     val withdrawalGateLearnMore: String?,
-    val complianceSupportEmail: String?,
+    val equityTiersLearnMore: String?,
 ) {
     companion object {
         fun parse(
@@ -96,10 +97,11 @@ data class EnvironmentLinks(
             val feedback = parser.asString(data["feedback"])
             val blogs = parser.asString(data["blogs"])
             val help = parser.asString(data["help"])
+            val vaultLearnMore = parser.asString(data["vaultLearnMore"])
             val launchIncentive = parser.asString(data["launchIncentive"])
             val statusPage = parser.asString(data["statusPage"])
             val withdrawalGateLearnMore = parser.asString(data["withdrawalGateLearnMore"])
-            val complianceSupportEmail = parser.asString(data["complianceSupportEmail"])
+            val equityTiersLearnMore = parser.asString(data["equityTiersLearnMore"])
             return EnvironmentLinks(
                 tos,
                 privacy,
@@ -110,10 +112,11 @@ data class EnvironmentLinks(
                 feedback,
                 blogs,
                 help,
+                vaultLearnMore,
                 launchIncentive,
                 statusPage,
                 withdrawalGateLearnMore,
-                complianceSupportEmail,
+                equityTiersLearnMore,
             )
         }
     }
@@ -486,22 +489,22 @@ class V4Environment(
             val featureFlags = EnvironmentFeatureFlags.parse(parser.asMap(data["featureFlags"]), parser)
 
             return V4Environment(
-                id,
-                name,
-                ethereumChainId,
-                dydxChainId,
-                squidIntegratorId,
-                chainName,
-                "$deploymentUri$chainLogo",
-                rewardsHistoryStartDateMs,
-                isMainNet,
-                endpoints,
-                links,
-                walletConnection,
-                apps,
-                tokens,
-                governance,
-                featureFlags,
+                id = id,
+                name = name,
+                ethereumChainId = ethereumChainId,
+                dydxChainId = dydxChainId,
+                squidIntegratorId = squidIntegratorId,
+                chainName = chainName,
+                chainLogo = "$deploymentUri$chainLogo",
+                rewardsHistoryStartDateMs = rewardsHistoryStartDateMs,
+                isMainNet = isMainNet,
+                endpoints = endpoints,
+                links = links,
+                walletConnection = walletConnection,
+                apps = apps,
+                tokens = tokens,
+                governance = governance,
+                featureFlags = featureFlags,
             )
         }
 
@@ -526,11 +529,11 @@ class V4Environment(
                             "$deploymentUri$it"
                         }
                         tokens[key] = TokenInfo(
-                            name,
-                            denom,
-                            decimals,
-                            gasDenom,
-                            imageUrl,
+                            name = name,
+                            denom = denom,
+                            decimals = decimals,
+                            gasDenom = gasDenom,
+                            imageUrl = imageUrl,
                         )
                     }
                 }
@@ -542,8 +545,10 @@ class V4Environment(
 }
 
 @JsExport
+@Suppress("PropertyName")
 data object StatsigConfig {
-    var useSkip: Boolean = false
+    var dc_max_safe_bridge_fees: Float = Float.POSITIVE_INFINITY
+    var ff_enable_limit_close: Boolean = false
 }
 
 @JsExport

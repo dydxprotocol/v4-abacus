@@ -9,6 +9,7 @@ import exchange.dydx.abacus.tests.extensions.loadMarkets
 import exchange.dydx.abacus.tests.extensions.loadMarketsConfigurations
 import exchange.dydx.abacus.tests.extensions.loadOrderbook
 import exchange.dydx.abacus.tests.extensions.loadUser
+import exchange.dydx.abacus.tests.extensions.parseOnChainEquityTiers
 
 open class V3BaseTests : BaseTests(0, false) {
     internal fun loadMarkets(): StateResponse {
@@ -18,31 +19,7 @@ open class V3BaseTests : BaseTests(0, false) {
     }
 
     internal fun loadMarketsConfigurations(): StateResponse {
-        return test(
-            {
-                perp.loadMarketsConfigurations(mock, deploymentUri)
-            },
-            """
-            {
-                "markets": {
-                    "markets": {
-                        "BTC-USD": {
-                            "configs": {
-                                "displayStepSize":"0.0001",
-                                "displayTickSize":"1"
-                                }
-                        },
-                        "ETH-USD": {
-                            "configs": {
-                                "displayStepSize":"0.001",
-                                "displayTickSize":"0.1"
-                                }
-                        }
-                    }
-                }
-            }
-            """.trimIndent(),
-        )
+        return perp.loadMarketsConfigurations(mock, deploymentUri)
     }
 
     internal fun loadAccounts(): StateResponse {

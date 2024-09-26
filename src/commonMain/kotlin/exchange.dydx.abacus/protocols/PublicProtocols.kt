@@ -10,14 +10,14 @@ import exchange.dydx.abacus.output.Notification
 import exchange.dydx.abacus.output.PerpetualMarket
 import exchange.dydx.abacus.output.PerpetualMarketSummary
 import exchange.dydx.abacus.output.PerpetualState
-import exchange.dydx.abacus.output.Subaccount
-import exchange.dydx.abacus.output.SubaccountFill
-import exchange.dydx.abacus.output.SubaccountFundingPayment
-import exchange.dydx.abacus.output.SubaccountHistoricalPNL
-import exchange.dydx.abacus.output.SubaccountOrder
-import exchange.dydx.abacus.output.SubaccountTransfer
 import exchange.dydx.abacus.output.TransferStatus
 import exchange.dydx.abacus.output.Wallet
+import exchange.dydx.abacus.output.account.Subaccount
+import exchange.dydx.abacus.output.account.SubaccountFill
+import exchange.dydx.abacus.output.account.SubaccountFundingPayment
+import exchange.dydx.abacus.output.account.SubaccountHistoricalPNL
+import exchange.dydx.abacus.output.account.SubaccountOrder
+import exchange.dydx.abacus.output.account.SubaccountTransfer
 import exchange.dydx.abacus.output.input.Input
 import exchange.dydx.abacus.responses.ParsingError
 import exchange.dydx.abacus.state.changes.StateChanges
@@ -158,7 +158,8 @@ enum class TransactionType(val rawValue: String) {
     CctpWithdraw("cctpWithdraw"),
     CctpMultiMsgWithdraw("cctpMultiMsgWithdraw"),
     SignCompliancePayload("signCompliancePayload"),
-    SetSelectedGasDenom("setSelectedGasDenom");
+    SetSelectedGasDenom("setSelectedGasDenom"),
+    SignPushNotificationTokenRegistrationPayload("signPushNotificationTokenRegistrationPayload");
 
     companion object {
         operator fun invoke(rawValue: String) =
@@ -195,41 +196,46 @@ interface DYDXChainTransactionsProtocol {
 }
 
 @JsExport
-enum class AnalyticsEvent(val rawValue: String) {
+enum class AnalyticsEvent {
     // App
-    NetworkStatus("NetworkStatus"),
+    NetworkStatus,
 
     // Trade
-    TradePlaceOrderClick("TradePlaceOrderClick"),
-    TradeCancelOrderClick("TradeCancelOrderClick"),
-    TradePlaceOrder("TradePlaceOrder"),
-    TradeCancelOrder("TradeCancelOrder"),
-    TradePlaceOrderSubmissionConfirmed("TradePlaceOrderSubmissionConfirmed"),
-    TradeCancelOrderSubmissionConfirmed("TradeCancelOrderSubmissionConfirmed"),
-    TradePlaceOrderSubmissionFailed("TradePlaceOrderSubmissionFailed"),
-    TradeCancelOrderSubmissionFailed("TradeCancelOrderSubmissionFailed"),
-    TradeCancelOrderConfirmed("TradeCancelOrderConfirmed"),
-    TradePlaceOrderConfirmed("TradePlaceOrderConfirmed"),
+    TradePlaceOrderClick,
+    TradeCancelOrderClick,
+    TradeCancelAllOrdersClick,
+    TradeCloseAllPositionsClick,
+    TradePlaceOrder,
+    TradeCancelOrder,
+    TradePlaceOrderSubmissionConfirmed,
+    TradeCancelOrderSubmissionConfirmed,
+    TradePlaceOrderSubmissionFailed,
+    TradeCancelOrderSubmissionFailed,
+    TradeCancelOrderConfirmed,
+    TradePlaceOrderConfirmed,
 
     // Order status change
-    TradePlaceOrderStatusCanceled("TradePlaceOrderStatusCanceled"),
-    TradePlaceOrderStatusCanceling("TradePlaceOrderStatusCanceling"),
-    TradePlaceOrderStatusFilled("TradePlaceOrderStatusFilled"),
-    TradePlaceOrderStatusOpen("TradePlaceOrderStatusOpen"),
-    TradePlaceOrderStatusPending("TradePlaceOrderStatusPending"),
-    TradePlaceOrderStatusUntriggered("TradePlaceOrderStatusUntriggered"),
-    TradePlaceOrderStatusPartiallyFilled("TradePlaceOrderStatusPartiallyFilled"),
-    TradePlaceOrderStatusPartiallyCanceled("TradePlaceOrderStatusPartiallyCanceled"),
+    TradePlaceOrderStatusCanceled,
+    TradePlaceOrderStatusCanceling,
+    TradePlaceOrderStatusFilled,
+    TradePlaceOrderStatusOpen,
+    TradePlaceOrderStatusPending,
+    TradePlaceOrderStatusUntriggered,
+    TradePlaceOrderStatusPartiallyFilled,
+    TradePlaceOrderStatusPartiallyCanceled,
 
     // Trigger Order
-    TriggerOrderClick("TriggerOrderClick"),
+    TriggerOrderClick,
+
+    // Validation Error
+    TradeValidation,
 
     // Transfers
-    TransferFaucetConfirmed("TransferFaucetConfirmed");
+    TransferFaucetConfirmed;
 
     companion object {
         operator fun invoke(rawValue: String) =
-            AnalyticsEvent.values().firstOrNull { it.rawValue == rawValue }
+            entries.firstOrNull { it.name == rawValue }
     }
 }
 
@@ -355,5 +361,7 @@ interface PresentationProtocol {
 interface LoggingProtocol {
     fun d(tag: String, message: String)
 
-    fun e(tag: String, message: String)
+    fun e(tag: String, message: String, context: Map<String, Any>?, error: Error?)
+
+    fun ddInfo(tag: String, message: String, context: Map<String, Any>?)
 }

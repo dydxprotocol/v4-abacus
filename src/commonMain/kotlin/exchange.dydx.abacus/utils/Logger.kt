@@ -17,10 +17,18 @@ object Logger {
         }
     }
 
-    fun e(message: () -> String) {
+    fun e(context: Map<String, Any>? = null, error: Error? = null, message: () -> String) {
         clientLogger?.let {
-            it.e(TAG, message())
+            it.e(TAG, message(), context?.toJsonObject(), error)
         } ?: platformErrorLog(message())
+    }
+
+    fun ddInfo(context: Map<String, Any>? = null, message: () -> String) {
+        if (isDebugEnabled) {
+            clientLogger?.let {
+                it.ddInfo(TAG, message(), context?.toJsonObject())
+            }
+        }
     }
 }
 

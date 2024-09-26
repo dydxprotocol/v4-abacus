@@ -5,6 +5,7 @@ import exchange.dydx.abacus.protocols.ParserProtocol
 import exchange.dydx.abacus.utils.Numeric
 import exchange.dydx.abacus.utils.mutable
 import exchange.dydx.abacus.utils.safeSet
+import kotlin.math.max
 
 internal enum class CalculationPeriod(val rawValue: String) {
     current("current"),
@@ -17,7 +18,6 @@ internal enum class CalculationPeriod(val rawValue: String) {
     }
 }
 
-@Suppress("UNCHECKED_CAST")
 internal class SubaccountCalculator(val parser: ParserProtocol) {
     internal fun calculate(
         subaccount: Map<String, Any>?,
@@ -159,13 +159,15 @@ internal class SubaccountCalculator(val parser: ParserProtocol) {
                             set(maxLeverage, modified, "maxLeverage", period)
 
                             if (entryPrice != null) {
+                                val leverage = parser.asDouble(value(position, "leverage", period))
+                                val scaledLeverage = max(leverage?.abs() ?: 1.0, 1.0)
                                 val entryValue = size * entryPrice
                                 val currentValue = size * oraclePrice
                                 val unrealizedPnl = currentValue - entryValue
-                                val unrealizedPnlPercent =
-                                    if (entryValue != Numeric.double.ZERO) unrealizedPnl / entryValue.abs() else null
+                                val scaledUnrealizedPnlPercent =
+                                    if (entryValue != Numeric.double.ZERO) unrealizedPnl / entryValue.abs() * scaledLeverage else null
                                 set(unrealizedPnl, modified, "unrealizedPnl", period)
-                                set(unrealizedPnlPercent, modified, "unrealizedPnlPercent", period)
+                                set(scaledUnrealizedPnlPercent, modified, "unrealizedPnlPercent", period)
                             }
 
                             val marginMode = parser.asString(parser.value(position, "marginMode"))

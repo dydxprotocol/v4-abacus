@@ -5,6 +5,7 @@ import exchange.dydx.abacus.di.Deployment
 import exchange.dydx.abacus.di.DeploymentUri
 import exchange.dydx.abacus.output.ComplianceAction
 import exchange.dydx.abacus.output.Documentation
+import exchange.dydx.abacus.output.PerpetualState
 import exchange.dydx.abacus.output.Restriction
 import exchange.dydx.abacus.output.input.SelectionOption
 import exchange.dydx.abacus.protocols.DataNotificationProtocol
@@ -23,7 +24,9 @@ import exchange.dydx.abacus.state.manager.ConfigFile
 import exchange.dydx.abacus.state.manager.GasToken
 import exchange.dydx.abacus.state.manager.HistoricalPnlPeriod
 import exchange.dydx.abacus.state.manager.HistoricalTradingRewardsPeriod
+import exchange.dydx.abacus.state.manager.HumanReadableCancelAllOrdersPayload
 import exchange.dydx.abacus.state.manager.HumanReadableCancelOrderPayload
+import exchange.dydx.abacus.state.manager.HumanReadableCloseAllPositionsPayload
 import exchange.dydx.abacus.state.manager.HumanReadableDepositPayload
 import exchange.dydx.abacus.state.manager.HumanReadablePlaceOrderPayload
 import exchange.dydx.abacus.state.manager.HumanReadableSubaccountTransferPayload
@@ -39,6 +42,7 @@ import exchange.dydx.abacus.state.model.ClosePositionInputField
 import exchange.dydx.abacus.state.model.TradeInputField
 import exchange.dydx.abacus.state.model.TransferInputField
 import exchange.dydx.abacus.state.model.TriggerOrdersInputField
+import exchange.dydx.abacus.state.model.WalletConnectionType
 import exchange.dydx.abacus.state.v2.supervisor.AppConfigsV2
 import exchange.dydx.abacus.utils.CoroutineTimer
 import exchange.dydx.abacus.utils.DummyFormatter
@@ -75,8 +79,8 @@ class AsyncAbacusStateManagerV2(
         }
     }
 
-    private val environmentsFile = ConfigFile.ENV
-    private val documentationFile = ConfigFile.DOCUMENTATION
+    override val state: PerpetualState?
+        get() = adaptor?.stateMachine?.state
 
     private var _appSettings: AppSettings? = null
 
@@ -138,7 +142,7 @@ class AsyncAbacusStateManagerV2(
                 value?.historicalPnlPeriod = historicalPnlPeriod
                 value?.candlesResolution = candlesResolution
                 value?.readyToConnect = readyToConnect
-                value?.cosmosWalletConnected = cosmosWalletConnected
+                value?.walletConnectionType = walletConnectionType
                 field = value
             }
         }
@@ -185,11 +189,11 @@ class AsyncAbacusStateManagerV2(
             }
         }
 
-    override var cosmosWalletConnected: Boolean? = false
+    override var walletConnectionType: WalletConnectionType? = WalletConnectionType.Ethereum
         set(value) {
             field = value
             ioImplementations.threading?.async(ThreadingType.abacus) {
-                adaptor?.cosmosWalletConnected = field
+                adaptor?.walletConnectionType = field
             }
         }
 
@@ -233,6 +237,9 @@ class AsyncAbacusStateManagerV2(
                 adaptor?.gasToken = field
             }
         }
+
+    private var pushNotificationToken: String? = null
+    private var pushNotificationLanguageCode: String? = null
 
     companion object {
         private fun createIOImplementions(_nativeImplementations: ProtocolNativeImpFactory): IOImplementations {
@@ -386,15 +393,15 @@ class AsyncAbacusStateManagerV2(
                 val data = parser.asMap(value) ?: continue
                 val dydxChainId = parser.asString(data["dydxChainId"]) ?: continue
                 val environment = V4Environment.parse(
-                    key,
-                    data,
-                    parser,
-                    deploymentUri,
-                    uiImplementations.localizer,
-                    parser.asNativeMap(tokensData?.get(dydxChainId)),
-                    parser.asNativeMap(linksData?.get(dydxChainId)),
-                    parser.asNativeMap(walletsData?.get(dydxChainId)),
-                    parser.asNativeMap(governanceData?.get(dydxChainId)),
+                    id = key,
+                    data = data,
+                    parser = parser,
+                    deploymentUri = deploymentUri,
+                    localizer = uiImplementations.localizer,
+                    tokensData = parser.asNativeMap(tokensData?.get(dydxChainId)),
+                    linksData = parser.asNativeMap(linksData?.get(dydxChainId)),
+                    walletsData = parser.asNativeMap(walletsData?.get(dydxChainId)),
+                    governanceData = parser.asNativeMap(governanceData?.get(dydxChainId)),
                 ) ?: continue
                 parsedEnvironments[environment.id] = environment
             }
@@ -435,16 +442,19 @@ class AsyncAbacusStateManagerV2(
         val environment = environment
         if (environment != null) {
             adaptor = StateManagerAdaptorV2(
-                deploymentUri,
-                environment,
-                ioImplementations,
-                uiImplementations,
-                V4StateManagerConfigs(deploymentUri, environment),
-                appConfigs,
-                stateNotification,
-                dataNotification,
-                presentationProtocol,
+                deploymentUri = deploymentUri,
+                environment = environment,
+                ioImplementations = ioImplementations,
+                uiImplementations = uiImplementations,
+                configs = V4StateManagerConfigs(deploymentUri, environment),
+                appConfigs = appConfigs,
+                stateNotification = stateNotification,
+                dataNotification = dataNotification,
+                presentationProtocol = presentationProtocol,
             )
+            pushNotificationToken?.let { token ->
+                adaptor?.registerPushNotification(token, pushNotificationLanguageCode)
+            }
         }
     }
 
@@ -501,6 +511,14 @@ class AsyncAbacusStateManagerV2(
 
     override fun cancelOrderPayload(orderId: String): HumanReadableCancelOrderPayload? {
         return adaptor?.cancelOrderPayload(orderId)
+    }
+
+    override fun cancelAllOrdersPayload(marketId: String?): HumanReadableCancelAllOrdersPayload? {
+        return adaptor?.cancelAllOrdersPayload(marketId)
+    }
+
+    override fun closeAllPositionsPayload(): HumanReadableCloseAllPositionsPayload? {
+        return adaptor?.closeAllPositionsPayload()
     }
 
     override fun triggerOrdersPayload(): HumanReadableTriggerOrdersPayload? {
@@ -603,6 +621,25 @@ class AsyncAbacusStateManagerV2(
         }
     }
 
+    override fun cancelAllOrders(marketId: String?, callback: TransactionCallback) {
+        try {
+            adaptor?.cancelAllOrders(marketId, callback)
+        } catch (e: Exception) {
+            val error = V4TransactionErrors.error(null, e.toString())
+            callback(false, error, null)
+        }
+    }
+
+    override fun closeAllPositions(callback: TransactionCallback): HumanReadableCloseAllPositionsPayload? {
+        return try {
+            adaptor?.closeAllPositions(callback)
+        } catch (e: Exception) {
+            val error = V4TransactionErrors.error(null, e.toString())
+            callback(false, error, null)
+            null
+        }
+    }
+
     override fun triggerCompliance(action: ComplianceAction, callback: TransactionCallback) {
         try {
             adaptor?.triggerCompliance(action, callback)
@@ -640,5 +677,11 @@ class AsyncAbacusStateManagerV2(
             )
         }
         return null
+    }
+
+    override fun registerPushNotification(token: String, languageCode: String?) {
+        pushNotificationToken = token
+        pushNotificationLanguageCode = languageCode
+        adaptor?.registerPushNotification(token, languageCode)
     }
 }

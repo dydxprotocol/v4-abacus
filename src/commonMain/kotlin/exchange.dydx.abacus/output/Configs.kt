@@ -455,57 +455,65 @@ data class Configs(
             data: Map<*, *>?,
             localizer: LocalizerProtocol?,
         ): Configs? {
-            data?.let {
+            if (data != null) {
                 val network =
                     NetworkConfigs.create(existing?.network, parser, parser.asMap(data["network"]))
+
                 val feeTiers = FeeTier.create(
                     existing?.feeTiers,
                     parser,
                     parser.asList(data["feeTiers"]),
                     localizer,
                 )
+
                 val feeDiscounts = FeeDiscount.create(
                     existing?.feeDiscounts,
                     parser,
                     parser.asList(data["feeDiscounts"]),
                     localizer,
                 )
+
                 val equityTiers = EquityTiers.create(
                     existing?.equityTiers,
                     parser,
                     parser.asMap(data["equityTiers"]),
                 )
-                var withdrawalGating = WithdrawalGating.create(
+
+                val withdrawalGating = WithdrawalGating.create(
                     existing?.withdrawalGating,
                     parser,
                     parser.asMap(data["withdrawalGating"]),
                 )
-                var withdrawalCapacity = WithdrawalCapacity.create(
+
+                val withdrawalCapacity = WithdrawalCapacity.create(
                     existing?.withdrawalCapacity,
                     parser,
                     parser.asMap(data["withdrawalCapacity"]),
                 )
+
                 return if (existing?.network !== network ||
                     existing?.feeTiers != feeTiers ||
                     existing?.feeDiscounts != feeDiscounts ||
-                    existing?.equityTiers != equityTiers
+                    existing?.equityTiers != equityTiers ||
+                    existing?.withdrawalGating != withdrawalGating ||
+                    existing?.withdrawalCapacity != withdrawalCapacity
                 ) {
                     Configs(
-                        network,
-                        feeTiers,
-                        feeDiscounts,
-                        equityTiers,
-                        withdrawalGating,
-                        withdrawalCapacity,
+                        network = network,
+                        feeTiers = feeTiers,
+                        feeDiscounts = feeDiscounts,
+                        equityTiers = equityTiers,
+                        withdrawalGating = withdrawalGating,
+                        withdrawalCapacity = withdrawalCapacity,
                     )
                 } else {
                     existing ?: Configs(
-                        null,
-                        null,
-                        null,
-                        null,
-                        null,
-                        null,
+                        network = null,
+                        feeTiers = null,
+                        feeDiscounts = null,
+                        equityTiers = null,
+                        withdrawalGating = null,
+                        withdrawalCapacity = null,
                     )
                 }
             }

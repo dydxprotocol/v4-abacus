@@ -1,6 +1,6 @@
 package exchange.dydx.abacus.utils
 
-import exchange.dydx.abacus.output.SubaccountOrder
+import exchange.dydx.abacus.output.account.SubaccountOrder
 import exchange.dydx.abacus.output.input.OrderType
 import exchange.dydx.abacus.state.manager.HumanReadableCancelOrderPayload
 import exchange.dydx.abacus.state.manager.HumanReadablePlaceOrderPayload
@@ -36,10 +36,10 @@ class AnalyticsUtils {
         val stopLossOrderTypes = listOf(OrderType.StopMarket, OrderType.StopLimit)
         val takeProfitOrderTypes = listOf(OrderType.TakeProfitMarket, OrderType.TakeProfitLimit)
 
-        var stopLossOrderCancelClientId: Int? = null
-        var stopLossOrderPlaceClientId: Int? = null
-        var takeProfitOrderCancelClientId: Int? = null
-        var takeProfitOrderPlaceClientId: Int? = null
+        var stopLossOrderCancelClientId: String? = null
+        var stopLossOrderPlaceClientId: String? = null
+        var takeProfitOrderCancelClientId: String? = null
+        var takeProfitOrderPlaceClientId: String? = null
 
         var stopLossOrderAction: TriggerOrderAction? = null
         var takeProfitOrderAction: TriggerOrderAction? = null
@@ -133,6 +133,7 @@ class AnalyticsUtils {
             "reduceOnly" to payload.reduceOnly,
             "side" to payload.side,
             "size" to payload.size,
+            "sizeInput" to payload.sizeInput,
             "subaccountNumber" to payload.subaccountNumber,
             "timeInForce" to payload.timeInForce,
             "triggerPrice" to payload.triggerPrice,
@@ -179,9 +180,10 @@ class AnalyticsUtils {
         existingOrder: SubaccountOrder?,
         fromSlTpDialog: Boolean? = false,
         isOrphanedTriggerOrder: Boolean = false,
+        isCancelAll: Boolean = false,
     ): IMap<String, Any>? {
         return ParsingHelper.merge(
-            formatCancelOrderPayload(payload, fromSlTpDialog, isOrphanedTriggerOrder),
+            formatCancelOrderPayload(payload, fromSlTpDialog, isOrphanedTriggerOrder, isCancelAll),
             if (existingOrder != null) formatOrder(existingOrder) else mapOf(),
         )?.toIMap()
     }
@@ -195,10 +197,12 @@ class AnalyticsUtils {
         payload: HumanReadableCancelOrderPayload,
         fromSlTpDialog: Boolean? = false,
         isOrphanedTriggerOrder: Boolean = false,
+        isCancelAll: Boolean = false,
     ): IMap<String, Any>? {
         return iMapOf(
             "fromSlTpDialog" to fromSlTpDialog,
             "isAutomaticallyCanceledByFrontend" to isOrphanedTriggerOrder,
+            "isCancelAll" to isCancelAll,
             "subaccountNumber" to payload.subaccountNumber,
             "clientId" to payload.clientId,
             "orderId" to payload.orderId,

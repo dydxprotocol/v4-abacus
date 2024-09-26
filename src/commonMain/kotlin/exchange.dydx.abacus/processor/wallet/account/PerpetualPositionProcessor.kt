@@ -1,13 +1,19 @@
 package exchange.dydx.abacus.processor.wallet.account
 
 import abs
+import exchange.dydx.abacus.output.TradeStatesWithStringValues
+import exchange.dydx.abacus.output.account.SubaccountPositionResources
 import exchange.dydx.abacus.output.input.MarginMode
 import exchange.dydx.abacus.processor.base.BaseProcessor
+import exchange.dydx.abacus.processor.utils.MarketId
+import exchange.dydx.abacus.protocols.LocalizerProtocol
 import exchange.dydx.abacus.protocols.ParserProtocol
+import exchange.dydx.abacus.state.internalstate.InternalPerpetualPosition
 import exchange.dydx.abacus.utils.NUM_PARENT_SUBACCOUNTS
 import exchange.dydx.abacus.utils.Numeric
-import exchange.dydx.abacus.utils.ParsingHelper
 import exchange.dydx.abacus.utils.safeSet
+import indexer.codegen.IndexerPerpetualPositionResponseObject
+import indexer.codegen.IndexerPositionSide
 
 /*
     "ETH-USD": {
@@ -70,8 +76,22 @@ import exchange.dydx.abacus.utils.safeSet
     }
  */
 
-@Suppress("UNCHECKED_CAST")
-internal class PerpetualPositionProcessor(parser: ParserProtocol) : BaseProcessor(parser) {
+internal interface PerpetualPositionProcessorProtocol {
+    fun process(
+        existing: InternalPerpetualPosition?,
+        payload: IndexerPerpetualPositionResponseObject?,
+    ): InternalPerpetualPosition?
+
+    fun processChanges(
+        existing: InternalPerpetualPosition?,
+        payload: IndexerPerpetualPositionResponseObject?,
+    ): InternalPerpetualPosition?
+}
+
+internal class PerpetualPositionProcessor(
+    parser: ParserProtocol,
+    private val localizer: LocalizerProtocol?,
+) : BaseProcessor(parser), PerpetualPositionProcessorProtocol {
     private val sideStringKeys = mapOf(
         "LONG" to "APP.GENERAL.LONG_POSITION_SHORT",
         "SHORT" to "APP.GENERAL.SHORT_POSITION_SHORT",
@@ -106,6 +126,78 @@ internal class PerpetualPositionProcessor(parser: ParserProtocol) : BaseProcesso
         ),
     )
 
+    override fun process(
+        existing: InternalPerpetualPosition?,
+        payload: IndexerPerpetualPositionResponseObject?,
+    ): InternalPerpetualPosition? {
+        return if (payload != null) {
+            val sideStringKey = sideStringKeys[payload.side?.value]
+            val sideString = if (sideStringKey != null) {
+                localizer?.localize(sideStringKey)
+            } else {
+                sideStringKey
+            }
+            val size = parser.asDouble(payload.size)
+            val signedSize =
+                if (size != null) {
+                    if (payload.side == IndexerPositionSide.SHORT) (size.abs() * -1.0) else size
+                } else {
+                    null
+                }
+
+            InternalPerpetualPosition(
+                market = payload.market,
+                status = payload.status,
+                side = payload.side,
+                size = signedSize,
+                maxSize = parser.asDouble(payload.maxSize),
+                entryPrice = parser.asDouble(payload.entryPrice),
+                realizedPnl = parser.asDouble(payload.realizedPnl),
+                createdAt = parser.asDatetime(payload.createdAt),
+                createdAtHeight = parser.asDouble(payload.createdAtHeight),
+                sumOpen = parser.asDouble(payload.sumOpen),
+                sumClose = parser.asDouble(payload.sumClose),
+                netFunding = parser.asDouble(payload.netFunding),
+                unrealizedPnl = parser.asDouble(payload.unrealizedPnl),
+                closedAt = parser.asDatetime(payload.closedAt),
+                exitPrice = parser.asDouble(payload.exitPrice),
+                subaccountNumber = payload.subaccountNumber,
+                resources = SubaccountPositionResources(
+                    sideString = TradeStatesWithStringValues(
+                        current = sideString,
+                        postOrder = null,
+                        postAllOrders = null,
+                    ),
+                    sideStringKey = TradeStatesWithStringValues(
+                        current = sideStringKey,
+                        postOrder = null,
+                        postAllOrders = null,
+                    ),
+                    indicator = TradeStatesWithStringValues(
+                        current = indicators[payload.side?.value],
+                        postOrder = null,
+                        postAllOrders = null,
+                    ),
+                ),
+            )
+        } else {
+            existing
+        }
+    }
+
+    override fun processChanges(
+        existing: InternalPerpetualPosition?,
+        payload: IndexerPerpetualPositionResponseObject?,
+    ): InternalPerpetualPosition? {
+        // Keep the position even if it is closed in the internal state.
+        // Filter at output
+        return if (payload != null) {
+            process(existing, payload)
+        } else {
+            existing
+        }
+    }
+
     override fun received(
         existing: Map<String, Any>?,
         payload: Map<String, Any>,
@@ -124,8 +216,14 @@ internal class PerpetualPositionProcessor(parser: ParserProtocol) : BaseProcesso
             modified.safeSet("marginMode", if (this >= NUM_PARENT_SUBACCOUNTS) MarginMode.Isolated.rawValue else MarginMode.Cross.rawValue)
         }
 
-        ParsingHelper.asset(parser.asString(modified["id"]))?.let {
-            modified["assetId"] = it
+        parser.asString(modified["id"])?.let { marketId ->
+            MarketId.getDisplayId(marketId).let { displayId ->
+                modified["displayId"] = displayId
+            }
+
+            MarketId.getAssetId(marketId)?.let { assetId ->
+                modified["assetId"] = assetId
+            }
         }
 
         val resources = parser.asNativeMap(modified["resources"])?.toMutableMap()
@@ -159,7 +257,7 @@ internal class PerpetualPositionProcessor(parser: ParserProtocol) : BaseProcesso
         return "NONE"
     }
 
-    internal fun receivedChanges(
+    internal fun receivedChangesDeprecated(
         existing: Map<String, Any>?,
         payload: Map<String, Any>?
     ): Map<String, Any>? {

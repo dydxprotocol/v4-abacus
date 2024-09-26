@@ -12,18 +12,20 @@
 package indexer.codegen
 
 import kotlinx.serialization.Serializable
+import kotlin.js.JsExport
 
 /**
  *
- * Values: LIMIT,MARKET,STOPLIMIT,STOPMARKET,TRAILINGSTOP,TAKEPROFIT,TAKEPROFITMARKET
+ * Values: LIMIT,MARKET,STOP_LIMIT,STOP_MARKET,TRAILING_STOP,TAKE_PROFIT,TAKE_PROFIT_MARKET
  */
+@JsExport
 @Serializable
 enum class IndexerOrderType(val value: kotlin.String) {
     LIMIT("LIMIT"), // :/
     MARKET("MARKET"), // :/
-    STOPLIMIT("STOP_LIMIT"), // :/
-    STOPMARKET("STOP_MARKET"), // :/
-    TRAILINGSTOP("TRAILING_STOP"), // :/
-    TAKEPROFIT("TAKE_PROFIT"), // :/
-    TAKEPROFITMARKET("TAKE_PROFIT_MARKET"); // :/
+    STOP_LIMIT("STOP_LIMIT"), // :/
+    STOP_MARKET("STOP_MARKET"), // :/
+    TRAILING_STOP("TRAILING_STOP"), // :/
+    TAKE_PROFIT("TAKE_PROFIT"), // :/
+    TAKE_PROFITMARKET("TAKE_PROFIT_MARKET"); // :/
 }

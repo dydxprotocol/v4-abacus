@@ -12,11 +12,13 @@
 package indexer.codegen
 
 import kotlinx.serialization.Serializable
+import kotlin.js.JsExport
 
 /**
  *
  * Values: ACTIVE,PAUSED,CANCELONLY,POSTONLY,INITIALIZING,FINALSETTLEMENT
  */
+@JsExport
 @Serializable
 enum class IndexerPerpetualMarketStatus(val value: kotlin.String) {
     ACTIVE("ACTIVE"), // :/

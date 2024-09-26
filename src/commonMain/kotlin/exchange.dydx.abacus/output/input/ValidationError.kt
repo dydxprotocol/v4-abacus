@@ -10,10 +10,25 @@ import kotlinx.serialization.Serializable
 
 @JsExport
 @Serializable
+enum class ErrorFormat(val rawValue: String) {
+    StringVal("string"),
+    UsdcPrice("usdcPrice"),
+    Price("price"),
+    Percent("percent"),
+    Size("size");
+
+    companion object {
+        operator fun invoke(rawValue: String?) =
+            ErrorFormat.values().firstOrNull { it.rawValue == rawValue }
+    }
+}
+
+@JsExport
+@Serializable
 data class ErrorParam(
     val key: String,
     val value: String?,
-    val format: String?
+    val format: ErrorFormat?
 ) {
     companion object {
         internal fun create(
@@ -26,7 +41,9 @@ data class ErrorParam(
             data?.let {
                 parser.asString(data["key"])?.let { key ->
                     val value = data["value"]
-                    val format = parser.asString(data["format"])
+                    val format = parser.asString(data["format"])?.let {
+                        ErrorFormat.invoke(it)
+                    }
                     return if (existing?.key != key ||
                         existing.value != value ||
                         existing.format != format
@@ -142,7 +159,7 @@ enum class ErrorType(val rawValue: String) {
 
     companion object {
         operator fun invoke(rawValue: String) =
-            ErrorType.values().firstOrNull { it.rawValue == rawValue }
+            entries.firstOrNull { it.rawValue == rawValue }
     }
 }
 
@@ -154,7 +171,7 @@ enum class ErrorAction(val rawValue: String) {
 
     companion object {
         operator fun invoke(rawValue: String) =
-            ErrorAction.values().firstOrNull { it.rawValue == rawValue }
+            entries.firstOrNull { it.rawValue == rawValue }
     }
 }
 

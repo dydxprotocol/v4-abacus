@@ -3,7 +3,7 @@ package exchange.dydx.abacus.state.manager.notification.providers
 import exchange.dydx.abacus.output.Notification
 import exchange.dydx.abacus.output.NotificationPriority
 import exchange.dydx.abacus.output.NotificationType
-import exchange.dydx.abacus.output.SubaccountOrder
+import exchange.dydx.abacus.output.account.SubaccountOrder
 import exchange.dydx.abacus.output.input.OrderStatus
 import exchange.dydx.abacus.output.input.OrderType
 import exchange.dydx.abacus.protocols.ParserProtocol
@@ -95,7 +95,7 @@ class OrderStatusChangesNotificationProvider(
             else -> null
         }
         return if (statusNotificationStringKey != null && timestamp != null) {
-            val marketId = order.marketId
+            val marketId = order.displayId
             val asset = stateMachine.state?.assetOfMarket(marketId) ?: return null
             val marketImageUrl = asset.resources?.imageUrl
             val side = order.side.rawValue
@@ -129,15 +129,15 @@ class OrderStatusChangesNotificationProvider(
             val orderId = order.id
             val notificationId = "orderstatus:$orderId"
             return Notification(
-                notificationId,
-                NotificationType.INFO,
-                NotificationPriority.NORMAL,
-                marketImageUrl,
-                title,
-                text,
-                "/orders/$orderId",
-                paramsAsJson,
-                timestamp,
+                id = notificationId,
+                type = NotificationType.INFO,
+                priority = NotificationPriority.NORMAL,
+                image = marketImageUrl,
+                title = title,
+                text = text,
+                link = "/orders/$orderId",
+                data = paramsAsJson,
+                updateTimeInMilliseconds = timestamp,
             )
         } else {
             null

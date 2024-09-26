@@ -1,23 +1,136 @@
 package exchange.dydx.abacus.processor.markets
 
 import exchange.dydx.abacus.processor.base.BaseProcessor
+import exchange.dydx.abacus.processor.base.BaseProcessorProtocol
 import exchange.dydx.abacus.protocols.ParserProtocol
+import exchange.dydx.abacus.state.internalstate.InternalMarketState
+import exchange.dydx.abacus.state.internalstate.InternalMarketSummaryState
 import exchange.dydx.abacus.utils.Logger
 import exchange.dydx.abacus.utils.mutable
 import exchange.dydx.abacus.utils.safeSet
+import indexer.codegen.IndexerSparklineTimePeriod
+import indexer.models.IndexerCompositeMarketObject
+import indexer.models.IndexerWsMarketUpdateResponse
 
-@Suppress("UNCHECKED_CAST")
-internal class MarketsProcessor(parser: ParserProtocol, calculateSparklines: Boolean) :
-    BaseProcessor(parser) {
-    private val marketProcessor = MarketProcessor(parser, calculateSparklines)
+internal interface MarketsProcessorProtocol : BaseProcessorProtocol {
+    fun processSubscribed(
+        existing: InternalMarketSummaryState,
+        content: Map<String, IndexerCompositeMarketObject>?
+    ): InternalMarketSummaryState
+
+    fun processChannelData(
+        existing: InternalMarketSummaryState,
+        content: IndexerWsMarketUpdateResponse?,
+    ): InternalMarketSummaryState
+
+    fun processChannelBatchData(
+        existing: InternalMarketSummaryState,
+        content: List<IndexerWsMarketUpdateResponse>?,
+    ): InternalMarketSummaryState
+
+    fun processSparklines(
+        existing: InternalMarketSummaryState,
+        content: Map<String, List<String>>?,
+        period: IndexerSparklineTimePeriod,
+    ): InternalMarketSummaryState
+}
+
+internal class MarketsProcessor(
+    parser: ParserProtocol,
+    calculateSparklines: Boolean,
+    private val marketProcessor: MarketProcessorProtocol = MarketProcessor(parser, calculateSparklines)
+) : BaseProcessor(parser), MarketsProcessorProtocol {
+    private val marketProcessorDeprecated: MarketProcessor? = marketProcessor as? MarketProcessor
 
     internal var groupingMultiplier: Int
-        get() = marketProcessor.groupingMultiplier
+        get() = marketProcessorDeprecated!!.groupingMultiplier
         set(value) {
-            marketProcessor.groupingMultiplier = value
+            marketProcessorDeprecated?.groupingMultiplier = value
         }
 
-    internal fun processSubscribed(
+    override fun processSubscribed(
+        existing: InternalMarketSummaryState,
+        content: Map<String, IndexerCompositeMarketObject>?
+    ): InternalMarketSummaryState {
+        for ((marketId, marketData) in content ?: mapOf()) {
+            marketProcessor.clearCachedOraclePrice(marketId) // Clear cached oracle price if it's new subscription
+            val receivedMarket = marketProcessor.process(
+                marketId = marketId,
+                payload = marketData,
+            )
+            val marketState = existing.markets[marketId] ?: InternalMarketState()
+            marketState.perpetualMarket = receivedMarket
+            existing.markets[marketId] = marketState
+        }
+        return existing
+    }
+
+    override fun processChannelData(
+        existing: InternalMarketSummaryState,
+        content: IndexerWsMarketUpdateResponse?,
+    ): InternalMarketSummaryState {
+        if (content != null) {
+            if (!content.trading.isNullOrEmpty()) {
+                for ((marketId, marketData) in content.trading) {
+                    val marketState = existing.markets[marketId] ?: InternalMarketState()
+                    val receivedMarket = marketProcessor.process(
+                        marketId = marketId,
+                        payload = marketData,
+                    )
+                    if (receivedMarket != marketState.perpetualMarket) {
+                        marketState.perpetualMarket = receivedMarket
+                        existing.markets[marketId] = marketState
+                    }
+                }
+            }
+            if (!content.oraclePrices.isNullOrEmpty()) {
+                for ((marketId, oracleData) in content.oraclePrices) {
+                    val marketState = existing.markets[marketId] ?: InternalMarketState()
+                    val receivedMarket = marketProcessor.processOraclePrice(
+                        marketId = marketId,
+                        payload = oracleData,
+                    )
+                    if (receivedMarket != marketState.perpetualMarket) {
+                        marketState.perpetualMarket = receivedMarket
+                        existing.markets[marketId] = marketState
+                    }
+                }
+            }
+        }
+        return existing
+    }
+
+    override fun processChannelBatchData(
+        existing: InternalMarketSummaryState,
+        content: List<IndexerWsMarketUpdateResponse>?,
+    ): InternalMarketSummaryState {
+        for (response in content ?: listOf()) {
+            processChannelData(existing, response)
+        }
+        return existing
+    }
+
+    override fun processSparklines(
+        existing: InternalMarketSummaryState,
+        content: Map<String, List<String>>?,
+        period: IndexerSparklineTimePeriod,
+    ): InternalMarketSummaryState {
+        for ((marketId, sparklines) in content ?: mapOf()) {
+            val marketState = existing.markets[marketId] ?: InternalMarketState()
+            val receivedMarket = marketProcessor.processSparklines(
+                marketId = marketId,
+                payload = sparklines,
+                period = period,
+            )
+            if (receivedMarket != marketState.perpetualMarket) {
+                marketState.perpetualMarket = receivedMarket
+                existing.markets[marketId] = marketState
+            }
+        }
+        return existing
+    }
+
+    internal fun processSubscribedDeprecated(
         existing: Map<String, Any>?,
         content: Map<String, Any>
     ): Map<String, Any>? {
@@ -29,21 +142,21 @@ internal class MarketsProcessor(parser: ParserProtocol, calculateSparklines: Boo
         }
     }
 
-    internal fun processChannelData(
+    internal fun processChannelDataDeprecated(
         existing: Map<String, Any>?,
         content: Map<String, Any>
     ): Map<String, Any> {
-        return receivedChanges(existing, content)
+        return receivedChangesDeprecated(existing, content)
     }
 
-    internal fun processChannelBatchData(
+    internal fun processChannelBatchDataDeprecated(
         existing: Map<String, Any>?,
         content: List<Any>
     ): Map<String, Any> {
         var data = existing ?: mapOf()
         for (partialPayload in content) {
             parser.asNativeMap(partialPayload)?.let {
-                data = receivedChanges(data, it)
+                data = receivedChangesDeprecated(data, it)
             }
         }
         return data
@@ -57,7 +170,7 @@ internal class MarketsProcessor(parser: ParserProtocol, calculateSparklines: Boo
         for ((market, data) in payload) {
             val marketPayload = parser.asNativeMap(data)
             if (marketPayload != null) {
-                val receivedMarket = marketProcessor.received(
+                val receivedMarket = marketProcessorDeprecated!!.received(
                     parser.asNativeMap(existing?.get(market)),
                     marketPayload,
                 )
@@ -67,7 +180,7 @@ internal class MarketsProcessor(parser: ParserProtocol, calculateSparklines: Boo
         return markets
     }
 
-    private fun receivedChanges(
+    private fun receivedChangesDeprecated(
         existing: Map<String, Any>?,
         payload: Map<String, Any>
     ): Map<String, Any> {
@@ -76,7 +189,7 @@ internal class MarketsProcessor(parser: ParserProtocol, calculateSparklines: Boo
         for ((market, data) in narrowedPayload) {
             val marketPayload = parser.asNativeMap(data)
             if (marketPayload != null) {
-                val receivedMarket = marketProcessor.receivedDelta(
+                val receivedMarket = marketProcessorDeprecated!!.receivedDeltaDeprecated(
                     parser.asNativeMap(existing?.get(market)),
                     marketPayload,
                 )
@@ -91,7 +204,7 @@ internal class MarketsProcessor(parser: ParserProtocol, calculateSparklines: Boo
             ?: parser.asNativeMap("markets") ?: payload
     }
 
-    internal fun receivedConfigurations(
+    internal fun receivedConfigurationsDeprecated(
         existing: Map<String, Any>?,
         payload: Map<String, Any>
     ): Map<String, Any> {
@@ -101,7 +214,7 @@ internal class MarketsProcessor(parser: ParserProtocol, calculateSparklines: Boo
             if (marketPayload == null) {
                 Logger.d { "Market payload is null" }
             } else {
-                val receivedMarket = marketProcessor.receivedConfigurations(
+                val receivedMarket = marketProcessorDeprecated!!.receivedConfigurationsDeprecated(
                     parser.asNativeMap(existing?.get(market)),
                     marketPayload,
                 )
@@ -111,14 +224,14 @@ internal class MarketsProcessor(parser: ParserProtocol, calculateSparklines: Boo
         return markets
     }
 
-    internal fun receivedOrderbook(
+    internal fun receivedOrderbookDeprecated(
         existing: Map<String, Any>?,
         market: String,
         payload: Map<String, Any>
     ): Map<String, Any> {
         val marketData = parser.asNativeMap(existing?.get(market)) ?: mutableMapOf()
         val markets = existing?.mutable() ?: mutableMapOf()
-        markets[market] = marketProcessor.receivedOrderbook(marketData, payload)
+        markets[market] = marketProcessorDeprecated!!.receivedOrderbookDeprecated(marketData, payload)
         return markets
     }
 
@@ -130,25 +243,27 @@ internal class MarketsProcessor(parser: ParserProtocol, calculateSparklines: Boo
         val marketData = parser.asNativeMap(existing?.get(market))
         return if (existing != null && marketData != null) {
             val markets = existing.mutable()
-            markets[market] = marketProcessor.receivedBatchOrderbookChanges(marketData, payload)
+            markets[market] = marketProcessorDeprecated!!.receivedBatchOrderbookChanges(marketData, payload)
             markets
         } else {
             existing
         }
     }
 
-    internal fun receivedTrades(
+    @Deprecated("static-typing")
+    internal fun receivedTradesDeprecated(
         existing: Map<String, Any>?,
         market: String,
         payload: Map<String, Any>
-    ): Map<String, Any>? {
+    ): Map<String, Any> {
         val marketData = parser.asNativeMap(existing?.get(market)) ?: mutableMapOf()
         val markets = existing?.mutable() ?: mutableMapOf()
-        markets[market] = marketProcessor.receivedTrades(marketData, payload)
+        markets[market] = marketProcessorDeprecated!!.receivedTradesDeprecated(marketData, payload)
         return markets
     }
 
-    internal fun receivedTradesChanges(
+    @Deprecated("static-typing")
+    internal fun receivedTradesChangesDeprecated(
         existing: Map<String, Any>?,
         market: String,
         payload: Map<String, Any>
@@ -156,7 +271,7 @@ internal class MarketsProcessor(parser: ParserProtocol, calculateSparklines: Boo
         val marketData = parser.asNativeMap(existing?.get(market))
         return if (existing != null && marketData != null) {
             val markets = existing.mutable()
-            markets[market] = marketProcessor.receivedTradesChanges(marketData, payload)
+            markets[market] = marketProcessorDeprecated!!.receivedTradesChangesDeprecated(marketData, payload)
             markets
         } else {
             existing
@@ -171,7 +286,7 @@ internal class MarketsProcessor(parser: ParserProtocol, calculateSparklines: Boo
         val marketData = parser.asNativeMap(existing?.get(market))
         return if (existing != null && marketData != null) {
             val markets = existing.mutable()
-            markets[market] = marketProcessor.receivedBatchedTradesChanges(marketData, payload)
+            markets[market] = marketProcessorDeprecated!!.receivedBatchedTradesChanges(marketData, payload)
             markets
         } else {
             existing
@@ -189,7 +304,7 @@ internal class MarketsProcessor(parser: ParserProtocol, calculateSparklines: Boo
                     parser.asString(key)?.let { market ->
                         parser.asNativeMap(existing?.get(market))?.let { marketData ->
                             parser.asNativeList(itemData)?.let { list ->
-                                modified[market] = marketProcessor.receivedCandles(marketData, list)
+                                modified[market] = marketProcessorDeprecated!!.receivedCandles(marketData, list)
                             }
                         }
                     }
@@ -204,7 +319,7 @@ internal class MarketsProcessor(parser: ParserProtocol, calculateSparklines: Boo
                         val modified = existing?.mutable() ?: mutableMapOf<String, Any>()
 
                         parser.asNativeMap(existing?.get(market))?.let { marketData ->
-                            modified[market] = marketProcessor.receivedCandles(marketData, list)
+                            modified[market] = marketProcessorDeprecated!!.receivedCandles(marketData, list)
                         }
                         return modified
                     }
@@ -214,7 +329,7 @@ internal class MarketsProcessor(parser: ParserProtocol, calculateSparklines: Boo
         return existing
     }
 
-    internal fun receivedSparklines(
+    internal fun receivedSparklinesDeprecated(
         existing: Map<String, Any>?,
         payload: Map<String, Any>
     ): Map<String, Any> {
@@ -223,7 +338,7 @@ internal class MarketsProcessor(parser: ParserProtocol, calculateSparklines: Boo
             parser.asString(key)?.let { market ->
                 parser.asNativeMap(existing?.get(market))?.let { marketData ->
                     parser.asNativeList(itemData)?.let { list ->
-                        modified[market] = marketProcessor.receivedSparklines(marketData, list)
+                        modified[market] = marketProcessorDeprecated!!.receivedSparklinesDeprecated(marketData, list)
                     }
                 }
             }
@@ -240,7 +355,7 @@ internal class MarketsProcessor(parser: ParserProtocol, calculateSparklines: Boo
         val marketData = parser.asNativeMap(existing?.get(market))
         return if (existing != null && marketData != null) {
             val markets = existing.mutable()
-            markets[market] = marketProcessor.receivedCandles(marketData, resolution, payload)
+            markets[market] = marketProcessorDeprecated!!.receivedCandles(marketData, resolution, payload)
             markets
         } else {
             existing
@@ -257,7 +372,7 @@ internal class MarketsProcessor(parser: ParserProtocol, calculateSparklines: Boo
         return if (existing != null && marketData != null) {
             val markets = existing.mutable()
             markets[market] =
-                marketProcessor.receivedCandlesChanges(marketData, resolution, payload)
+                marketProcessorDeprecated!!.receivedCandlesChanges(marketData, resolution, payload)
             markets
         } else {
             existing
@@ -274,7 +389,7 @@ internal class MarketsProcessor(parser: ParserProtocol, calculateSparklines: Boo
         return if (existing != null && marketData != null) {
             val markets = existing.mutable()
             markets[market] =
-                marketProcessor.receivedBatchedCandlesChanges(marketData, resolution, payload)
+                marketProcessorDeprecated!!.receivedBatchedCandlesChanges(marketData, resolution, payload)
             markets
         } else {
             existing
@@ -295,7 +410,7 @@ internal class MarketsProcessor(parser: ParserProtocol, calculateSparklines: Boo
             val marketData = parser.asNativeMap(existing?.get(market))
             if (existing != null && marketData != null) {
                 val markets = existing.mutable()
-                markets[market] = marketProcessor.receivedHistoricalFundings(marketData, payload)
+                markets[market] = marketProcessorDeprecated!!.receivedHistoricalFundings(marketData, payload)
                 return markets
             }
         }
@@ -307,11 +422,11 @@ internal class MarketsProcessor(parser: ParserProtocol, calculateSparklines: Boo
             val modified = existing.mutable()
             if (market != null) {
                 val existingMarket = parser.asNativeMap(existing[market])
-                modified.safeSet(market, marketProcessor.groupOrderbook(existingMarket))
+                modified.safeSet(market, marketProcessorDeprecated!!.groupOrderbook(existingMarket))
             } else {
                 for ((key, value) in existing) {
                     val existingMarket = parser.asNativeMap(value)
-                    modified.safeSet(key, marketProcessor.groupOrderbook(existingMarket))
+                    modified.safeSet(key, marketProcessorDeprecated!!.groupOrderbook(existingMarket))
                 }
             }
             modified

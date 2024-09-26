@@ -12,6 +12,7 @@
 package indexer.codegen
 
 import kotlinx.serialization.Serializable
+import kotlin.js.JsExport
 
 /**
  *
@@ -21,6 +22,7 @@ import kotlinx.serialization.Serializable
  * @param assetId
  * @param subaccountNumber
  */
+@JsExport
 @Serializable
 data class IndexerAssetPositionResponseObject(
 
@@ -28,5 +30,5 @@ data class IndexerAssetPositionResponseObject(
     val side: IndexerPositionSide? = null,
     val size: kotlin.String? = null,
     val assetId: kotlin.String? = null,
-    val subaccountNumber: kotlin.Double? = null
+    val subaccountNumber: kotlin.Int? = null
 )

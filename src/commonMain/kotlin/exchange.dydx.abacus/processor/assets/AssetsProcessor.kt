@@ -6,7 +6,7 @@ import exchange.dydx.abacus.processor.utils.MarketId
 import exchange.dydx.abacus.protocols.LocalizerProtocol
 import exchange.dydx.abacus.protocols.ParserProtocol
 import exchange.dydx.abacus.utils.mutable
-import indexer.models.configs.AssetJson
+import indexer.models.configs.ConfigsMarketAsset
 
 internal class AssetsProcessor(
     parser: ParserProtocol,
@@ -20,11 +20,11 @@ internal class AssetsProcessor(
 
     internal fun processConfigurations(
         existing: MutableMap<String, Asset>,
-        payload: Map<String, AssetJson>,
+        payload: Map<String, ConfigsMarketAsset>,
         deploymentUri: String
     ): MutableMap<String, Asset> {
         for ((key, data) in payload) {
-            val assetId = MarketId.assetid(key)
+            val assetId = MarketId.getAssetId(key)
             if (assetId != null) {
                 val asset = assetProcessor.process(
                     assetId = assetId,
@@ -46,7 +46,7 @@ internal class AssetsProcessor(
     ): Map<String, Any> {
         val assets = existing?.mutable() ?: mutableMapOf<String, Any>()
         for ((key, data) in payload) {
-            val assetId = MarketId.assetid(key)
+            val assetId = MarketId.getAssetId(key)
             if (assetId != null) {
                 val marketPayload = parser.asNativeMap(data)
                 if (marketPayload != null) {

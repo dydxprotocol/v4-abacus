@@ -52,7 +52,7 @@ data class TradeStatesWithDoubleValues(
 
 @JsExport
 @Serializable
-class TradeStatesWithStringValues(
+data class TradeStatesWithStringValues(
     val current: String?,
     val postOrder: String?,
     val postAllOrders: String?

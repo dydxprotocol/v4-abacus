@@ -26,7 +26,9 @@ import exchange.dydx.abacus.state.manager.BlockAndTime
 import exchange.dydx.abacus.state.manager.GasToken
 import exchange.dydx.abacus.state.manager.HistoricalPnlPeriod
 import exchange.dydx.abacus.state.manager.HistoricalTradingRewardsPeriod
+import exchange.dydx.abacus.state.manager.HumanReadableCancelAllOrdersPayload
 import exchange.dydx.abacus.state.manager.HumanReadableCancelOrderPayload
+import exchange.dydx.abacus.state.manager.HumanReadableCloseAllPositionsPayload
 import exchange.dydx.abacus.state.manager.HumanReadableDepositPayload
 import exchange.dydx.abacus.state.manager.HumanReadablePlaceOrderPayload
 import exchange.dydx.abacus.state.manager.HumanReadableSubaccountTransferPayload
@@ -43,6 +45,7 @@ import exchange.dydx.abacus.state.model.TradeInputField
 import exchange.dydx.abacus.state.model.TradingStateMachine
 import exchange.dydx.abacus.state.model.TransferInputField
 import exchange.dydx.abacus.state.model.TriggerOrdersInputField
+import exchange.dydx.abacus.state.model.WalletConnectionType
 import exchange.dydx.abacus.state.model.tradeInMarket
 import exchange.dydx.abacus.state.v2.supervisor.AccountsSupervisor
 import exchange.dydx.abacus.state.v2.supervisor.AppConfigsV2
@@ -52,12 +55,17 @@ import exchange.dydx.abacus.state.v2.supervisor.MarketsSupervisor
 import exchange.dydx.abacus.state.v2.supervisor.NetworkHelper
 import exchange.dydx.abacus.state.v2.supervisor.OnboardingSupervisor
 import exchange.dydx.abacus.state.v2.supervisor.SystemSupervisor
+import exchange.dydx.abacus.state.v2.supervisor.VaultSupervisor
 import exchange.dydx.abacus.state.v2.supervisor.accountAddress
 import exchange.dydx.abacus.state.v2.supervisor.addressRestriction
 import exchange.dydx.abacus.state.v2.supervisor.adjustIsolatedMargin
 import exchange.dydx.abacus.state.v2.supervisor.adjustIsolatedMarginPayload
+import exchange.dydx.abacus.state.v2.supervisor.cancelAllOrders
+import exchange.dydx.abacus.state.v2.supervisor.cancelAllOrdersPayload
 import exchange.dydx.abacus.state.v2.supervisor.cancelOrder
 import exchange.dydx.abacus.state.v2.supervisor.cancelOrderPayload
+import exchange.dydx.abacus.state.v2.supervisor.closeAllPositions
+import exchange.dydx.abacus.state.v2.supervisor.closeAllPositionsPayload
 import exchange.dydx.abacus.state.v2.supervisor.closePosition
 import exchange.dydx.abacus.state.v2.supervisor.closePositionPayload
 import exchange.dydx.abacus.state.v2.supervisor.commitAdjustIsolatedMargin
@@ -65,7 +73,6 @@ import exchange.dydx.abacus.state.v2.supervisor.commitClosePosition
 import exchange.dydx.abacus.state.v2.supervisor.commitPlaceOrder
 import exchange.dydx.abacus.state.v2.supervisor.commitTriggerOrders
 import exchange.dydx.abacus.state.v2.supervisor.connectedSubaccountNumber
-import exchange.dydx.abacus.state.v2.supervisor.cosmosWalletConnected
 import exchange.dydx.abacus.state.v2.supervisor.depositPayload
 import exchange.dydx.abacus.state.v2.supervisor.faucet
 import exchange.dydx.abacus.state.v2.supervisor.marketId
@@ -82,6 +89,7 @@ import exchange.dydx.abacus.state.v2.supervisor.trade
 import exchange.dydx.abacus.state.v2.supervisor.triggerCompliance
 import exchange.dydx.abacus.state.v2.supervisor.triggerOrders
 import exchange.dydx.abacus.state.v2.supervisor.triggerOrdersPayload
+import exchange.dydx.abacus.state.v2.supervisor.walletConnectionType
 import exchange.dydx.abacus.state.v2.supervisor.withdrawPayload
 import exchange.dydx.abacus.utils.AnalyticsUtils
 import exchange.dydx.abacus.utils.GEO_POLLING_DURATION_SECONDS
@@ -113,6 +121,7 @@ internal class StateManagerAdaptorV2(
         maxSubaccountNumber = 127,
         useParentSubaccount = appConfigs.accountConfigs.subaccountConfigs.useParentSubaccount,
         staticTyping = appConfigs.staticTyping,
+        trackingProtocol = ioImplementations.tracking,
     )
 
     internal val jsonEncoder = JsonEncoder()
@@ -120,62 +129,69 @@ internal class StateManagerAdaptorV2(
     internal var analyticsUtils: AnalyticsUtils = AnalyticsUtils()
 
     internal val networkHelper = NetworkHelper(
-        deploymentUri,
-        environment,
-        uiImplementations,
-        ioImplementations,
-        configs,
-        stateNotification,
-        dataNotification,
-        parser,
+        deploymentUri = deploymentUri,
+        environment = environment,
+        uiImplementations = uiImplementations,
+        ioImplementations = ioImplementations,
+        configs = configs,
+        stateNotification = stateNotification,
+        dataNotification = dataNotification,
+        parser = parser,
     ) { indexerRestriction ->
         updateRestriction(indexerRestriction)
     }
 
     private val connections = ConnectionsSupervisor(
-        stateMachine,
-        networkHelper,
-        analyticsUtils,
-        this,
+        stateMachine = stateMachine,
+        helper = networkHelper,
+        analyticsUtils = analyticsUtils,
+        delegate = this,
     )
 
     private val system = SystemSupervisor(
-        stateMachine,
-        networkHelper,
-        analyticsUtils,
-        appConfigs.systemConfigs,
+        stateMachine = stateMachine,
+        helper = networkHelper,
+        analyticsUtils = analyticsUtils,
+        configs = appConfigs.systemConfigs,
     )
 
     private val onboarding = OnboardingSupervisor(
-        stateMachine,
-        networkHelper,
-        analyticsUtils,
-        appConfigs.onboardingConfigs,
+        stateMachine = stateMachine,
+        helper = networkHelper,
+        analyticsUtils = analyticsUtils,
+        configs = appConfigs.onboardingConfigs,
     )
 
     private val accounts = AccountsSupervisor(
-        stateMachine,
-        networkHelper,
-        analyticsUtils,
-        appConfigs.accountConfigs,
+        stateMachine = stateMachine,
+        helper = networkHelper,
+        analyticsUtils = analyticsUtils,
+        configs = appConfigs.accountConfigs,
     )
 
     private val markets = MarketsSupervisor(
-        stateMachine,
-        networkHelper,
-        analyticsUtils,
-        appConfigs.marketConfigs,
+        stateMachine = stateMachine,
+        helper = networkHelper,
+        analyticsUtils = analyticsUtils,
+        configs = appConfigs.marketConfigs,
+    )
+
+    private val vault = VaultSupervisor(
+        stateMachine = stateMachine,
+        helper = networkHelper,
+        analyticsUtils = analyticsUtils,
+        configs = appConfigs.vaultConfigs,
     )
 
     private val triggerOrderToastGenerator = TriggerOrderToastGenerator(
-        presentationProtocol,
-        parser,
-        uiImplementations.formatter,
-        uiImplementations.localizer,
-        ioImplementations.threading,
+        presentation = presentationProtocol,
+        parser = parser,
+        formatter = uiImplementations.formatter,
+        localizer = uiImplementations.localizer,
+        threading = ioImplementations.threading,
     )
 
-    internal open var restriction: UsageRestriction = UsageRestriction.noRestriction
+    internal var restriction: UsageRestriction = UsageRestriction.noRestriction
         set(value) {
             if (field != value) {
                 field = value
@@ -183,7 +199,7 @@ internal class StateManagerAdaptorV2(
             }
         }
 
-    internal open var geo: String? = null
+    internal var geo: String? = null
         set(value) {
             if (field != value) {
                 field = value
@@ -277,12 +293,13 @@ internal class StateManagerAdaptorV2(
             accounts.accountAddress = value
         }
 
-    internal var cosmosWalletConnected: Boolean?
+    internal var walletConnectionType: WalletConnectionType?
         get() {
-            return accounts.cosmosWalletConnected
+            return accounts.walletConnectionType
         }
         set(value) {
-            accounts.cosmosWalletConnected = value
+            accounts.walletConnectionType = value
+            onboarding.walletConnectionType = value
         }
 
     internal var sourceAddress: String?
@@ -341,6 +358,7 @@ internal class StateManagerAdaptorV2(
         onboarding.readyToConnect = readyToConnect
         markets.readyToConnect = readyToConnect
         accounts.readyToConnect = readyToConnect
+        vault.readyToConnect = readyToConnect
         if (readyToConnect) {
             pollGeo()
         }
@@ -351,6 +369,7 @@ internal class StateManagerAdaptorV2(
         onboarding.indexerConnected = indexerConnected
         markets.indexerConnected = indexerConnected
         accounts.indexerConnected = indexerConnected
+        vault.indexerConnected = indexerConnected
     }
 
     private fun didSetSocketConnected(socketConnected: Boolean) {
@@ -359,6 +378,7 @@ internal class StateManagerAdaptorV2(
         onboarding.socketConnected = socketConnected
         markets.socketConnected = socketConnected
         accounts.socketConnected = socketConnected
+        vault.socketConnected = socketConnected
     }
 
     private fun didSetValidatorConnected(validatorConnected: Boolean) {
@@ -366,6 +386,7 @@ internal class StateManagerAdaptorV2(
         onboarding.validatorConnected = validatorConnected
         markets.validatorConnected = validatorConnected
         accounts.validatorConnected = validatorConnected
+        vault.validatorConnected = validatorConnected
     }
 
     internal fun dispose() {
@@ -484,14 +505,13 @@ internal class StateManagerAdaptorV2(
             true
         }
     }
-
     private fun fetchGeo() {
         val url = environment.endpoints.geo
         if (url != null) {
             networkHelper.get(
-                url,
-                null,
-                null,
+                url = url,
+                params = null,
+                headers = null,
                 callback = { _, response, httpCode, _ ->
                     geo = if (networkHelper.success(httpCode) && response != null) {
                         val payload = networkHelper.parser.decodeJsonObject(response)?.toIMap()
@@ -535,6 +555,14 @@ internal class StateManagerAdaptorV2(
 
     internal fun cancelOrderPayload(orderId: String): HumanReadableCancelOrderPayload? {
         return accounts.cancelOrderPayload(orderId)
+    }
+
+    internal fun cancelAllOrdersPayload(marketId: String?): HumanReadableCancelAllOrdersPayload? {
+        return accounts.cancelAllOrdersPayload(marketId)
+    }
+
+    internal fun closeAllPositionsPayload(): HumanReadableCloseAllPositionsPayload? {
+        return accounts.closeAllPositionsPayload(currentHeight)
     }
 
     internal fun triggerOrdersPayload(): HumanReadableTriggerOrdersPayload? {
@@ -595,6 +623,14 @@ internal class StateManagerAdaptorV2(
         accounts.cancelOrder(orderId, callback)
     }
 
+    internal fun cancelAllOrders(marketId: String?, callback: TransactionCallback) {
+        accounts.cancelAllOrders(marketId, callback)
+    }
+
+    internal fun closeAllPositions(callback: TransactionCallback): HumanReadableCloseAllPositionsPayload? {
+        return accounts.closeAllPositions(currentHeight, callback)
+    }
+
     internal fun orderCanceled(orderId: String) {
         accounts.orderCanceled(orderId)
     }
@@ -649,37 +685,21 @@ internal class StateManagerAdaptorV2(
         accounts.triggerCompliance(action, callback)
     }
 
+    internal fun registerPushNotification(token: String, languageCode: String?) {
+        accounts.registerPushNotification(token, languageCode)
+    }
+
     private fun updateRestriction(indexerRestriction: UsageRestriction?) {
         restriction = indexerRestriction ?: accounts.addressRestriction ?: UsageRestriction.noRestriction
     }
 
     private fun didSetRestriction(restriction: UsageRestriction?) {
-        val state = stateMachine.state
-        stateMachine.state = PerpetualState(
-            state?.assets,
-            state?.marketsSummary,
-            state?.orderbooks,
-            state?.candles,
-            state?.trades,
-            state?.historicalFundings,
-            state?.wallet,
-            state?.account,
-            state?.historicalPnl,
-            state?.fills,
-            state?.transfers,
-            state?.fundingPayments,
-            state?.configs,
-            state?.input,
-            state?.availableSubaccountNumbers ?: iListOf(),
-            state?.transferStatuses,
-            restriction,
-            state?.launchIncentive,
-            state?.compliance,
-        )
+        val state = stateMachine.state ?: PerpetualState.newState()
+        stateMachine.state = state.copy(restriction = restriction)
         ioImplementations.threading?.async(ThreadingType.main) {
             stateNotification?.stateChanged(
-                stateMachine.state,
-                StateChanges(
+                state = stateMachine.state,
+                changes = StateChanges(
                     iListOf(Changes.restriction),
                 ),
             )
@@ -687,41 +707,22 @@ internal class StateManagerAdaptorV2(
     }
 
     private fun didSetGeo(geo: String?) {
-        val state = stateMachine.state
-        stateMachine.state = PerpetualState(
-            state?.assets,
-            state?.marketsSummary,
-            state?.orderbooks,
-            state?.candles,
-            state?.trades,
-            state?.historicalFundings,
-            state?.wallet,
-            state?.account,
-            state?.historicalPnl,
-            state?.fills,
-            state?.transfers,
-            state?.fundingPayments,
-            state?.configs,
-            state?.input,
-            state?.availableSubaccountNumbers ?: iListOf(),
-            state?.transferStatuses,
-            state?.restriction,
-            state?.launchIncentive,
-            Compliance(
-                geo,
-                state?.compliance?.status ?: ComplianceStatus.COMPLIANT,
-                state?.compliance?.updatedAt,
-                state?.compliance?.expiresAt,
+        val state = stateMachine.state ?: PerpetualState.newState()
+        stateMachine.state = state.copy(
+            compliance = Compliance(
+                geo = geo,
+                status = state.compliance?.status ?: ComplianceStatus.COMPLIANT,
+                updatedAt = state.compliance?.updatedAt,
+                expiresAt = state.compliance?.expiresAt,
             ),
         )
         ioImplementations.threading?.async(ThreadingType.main) {
             stateNotification?.stateChanged(
-                stateMachine.state,
-                StateChanges(
+                state = stateMachine.state,
+                changes = StateChanges(
                     iListOf(Changes.compliance),
                 ),
             )
         }
-        triggerCompliance(ComplianceAction.CONNECT, null)
     }
 }

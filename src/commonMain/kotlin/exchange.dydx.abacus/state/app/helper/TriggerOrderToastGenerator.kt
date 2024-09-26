@@ -1,8 +1,8 @@
 package exchange.dydx.abacus.state.app.helper
 
 import exchange.dydx.abacus.output.PerpetualState
-import exchange.dydx.abacus.output.PositionSide
-import exchange.dydx.abacus.output.SubaccountOrder
+import exchange.dydx.abacus.output.account.PositionSide
+import exchange.dydx.abacus.output.account.SubaccountOrder
 import exchange.dydx.abacus.output.input.OrderStatus
 import exchange.dydx.abacus.output.input.OrderType
 import exchange.dydx.abacus.output.isOppositeOf

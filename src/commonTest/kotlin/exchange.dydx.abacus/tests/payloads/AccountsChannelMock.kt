@@ -20,6 +20,7 @@ internal class AccountsChannelMock {
                 "id": "3c5193d7a49805ffcf231af1ed446188f04aaa6756bf9df7b5913568b2763d7",
                 "clientId": "69967309621008383",
                 "market": "ETH-USD",
+                "ticker":"ETH-USD",
                 "accountId": "dace1648-c854-5aed-9879-88899bf647a3",
                 "side": "BUY",
                 "size": "0.1",
@@ -1038,6 +1039,7 @@ internal class AccountsChannelMock {
                 "id": "025f806ef88ff3cdefaa7eea314040f77625cd71cbd837d951036b23c51f397",
                 "clientId": "66507608042289887",
                 "market": "ETH-USD",
+                "ticker":"ETH-USD",
                 "accountId": "dace1648-c854-5aed-9879-88899bf647a3",
                 "side": "BUY",
                 "size": "45.249",
@@ -1193,7 +1195,6 @@ internal class AccountsChannelMock {
         		"equity": "100000.000000",
         		"freeCollateral": "100000.000000",
         		"openPerpetualPositions": {},
-        		"quoteBalance": "100000.000000",
         		"marginEnabled": true
         	}, {
         		"address": "cosmos1fq8q55896ljfjj7v3x0qd0z3sr78wmes940uhm",
@@ -1201,7 +1202,6 @@ internal class AccountsChannelMock {
         		"equity": "100000.000000",
         		"freeCollateral": "100000.000000",
         		"openPerpetualPositions": {},
-        		"quoteBalance": "100000.000000",
         		"marginEnabled": true
         	}, {
         		"address": "cosmos1fq8q55896ljfjj7v3x0qd0z3sr78wmes940uhm",
@@ -1209,7 +1209,6 @@ internal class AccountsChannelMock {
         		"equity": "100000.000000",
         		"freeCollateral": "100000.000000",
         		"openPerpetualPositions": {},
-        		"quoteBalance": "100000.000000",
         		"marginEnabled": true
         	}, {
         		"address": "cosmos1fq8q55896ljfjj7v3x0qd0z3sr78wmes940uhm",
@@ -1217,7 +1216,6 @@ internal class AccountsChannelMock {
         		"equity": "100000.000000",
         		"freeCollateral": "100000.000000",
         		"openPerpetualPositions": {},
-        		"quoteBalance": "100000.000000",
         		"marginEnabled": true
         	}, {
         		"address": "cosmos1fq8q55896ljfjj7v3x0qd0z3sr78wmes940uhm",
@@ -1225,7 +1223,6 @@ internal class AccountsChannelMock {
         		"equity": "100000.000000",
         		"freeCollateral": "100000.000000",
         		"openPerpetualPositions": {},
-        		"quoteBalance": "100000.000000",
         		"marginEnabled": true
         	}, {
         		"address": "cosmos1fq8q55896ljfjj7v3x0qd0z3sr78wmes940uhm",
@@ -1233,7 +1230,6 @@ internal class AccountsChannelMock {
         		"equity": "100000.000000",
         		"freeCollateral": "100000.000000",
         		"openPerpetualPositions": {},
-        		"quoteBalance": "100000.000000",
         		"marginEnabled": true
         	}, {
         		"address": "cosmos1fq8q55896ljfjj7v3x0qd0z3sr78wmes940uhm",
@@ -1241,7 +1237,6 @@ internal class AccountsChannelMock {
         		"equity": "100000.000000",
         		"freeCollateral": "100000.000000",
         		"openPerpetualPositions": {},
-        		"quoteBalance": "100000.000000",
         		"marginEnabled": true
         	}, {
         		"address": "cosmos1fq8q55896ljfjj7v3x0qd0z3sr78wmes940uhm",
@@ -1249,7 +1244,6 @@ internal class AccountsChannelMock {
         		"equity": "100000.000000",
         		"freeCollateral": "100000.000000",
         		"openPerpetualPositions": {},
-        		"quoteBalance": "100000.000000",
         		"marginEnabled": true
         	}, {
         		"address": "cosmos1fq8q55896ljfjj7v3x0qd0z3sr78wmes940uhm",
@@ -1257,7 +1251,6 @@ internal class AccountsChannelMock {
         		"equity": "100000.000000",
         		"freeCollateral": "100000.000000",
         		"openPerpetualPositions": {},
-        		"quoteBalance": "100000.000000",
         		"marginEnabled": true
         	}]
         }
@@ -1747,12 +1740,20 @@ internal class AccountsChannelMock {
                        "netFunding":"0"
                     }
                  },
-                 "quoteBalance":"68257.215192",
+                 "assetPositions": {
+                    "USDC": {
+                       "symbol": "USDC",
+                       "side": "LONG",
+                       "size": "68257.215192",
+                       "assetId": "0"
+                    }
+                 },
                  "marginEnabled":true
               },
               "orders":[
                  {
                     "id":"b812bea8-29d3-5841-9549-caa072f6f8a8",
+                    "ticker":"ETH-USD",
                     "subaccountId":"660efb4c-5472-5119-8c17-65cf702ccaea",
                     "clientId":"2194126268",
                     "clobPairId":"1",
@@ -1769,6 +1770,7 @@ internal class AccountsChannelMock {
                  },
                  {
                     "id":"b812bea8-29d3-5841-9549-caa072f6f8a9",
+                    "ticker":"ETH-USD",
                     "subaccountId":"660efb4c-5472-5119-8c17-65cf702ccaea",
                     "clientId":"2194126269",
                     "clobPairId":"1",
@@ -1848,6 +1850,7 @@ internal class AccountsChannelMock {
                  {
                     "id":"b812bea8-29d3-5841-9549-caa072f6f8a8",
                     "market": "ETH-USD",
+                    "ticker":"ETH-USD",
                     "subaccountId":"660efb4c-5472-5119-8c17-65cf702ccaea",
                     "clientId":"2194126268",
                     "clobPairId":"1",
@@ -1946,6 +1949,28 @@ internal class AccountsChannelMock {
                     "goodTilBlock": "8864635",
                     "ticker": "ETH-USD",
                     "clientMetadata": "1"
+                },
+                {
+                    "id": "734617f4-29ba-50fe-878d-391ad4e4fbae",
+                    "subaccountId": "e470a747-3aa0-543e-aafa-0bd27d568901",
+                    "clientId": "1597910999",
+                    "clobPairId": "0",
+                    "side": "BUY",
+                    "size": "0.1",
+                    "totalFilled": "0",
+                    "price": "42000",
+                    "type": "LIMIT",
+                    "status": "OPEN",
+                    "timeInForce": "IOC",
+                    "reduceOnly": true,
+                    "orderFlags": "0",
+                    "goodTilBlockTime": "2024-04-02T15:57:16.000Z",
+                    "createdAtHeight": "8489771",
+                    "clientMetadata": "0",
+                    "updatedAt": "2024-03-15T06:37:01.731Z",
+                    "updatedAtHeight": "8489771",
+                    "postOnly": false,
+                    "ticker": "BTC-USD"
                 }
               ],
               "fills":[
@@ -2031,7 +2056,7 @@ internal class AccountsChannelMock {
                     "subaccountNumber":0,
                     "positionId":"24a26508-9d45-5b4c-a13b-31f6e9780ecc",
                     "assetId":"0",
-                    "denom":"USDC",
+                    "symbol":"USDC",
                     "side":"LONG",
                     "size":"7250.506704"
                  }
@@ -2070,7 +2095,7 @@ internal class AccountsChannelMock {
                     "subaccountNumber":0,
                     "positionId":"24a26508-9d45-5b4c-a13b-31f6e9780ecc",
                     "assetId":"0",
-                    "denom":"USDC",
+                    "symbol":"USDC",
                     "side":"LONG",
                     "size":"8772.436277"
                  }
@@ -2655,6 +2680,7 @@ internal class AccountsChannelMock {
                  "fills":[
                     {
                        "id":"1275aabc-f617-585d-a736-6bfbcf28f275",
+                       "market":"ETH-USD",
                        "side":"BUY",
                        "size":"0.01",
                        "type":"LIMIT",
@@ -2731,6 +2757,7 @@ internal class AccountsChannelMock {
                  "fills":[
                     {
                        "id":"012f27d8-34d9-532d-b3ea-0093c70d7204",
+                       "market":"ETH-USD",
                        "side":"BUY",
                        "size":"0.01",
                        "type":"LIMIT",
@@ -2807,6 +2834,7 @@ internal class AccountsChannelMock {
                  "fills":[
                     {
                        "id":"feb8fd0c-5001-5d40-8d60-7b8e17d4080f",
+                    "market":"ETH-USD",
                        "side":"BUY",
                        "size":"0.01",
                        "type":"LIMIT",
@@ -2883,6 +2911,7 @@ internal class AccountsChannelMock {
                  "fills":[
                     {
                        "id":"623be8bd-d5a1-5366-a073-7f0b1b873f6d",
+                      "market":"ETH-USD",
                        "side":"BUY",
                        "size":"0.01",
                        "type":"LIMIT",
@@ -2959,6 +2988,7 @@ internal class AccountsChannelMock {
                  "fills":[
                     {
                        "id":"595bcf25-423e-5bec-a395-3e4524d3d2e8",
+                       "market":"ETH-USD",
                        "side":"BUY",
                        "size":"0.01",
                        "type":"LIMIT",
@@ -3035,6 +3065,7 @@ internal class AccountsChannelMock {
                  "fills":[
                     {
                        "id":"180c2462-eb3b-5985-a702-32c503462a37",
+                       "market":"ETH-USD",
                        "side":"BUY",
                        "size":"0.01",
                        "type":"LIMIT",
@@ -3111,6 +3142,7 @@ internal class AccountsChannelMock {
                  "fills":[
                     {
                        "id":"c7a2c673-66f4-5fe3-92f8-6dae7e5b1bcd",
+                       "market":"ETH-USD",
                        "side":"BUY",
                        "size":"0.01",
                        "type":"LIMIT",
@@ -3187,6 +3219,7 @@ internal class AccountsChannelMock {
                  "fills":[
                     {
                        "id":"140fed65-77d9-525e-9d22-3ae35c4c05a7",
+                       "market":"ETH-USD",
                        "side":"BUY",
                        "size":"0.01",
                        "type":"LIMIT",
@@ -3263,6 +3296,7 @@ internal class AccountsChannelMock {
                  "fills":[
                     {
                        "id":"7b8dabee-1249-51fc-aa02-fa00a5d85e39",
+                       "market":"ETH-USD",
                        "side":"BUY",
                        "size":"0.01",
                        "type":"LIMIT",
@@ -3339,6 +3373,7 @@ internal class AccountsChannelMock {
                  "fills":[
                     {
                        "id":"cc8c89e7-2975-5387-b6da-a38609761432",
+                       "market":"ETH-USD",
                        "side":"BUY",
                        "size":"0.01",
                        "type":"LIMIT",
@@ -3411,7 +3446,7 @@ internal class AccountsChannelMock {
                       "clientMetadata": "0",
                       "createdAtHeight": "14689438",
                       "transactionHash": "AEFB668CC357F5A1DCCE3A3B34CB6ACC99406058CA296C91DE534BAED0511250",
-                      "ticker": "LDO-USD"
+                      "market": "LDO-USD"
                     },
                     {
                       "id": "aa394a06-478b-5c55-960e-f667a7871794",
@@ -3430,7 +3465,7 @@ internal class AccountsChannelMock {
                       "clientMetadata": "0",
                       "createdAtHeight": "14689438",
                       "transactionHash": "E16EFED4E63D2D9BD4AAEC4F1C459EF04CB7320013DF5E4F5CCCFA98F8ABBCF6",
-                      "ticker": "LDO-USD"
+                      "market": "LDO-USD"
                     }
               ],
               "blockHeight": "14689438",

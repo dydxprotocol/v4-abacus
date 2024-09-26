@@ -1,7 +1,7 @@
 package exchange.dydx.abacus.processor.wallet.account
 
-import exchange.dydx.abacus.output.SubaccountOrder
-import exchange.dydx.abacus.output.SubaccountOrderResources
+import exchange.dydx.abacus.output.account.SubaccountOrder
+import exchange.dydx.abacus.output.account.SubaccountOrderResources
 import exchange.dydx.abacus.output.input.MarginMode
 import exchange.dydx.abacus.output.input.OrderSide
 import exchange.dydx.abacus.output.input.OrderStatus
@@ -40,12 +40,13 @@ class OrderProcessorTests {
         val orderMock = SubaccountOrder(
             subaccountNumber = 0,
             id = "1",
-            clientId = 1,
+            clientId = "1",
             type = OrderType.Limit,
             side = OrderSide.Buy,
             status = OrderStatus.Open,
             timeInForce = null,
             marketId = "WETH-DAI",
+            displayId = "WETH-DAI",
             clobPairId = null,
             orderFlags = null,
             price = 3.0,
@@ -165,5 +166,27 @@ class OrderProcessorTests {
         )
 
         assertTrue { !updated }
+    }
+
+    @Test
+    fun testCanceled() {
+        val existing = orderMock.copy(
+            status = OrderStatus.Open,
+        )
+        val updatedOrder = orderProcessor.canceled(
+            existing = existing,
+        )
+        assertEquals(
+            expected = orderMock.copy(
+                status = OrderStatus.Canceling,
+                updatedAtMilliseconds = updatedAt.toEpochMilliseconds().toDouble(),
+                cancelReason = "USER_CANCELED",
+                resources = orderMock.resources.copy(
+                    statusString = "APP.TRADE.CANCELING",
+                    statusStringKey = "APP.TRADE.CANCELING",
+                ),
+            ),
+            actual = updatedOrder,
+        )
     }
 }

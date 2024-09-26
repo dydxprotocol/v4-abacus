@@ -1,11 +1,12 @@
 package exchange.dydx.abacus.processor.wallet.account
 
-import exchange.dydx.abacus.output.SubaccountOrder
+import exchange.dydx.abacus.output.account.SubaccountOrder
 import exchange.dydx.abacus.processor.base.BaseProcessor
 import exchange.dydx.abacus.processor.base.mergeWithIds
 import exchange.dydx.abacus.protocols.LocalizerProtocol
 import exchange.dydx.abacus.protocols.ParserProtocol
 import exchange.dydx.abacus.state.manager.BlockAndTime
+import exchange.dydx.abacus.utils.SHORT_TERM_ORDER_DURATION
 import exchange.dydx.abacus.utils.mutable
 import exchange.dydx.abacus.utils.safeSet
 import exchange.dydx.abacus.utils.typedSafeSet
@@ -34,10 +35,19 @@ internal class OrdersProcessor(
                 height = height,
             )
         }
-        existing?.let {
-            return mergeWithIds(new, existing) { item -> item.id }
+        val merged = existing?.let {
+            mergeWithIds(new, existing) { item -> item.id }
+        } ?: new
+
+        return merged.sortedBy { block(it) }.reversed()
+    }
+
+    private fun block(order: SubaccountOrder): Int? {
+        return order.createdAtHeight ?: if (order.goodTilBlock != null) {
+            order.goodTilBlock - SHORT_TERM_ORDER_DURATION
+        } else {
+            null
         }
-        return new
     }
 
     internal fun received(
@@ -72,7 +82,20 @@ internal class OrdersProcessor(
         }
     }
 
-    internal fun updateHeight(
+    fun updateHeight(
+        existing: List<SubaccountOrder>?,
+        height: BlockAndTime?
+    ): Pair<List<SubaccountOrder>?, Boolean> {
+        var updated = false
+        val modified = existing?.map { order ->
+            val (modifiedOrder, orderUpdated) = itemProcessor?.updateHeight(order, height) ?: Pair(order, false)
+            updated = updated || orderUpdated
+            modifiedOrder
+        }
+        return Pair(modified, updated)
+    }
+
+    internal fun updateHeightDeprecated(
         existing: Map<String, Any>,
         height: BlockAndTime?
     ): Pair<Map<String, Any>, Boolean> {
@@ -92,14 +115,29 @@ internal class OrdersProcessor(
         return Pair(modified, updated)
     }
 
-    internal fun canceled(
+    fun canceled(
+        existing: List<SubaccountOrder>?,
+        orderId: String,
+    ): Pair<List<SubaccountOrder>?, Boolean> {
+        val order = existing?.find { it.id == orderId }
+        if (order != null && itemProcessor != null) {
+            val modifiedItem = itemProcessor.canceled(order)
+            val modified = existing.toMutableList()
+            modified[existing.indexOf(order)] = modifiedItem
+            return Pair(modified, true)
+        } else {
+            return Pair(existing, false)
+        }
+    }
+
+    internal fun canceledDeprecated(
         existing: Map<String, Any>,
         orderId: String,
     ): Pair<Map<String, Any>, Boolean> {
         val order = parser.asNativeMap(existing.get(orderId))
         return if (order != null) {
             val modified = existing.mutable()
-            itemProcessor?.canceled(order)
+            itemProcessor?.canceledDeprecated(order)
             modified.typedSafeSet(orderId, order)
             Pair(modified, true)
         } else {

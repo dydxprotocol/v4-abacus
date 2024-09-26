@@ -1,6 +1,6 @@
-import exchange.dydx.abacus.output.BlockReward
-import exchange.dydx.abacus.output.HistoricalTradingReward
-import exchange.dydx.abacus.output.TradingRewards
+import exchange.dydx.abacus.output.account.BlockReward
+import exchange.dydx.abacus.output.account.HistoricalTradingReward
+import exchange.dydx.abacus.output.account.TradingRewards
 import exchange.dydx.abacus.utils.Parser
 import kollections.iListOf
 import kollections.toIMap
@@ -25,7 +25,7 @@ class TradingRewardsTests {
 
     @Test
     fun testHistoricalDailyTradingRewardsWithoutExisting() {
-        val tradingRewards = TradingRewards.create(
+        val tradingRewards = TradingRewards.createDeprecated(
             null,
             parser,
             mapOf(
@@ -87,7 +87,7 @@ class TradingRewardsTests {
 
     @Test
     fun testHistoricalDailyTradingRewardsWithoutExistingFillsAndDoesntFill() {
-        val tradingRewards = TradingRewards.create(
+        val tradingRewards = TradingRewards.createDeprecated(
             null,
             parser,
             mapOf(
@@ -164,7 +164,7 @@ class TradingRewardsTests {
 
     @Test
     fun testHistoricalDailyTradingRewardsWithExistingFillsAndDoesntFill() {
-        val tradingRewards = TradingRewards.create(
+        val tradingRewards = TradingRewards.createDeprecated(
             TradingRewards(
                 197.0,
                 iListOf(
@@ -267,7 +267,7 @@ class TradingRewardsTests {
     @Test
     fun testHistoricalDailyTradingRewardsWithExisting() {
         val total = 200.0
-        val tradingRewards = TradingRewards.create(
+        val tradingRewards = TradingRewards.createDeprecated(
             TradingRewards(
                 total,
                 iListOf(

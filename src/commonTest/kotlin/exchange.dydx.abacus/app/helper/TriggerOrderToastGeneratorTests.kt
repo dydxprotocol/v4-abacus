@@ -56,6 +56,7 @@ class TriggerOrderToastGeneratorTests {
                         "side": "Buy",
                         "status": "Untriggered",
                         "marketId": "ETH-USD",
+                        "displayId": "ETH-USD",
                         "price": 1000,
                         "triggerPrice": 2000,
                         "size": 1,
@@ -70,6 +71,7 @@ class TriggerOrderToastGeneratorTests {
                     {
                         "id": "ETH-USD",
                         "assetId": "assetId",
+                        "displayId": "ETH-USD",
                         "side": {
                             "current": "SHORT"
                         },
@@ -138,7 +140,7 @@ class TriggerOrderToastGeneratorTests {
                 cancelOrderPayloads = iListOf(
                     HumanReadableCancelOrderPayload(
                         subaccountNumber = 0,
-                        clientId = 0,
+                        clientId = "0",
                         type = "TAKE_PROFIT",
                         orderId = "existingOrderId",
                         orderFlags = SHORT_TERM_ORDER_FLAGS,
@@ -151,12 +153,13 @@ class TriggerOrderToastGeneratorTests {
                     HumanReadablePlaceOrderPayload(
                         subaccountNumber = 0,
                         marketId = "ETH-USD",
-                        clientId = 0,
+                        clientId = "0",
                         type = "STOP_LIMIT",
                         side = "buy",
                         price = 1000.0,
                         triggerPrice = 1500.0,
                         size = 1.0,
+                        sizeInput = null,
                         postOnly = false,
                         reduceOnly = false,
                         timeInForce = null,
@@ -209,7 +212,7 @@ class TriggerOrderToastGeneratorTests {
                 cancelOrderPayloads = iListOf(
                     HumanReadableCancelOrderPayload(
                         subaccountNumber = 0,
-                        clientId = 0,
+                        clientId = "0",
                         type = "TAKE_PROFIT",
                         orderId = "existingOrderId",
                         orderFlags = SHORT_TERM_ORDER_FLAGS,
@@ -241,12 +244,13 @@ class TriggerOrderToastGeneratorTests {
                     HumanReadablePlaceOrderPayload(
                         subaccountNumber = 0,
                         marketId = "ETH-USD",
-                        clientId = 0,
+                        clientId = "0",
                         type = "TAKE_PROFIT_MARKET",
                         side = "buy",
                         price = 1000.0,
                         triggerPrice = 3000.0,
                         size = 1.0,
+                        sizeInput = null,
                         postOnly = false,
                         reduceOnly = false,
                         timeInForce = null,
@@ -294,7 +298,7 @@ class TriggerOrderToastGeneratorTests {
                     HumanReadableCancelOrderPayload(
                         subaccountNumber = 0,
                         type = "TAKE_PROFIT",
-                        clientId = 0,
+                        clientId = "0",
                         orderId = "existingOrderId",
                         orderFlags = SHORT_TERM_ORDER_FLAGS,
                         clobPairId = 0,

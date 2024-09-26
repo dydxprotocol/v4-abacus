@@ -2,6 +2,7 @@ package exchange.dydx.abacus.payload.v4
 
 import exchange.dydx.abacus.utils.ServerTime
 import kotlin.test.Test
+import kotlin.test.assertEquals
 
 class V4WalletTests : V4BaseTests() {
     @Test
@@ -21,30 +22,44 @@ class V4WalletTests : V4BaseTests() {
     }
 
     private fun testSetWallet() {
-        test(
-            {
-                perp.resetWallet("1234")
-            },
-            """
+        if (perp.staticTyping) {
+            perp.resetWallet("1234")
+
+            val wallet = perp.internalState.wallet
+            assertEquals("1234", wallet.walletAddress)
+        } else {
+            test(
+                {
+                    perp.resetWallet("1234")
+                },
+                """
             {
                 "wallet": {
                     "walletAddress": "1234"
                 }
             }
-            """.trimIndent(),
-        )
+                """.trimIndent(),
+            )
+        }
     }
 
     private fun testResetWallet() {
-        test(
-            {
-                perp.resetWallet(null)
-            },
-            """
+        if (perp.staticTyping) {
+            perp.resetWallet(null)
+
+            val wallet = perp.internalState.wallet
+            assertEquals(null, wallet.walletAddress)
+        } else {
+            test(
+                {
+                    perp.resetWallet(null)
+                },
+                """
                 {
                     "wallet": null
                 }
-            """.trimIndent(),
-        )
+                """.trimIndent(),
+            )
+        }
     }
 }

@@ -2,8 +2,10 @@ package exchange.dydx.abacus.processor.router.skip
 
 import exchange.dydx.abacus.processor.base.BaseProcessor
 import exchange.dydx.abacus.protocols.ParserProtocol
+import exchange.dydx.abacus.state.manager.StatsigConfig
 import exchange.dydx.abacus.utils.SLIPPAGE_PERCENT
 import exchange.dydx.abacus.utils.safeSet
+import exchange.dydx.abacus.utils.toJson
 import exchange.dydx.abacus.utils.toJsonArray
 import kotlin.math.pow
 
@@ -14,6 +16,7 @@ internal class SkipRouteProcessor(internal val parser: ParserProtocol) {
             "route.usd_amount_out" to "toAmountUSD",
             "route.estimated_amount_out" to "toAmount",
             "route.swap_price_impact_percent" to "aggregatePriceImpact",
+            "route.warning" to "warning",
 
 //            SQUID PARAMS THAT ARE NOW DEPRECATED:
 //            "route.estimate.gasCosts.0.amountUSD" to "gasFee",
@@ -106,6 +109,17 @@ internal class SkipRouteProcessor(internal val parser: ParserProtocol) {
 //          Only bother processing payload if there's no error
             val payloadProcessor = SkipRoutePayloadProcessor(parser)
             modified.safeSet("requestPayload", payloadProcessor.received(null, payload))
+        }
+
+        if (modified.get("warning") == null && bridgeFees > StatsigConfig.dc_max_safe_bridge_fees) {
+            val fromAmountUSD = parser.asString(parser.value(payload, "route.usd_amount_in"))
+            modified.safeSet(
+                "warning",
+                mapOf(
+                    "type" to "BAD_PRICE_WARNING",
+                    "message" to "Difference in USD value of route input and output is large ($bridgeFees). Input USD Value: $fromAmountUSD Output USD value: $toAmountUSD",
+                ).toJson(),
+            )
         }
         return modified
     }

@@ -3,6 +3,7 @@ package exchange.dydx.abacus.state.manager
 import exchange.dydx.abacus.output.input.OrderStatus
 import exchange.dydx.abacus.utils.IList
 import kollections.JsExport
+import kollections.List
 import kotlinx.serialization.Serializable
 
 internal data class Subaccount(
@@ -18,7 +19,7 @@ data class FaucetRecord(
 
 data class PlaceOrderRecord(
     val subaccountNumber: Int,
-    val clientId: Int,
+    val clientId: String,
     val timestampInMilliseconds: Double,
     val fromSlTpDialog: Boolean,
     var lastOrderStatus: OrderStatus?,
@@ -27,14 +28,14 @@ data class PlaceOrderRecord(
 
 data class CancelOrderRecord(
     val subaccountNumber: Int,
-    val clientId: Int,
+    val clientId: String,
     val timestampInMilliseconds: Double,
     val fromSlTpDialog: Boolean,
 )
 
 data class IsolatedPlaceOrderRecord(
     val subaccountNumber: Int,
-    val clientId: Int,
+    val clientId: String,
     val destinationSubaccountNumber: Int,
 )
 
@@ -53,12 +54,13 @@ data class PlaceOrderMarketInfo(
 data class HumanReadablePlaceOrderPayload(
     val subaccountNumber: Int,
     val marketId: String,
-    val clientId: Int,
+    val clientId: String,
     val type: String,
     val side: String,
     val price: Double,
     val triggerPrice: Double?,
     val size: Double,
+    val sizeInput: String?,
     val reduceOnly: Boolean?,
     val postOnly: Boolean?,
     val timeInForce: String?,
@@ -75,11 +77,24 @@ data class HumanReadableCancelOrderPayload(
     val subaccountNumber: Int,
     val type: String,
     val orderId: String,
-    val clientId: Int,
+    val clientId: String,
     val orderFlags: Int,
     val clobPairId: Int,
     val goodTilBlock: Int?,
     val goodTilBlockTime: Int?,
+)
+
+@JsExport
+@Serializable
+data class HumanReadableCancelAllOrdersPayload(
+    val marketId: String?,
+    val payloads: List<HumanReadableCancelOrderPayload>,
+)
+
+@JsExport
+@Serializable
+data class HumanReadableCloseAllPositionsPayload(
+    val payloads: List<HumanReadablePlaceOrderPayload>,
 )
 
 @JsExport

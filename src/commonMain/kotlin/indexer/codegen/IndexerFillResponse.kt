@@ -12,6 +12,7 @@
 package indexer.codegen
 
 import kotlinx.serialization.Serializable
+import kotlin.js.JsExport
 
 /**
  *
@@ -20,11 +21,12 @@ import kotlinx.serialization.Serializable
  * @param offset
  * @param fills
  */
+@JsExport
 @Serializable
 data class IndexerFillResponse(
 
-    val pageSize: kotlin.Double? = null,
-    val totalResults: kotlin.Double? = null,
-    val offset: kotlin.Double? = null,
+    val pageSize: kotlin.Int? = null,
+    val totalResults: kotlin.Int? = null,
+    val offset: kotlin.Int? = null,
     val fills: kotlin.Array<IndexerFillResponseObject>? = null
 )

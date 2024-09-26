@@ -7,17 +7,16 @@ import exchange.dydx.abacus.protocols.LocalizerProtocol
 import exchange.dydx.abacus.protocols.ParserProtocol
 import exchange.dydx.abacus.utils.mutable
 import exchange.dydx.abacus.utils.safeSet
-import indexer.models.configs.AssetJson
+import indexer.models.configs.ConfigsMarketAsset
 
 internal interface AssetProcessorProtocol {
     fun process(
         assetId: String,
-        payload: AssetJson,
+        payload: ConfigsMarketAsset,
         deploymentUri: String,
     ): Asset
 }
 
-@Suppress("UNCHECKED_CAST")
 internal class AssetProcessor(
     parser: ParserProtocol,
     private val localizer: LocalizerProtocol?
@@ -41,7 +40,7 @@ internal class AssetProcessor(
 
     override fun process(
         assetId: String,
-        payload: AssetJson,
+        payload: ConfigsMarketAsset,
         deploymentUri: String,
     ): Asset {
         val imageUrl = "$deploymentUri/currencies/${assetId.lowercase()}.png"

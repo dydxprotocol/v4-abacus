@@ -12,6 +12,7 @@
 package indexer.codegen
 
 import kotlinx.serialization.Serializable
+import kotlin.js.JsExport
 
 /**
  *
@@ -24,12 +25,14 @@ import kotlinx.serialization.Serializable
  * @param price
  * @param size
  * @param fee
+ * @param affiliateRevShare
  * @param createdAt
  * @param createdAtHeight
  * @param orderId
  * @param clientMetadata
  * @param subaccountNumber
  */
+@JsExport
 @Serializable
 data class IndexerFillResponseObject(
 
@@ -42,9 +45,10 @@ data class IndexerFillResponseObject(
     val price: kotlin.String? = null,
     val size: kotlin.String? = null,
     val fee: kotlin.String? = null,
+    val affiliateRevShare: kotlin.String? = null,
     val createdAt: IndexerIsoString? = null,
     val createdAtHeight: kotlin.String? = null,
     val orderId: kotlin.String? = null,
     val clientMetadata: kotlin.String? = null,
-    val subaccountNumber: kotlin.Double? = null
+    val subaccountNumber: kotlin.Int? = null
 )
