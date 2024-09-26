@@ -9,20 +9,6 @@ import exchange.dydx.abacus.state.model.onVaultTransferHistory
 import exchange.dydx.abacus.utils.AnalyticsUtils
 import exchange.dydx.abacus.utils.CoroutineTimer
 import exchange.dydx.abacus.utils.Logger
-import exchange.dydx.abacus.utils.NUM_PARENT_SUBACCOUNTS
-import indexer.codegen.IndexerAssetPositionResponseObject
-import indexer.codegen.IndexerMegavaultHistoricalPnlResponse
-import indexer.codegen.IndexerMegavaultPositionResponse
-import indexer.codegen.IndexerPerpetualPositionResponseObject
-import indexer.codegen.IndexerPerpetualPositionStatus
-import indexer.codegen.IndexerPnlTicksResponseObject
-import indexer.codegen.IndexerPositionSide
-import indexer.codegen.IndexerVaultHistoricalPnl
-import indexer.codegen.IndexerVaultPosition
-import indexer.codegen.IndexerVaultsHistoricalPnlResponse
-import kotlinx.datetime.Instant
-import kotlinx.serialization.encodeToString
-import kotlinx.serialization.json.Json
 
 internal class VaultSupervisor(
     stateMachine: TradingStateMachine,

@@ -14,6 +14,7 @@ import exchange.dydx.abacus.calculator.v2.AdjustIsolatedMarginInputCalculatorV2
 import exchange.dydx.abacus.calculator.v2.TransferInputCalculatorV2
 import exchange.dydx.abacus.calculator.v2.TriggerOrdersInputCalculatorV2
 import exchange.dydx.abacus.calculator.v2.tradeinput.TradeInputCalculatorV2
+import exchange.dydx.abacus.functional.vault.VaultAccountCalculator
 import exchange.dydx.abacus.functional.vault.VaultCalculator
 import exchange.dydx.abacus.output.Asset
 import exchange.dydx.abacus.output.Configs
@@ -1370,7 +1371,14 @@ open class TradingStateMachine(
                     vault = internalState.vault,
                     markets = marketsSummary?.markets,
                 )
-                vault = Vault(details = internalState.vault?.details, positions = positions)
+                val accountInfo = internalState.vault?.account
+                val transfers = internalState.vault?.transfers
+                val account = if (accountInfo != null && transfers != null) {
+                    VaultAccountCalculator.calculateUserVaultInfo(vaultInfo = accountInfo, vaultTransfers = transfers)
+                } else {
+                    null
+                }
+                vault = Vault(details = internalState.vault?.details, positions = positions, account = account)
             } else {
                 vault = null
             }

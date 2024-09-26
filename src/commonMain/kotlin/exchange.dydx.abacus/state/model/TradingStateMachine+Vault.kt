@@ -7,6 +7,7 @@ import exchange.dydx.abacus.state.internalstate.InternalState
 import exchange.dydx.abacus.state.internalstate.InternalVaultState
 import indexer.codegen.IndexerMegavaultHistoricalPnlResponse
 import indexer.codegen.IndexerMegavaultPositionResponse
+import indexer.codegen.IndexerTransferBetweenResponse
 import indexer.codegen.IndexerVaultsHistoricalPnlResponse
 import kollections.iListOf
 
@@ -37,8 +38,8 @@ internal fun TradingStateMachine.onVaultMarketPositions(
 internal fun TradingStateMachine.onVaultTransferHistory(
     payload: String
 ): StateChanges {
-    val positionResponse = parser.asTypedObject<IndexerMegavaultPositionResponse>(payload)
-    val newState = vaultProcessor.processVaultMarketPositions(internalState.vault, positionResponse)
+    val transferBetweenResponse = parser.asTypedObject<IndexerTransferBetweenResponse>(payload)
+    val newState = vaultProcessor.processTransferBetween(internalState.vault, transferBetweenResponse)
     return updateVaultState(internalState, newState)
 }
 
