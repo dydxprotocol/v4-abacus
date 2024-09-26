@@ -1,6 +1,6 @@
 package exchange.dydx.abacus.functional.vault
 
-import exchange.dydx.abacus.output.input.ErrorType
+import exchange.dydx.abacus.output.input.ValidationError
 import kollections.iListOf
 import kollections.toIList
 import kotlin.test.Test
@@ -32,6 +32,7 @@ class VaultFormTests {
             accountData = VaultFormAccountData(
                 marginUsage = 0.5,
                 freeCollateral = 1000.0,
+                canViewAccount = true,
             ),
             vaultAccount = makeVaultAccount(
                 balanceUsdc = 500.0,
@@ -43,7 +44,7 @@ class VaultFormTests {
 
         assertEquals(
             VaultFormValidationResult(
-                errors = listOf<VaultFormValidationError>().toIList(),
+                errors = listOf<ValidationError>().toIList(),
                 submissionData = VaultDepositWithdrawSubmissionData(
                     deposit = VaultDepositData(
                         subaccountFrom = "0",
@@ -76,6 +77,7 @@ class VaultFormTests {
             accountData = VaultFormAccountData(
                 marginUsage = 0.5,
                 freeCollateral = 1000.0,
+                canViewAccount = true,
             ),
             vaultAccount = makeVaultAccount(
                 balanceUsdc = 500.0,
@@ -83,15 +85,15 @@ class VaultFormTests {
                 balanceShares = 500.0,
             ),
             slippageResponse = VaultDepositWithdrawSlippageResponse(
-                shares = 100.0,
-                expectedAmount = 98.0,
+                sharesToWithdraw = NumShares(numShares = 100.0),
+                expectedQuoteQuantums = 98.0 * 1_000_000,
             ),
         )
 
         assertEquals(
             VaultFormValidationResult(
                 errors = iListOf(
-                    VaultFormValidationError(ErrorType.warning, VaultFormValidationErrorType.SLIPPAGE_TOO_HIGH),
+                    VaultFormValidationErrors.slippageTooHigh(0.02),
                 ),
                 submissionData = VaultDepositWithdrawSubmissionData(
                     deposit = null,
@@ -127,6 +129,7 @@ class VaultFormTests {
             accountData = VaultFormAccountData(
                 marginUsage = 0.5,
                 freeCollateral = 1000.0,
+                canViewAccount = true,
             ),
             vaultAccount = makeVaultAccount(
                 balanceUsdc = 500.0,
@@ -134,16 +137,16 @@ class VaultFormTests {
                 balanceShares = 500.0,
             ),
             slippageResponse = VaultDepositWithdrawSlippageResponse(
-                shares = 120.0,
-                expectedAmount = 98.0,
+                sharesToWithdraw = NumShares(numShares = 120.0),
+                expectedQuoteQuantums = 98.0 * 1_000_000,
             ),
         )
 
         assertEquals(
             VaultFormValidationResult(
                 errors = iListOf(
-                    VaultFormValidationError(ErrorType.error, VaultFormValidationErrorType.SLIPPAGE_RESPONSE_WRONG_SHARES),
-                    VaultFormValidationError(ErrorType.warning, VaultFormValidationErrorType.SLIPPAGE_TOO_HIGH),
+                    VaultFormValidationErrors.slippageResponseWrongShares(),
+                    VaultFormValidationErrors.slippageTooHigh(0.02),
                 ),
                 submissionData = null,
                 summaryData = VaultFormSummaryData(
@@ -171,6 +174,7 @@ class VaultFormTests {
             accountData = VaultFormAccountData(
                 marginUsage = 0.5,
                 freeCollateral = 1000.0,
+                canViewAccount = true,
             ),
             vaultAccount = makeVaultAccount(
                 balanceUsdc = 500.0,
@@ -178,17 +182,17 @@ class VaultFormTests {
                 balanceShares = 500.0,
             ),
             slippageResponse = VaultDepositWithdrawSlippageResponse(
-                shares = 600.0,
-                expectedAmount = 500.0,
+                sharesToWithdraw = NumShares(numShares = 600.0),
+                expectedQuoteQuantums = 500.0 * 1_000_000,
             ),
         )
 
         assertEquals(
             VaultFormValidationResult(
                 errors = iListOf(
-                    VaultFormValidationError(ErrorType.error, VaultFormValidationErrorType.WITHDRAW_TOO_HIGH),
-                    VaultFormValidationError(ErrorType.warning, VaultFormValidationErrorType.SLIPPAGE_TOO_HIGH),
-                    VaultFormValidationError(ErrorType.error, VaultFormValidationErrorType.MUST_ACK_SLIPPAGE),
+                    VaultFormValidationErrors.withdrawTooHigh(),
+                    VaultFormValidationErrors.slippageTooHigh(0.166666),
+                    VaultFormValidationErrors.mustAckSlippage(),
                 ),
                 submissionData = null,
                 summaryData = VaultFormSummaryData(

@@ -253,6 +253,21 @@ class V4TransactionTests : NetworkTests() {
     }
 
     @Test
+    fun testCloseAllPositions() {
+        setStateMachineConnected(stateManager)
+        testWebSocket?.simulateReceived(mock.accountsChannel.v4_parent_subaccounts_subscribed_with_trigger_orders_and_open_positions)
+
+        var orderPlacedCallCount = 0
+        val callback: TransactionCallback = { _, _, _ -> orderPlacedCallCount++ }
+        val closePositionPayloads = testChain!!.placeOrderPayloads
+
+        subaccountSupervisor?.closeAllPositions(0, callback)
+        assertTransactionQueueEmpty()
+        // there are 3 open positions
+        assertEquals(3, closePositionPayloads.size)
+    }
+
+    @Test
     fun testCancelTriggerOrdersWithClosedOrFlippedPositions() {
         setStateMachineConnected(stateManager)
         val canceldOrderPayloads = testChain!!.canceldOrderPayloads

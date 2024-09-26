@@ -26,6 +26,7 @@ import exchange.dydx.abacus.state.manager.HistoricalPnlPeriod
 import exchange.dydx.abacus.state.manager.HistoricalTradingRewardsPeriod
 import exchange.dydx.abacus.state.manager.HumanReadableCancelAllOrdersPayload
 import exchange.dydx.abacus.state.manager.HumanReadableCancelOrderPayload
+import exchange.dydx.abacus.state.manager.HumanReadableCloseAllPositionsPayload
 import exchange.dydx.abacus.state.manager.HumanReadableDepositPayload
 import exchange.dydx.abacus.state.manager.HumanReadablePlaceOrderPayload
 import exchange.dydx.abacus.state.manager.HumanReadableSubaccountTransferPayload
@@ -516,6 +517,10 @@ class AsyncAbacusStateManagerV2(
         return adaptor?.cancelAllOrdersPayload(marketId)
     }
 
+    override fun closeAllPositionsPayload(): HumanReadableCloseAllPositionsPayload? {
+        return adaptor?.closeAllPositionsPayload()
+    }
+
     override fun triggerOrdersPayload(): HumanReadableTriggerOrdersPayload? {
         return adaptor?.triggerOrdersPayload()
     }
@@ -622,6 +627,16 @@ class AsyncAbacusStateManagerV2(
         } catch (e: Exception) {
             val error = V4TransactionErrors.error(null, e.toString())
             callback(false, error, null)
+        }
+    }
+
+    override fun closeAllPositions(callback: TransactionCallback): HumanReadableCloseAllPositionsPayload? {
+        return try {
+            adaptor?.closeAllPositions(callback)
+        } catch (e: Exception) {
+            val error = V4TransactionErrors.error(null, e.toString())
+            callback(false, error, null)
+            null
         }
     }
 

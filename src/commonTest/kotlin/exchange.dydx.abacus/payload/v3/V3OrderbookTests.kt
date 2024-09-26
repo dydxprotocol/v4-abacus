@@ -1,6 +1,7 @@
 package exchange.dydx.abacus.payload.v3
 
 import exchange.dydx.abacus.state.model.setOrderbookGrouping
+import exchange.dydx.abacus.tests.extensions.socket
 import kotlin.test.Test
 import kotlin.test.assertEquals
 import kotlin.test.assertNotNull

@@ -14,6 +14,7 @@ import exchange.dydx.abacus.utils.Logger
 import exchange.dydx.abacus.utils.NUM_PARENT_SUBACCOUNTS
 import exchange.dydx.abacus.utils.Parser
 import kollections.JsExport
+import kollections.iListOf
 import kollections.toIList
 import kotlinx.serialization.Serializable
 
@@ -43,7 +44,36 @@ data class PerpetualState(
     val restriction: UsageRestriction?,
     val launchIncentive: LaunchIncentive?,
     val compliance: Compliance?,
+    val vault: Vault?
 ) {
+    internal companion object {
+        fun newState(): PerpetualState {
+            return PerpetualState(
+                assets = null,
+                marketsSummary = null,
+                orderbooks = null,
+                candles = null,
+                trades = null,
+                historicalFundings = null,
+                wallet = null,
+                account = null,
+                historicalPnl = null,
+                fills = null,
+                transfers = null,
+                fundingPayments = null,
+                configs = null,
+                input = null,
+                availableSubaccountNumbers = iListOf(),
+                transferStatuses = null,
+                trackStatuses = null,
+                restriction = null,
+                launchIncentive = null,
+                compliance = null,
+                vault = null,
+            )
+        }
+    }
+
     val parser: ParserProtocol
         get() = Parser()
 

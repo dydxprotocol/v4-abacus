@@ -329,7 +329,7 @@ internal class SubaccountTransformerV2(
     ): Map<String, InternalPerpetualPosition> {
         return positions.filterValues { position ->
             val marketId = position.market
-            val current = position.calculated[CalculationPeriod.current]?.size ?: 0.0
+            val current = position.calculated[CalculationPeriod.current]?.size ?: position.size ?: 0.0
             val postOrder = position.calculated[CalculationPeriod.post]?.size ?: 0.0
             (marketId != exceptMarketId) || (current != 0.0 || postOrder != 0.0)
         }
@@ -343,7 +343,7 @@ internal class SubaccountTransformerV2(
         val deltaSize = delta?.size
         val calculatedAtPeriod = position.calculated[period] ?: InternalPositionCalculated()
         if (delta != null && deltaSize != null) {
-            val currentSize = position.calculated[CalculationPeriod.current]?.size ?: Numeric.double.ZERO
+            val currentSize = position.calculated[CalculationPeriod.current]?.size ?: position.size ?: Numeric.double.ZERO
             calculatedAtPeriod.size = currentSize + deltaSize
         } else {
             calculatedAtPeriod.size = null

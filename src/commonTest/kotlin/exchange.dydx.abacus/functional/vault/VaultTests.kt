@@ -5,11 +5,15 @@ import exchange.dydx.abacus.functional.vault.VaultCalculator.calculateVaultSumma
 import exchange.dydx.abacus.output.PerpetualMarket
 import exchange.dydx.abacus.utils.NUM_PARENT_SUBACCOUNTS
 import indexer.codegen.IndexerAssetPositionResponseObject
+import indexer.codegen.IndexerMegavaultHistoricalPnlResponse
 import indexer.codegen.IndexerPerpetualPositionResponseObject
 import indexer.codegen.IndexerPerpetualPositionStatus
 import indexer.codegen.IndexerPnlTicksResponseObject
 import indexer.codegen.IndexerPositionSide
+import indexer.codegen.IndexerVaultHistoricalPnl
+import indexer.codegen.IndexerVaultPosition
 import kollections.iListOf
+import kotlinx.datetime.Instant
 import kotlin.test.Test
 import kotlin.test.assertEquals
 import kotlin.test.assertNotNull
@@ -19,19 +23,19 @@ class VaultTests {
 
     @Test
     fun calculateVaultSummary_basic() {
-        val historicalPnl = IndexerVaultHistoricalPnlResponse(
-            vaultOfVaultsPnl = iListOf(
+        val historicalPnl = IndexerMegavaultHistoricalPnlResponse(
+            megavaultPnl = arrayOf(
                 IndexerPnlTicksResponseObject(
                     equity = "10000.0",
                     totalPnl = "1000.0",
                     netTransfers = "0.0",
-                    createdAt = "1659465600000",
+                    createdAt = Instant.fromEpochMilliseconds(1659465600000).toString(),
                 ),
                 IndexerPnlTicksResponseObject(
                     equity = "5000.0",
                     totalPnl = "500",
                     netTransfers = "0.0",
-                    createdAt = "1659379200000",
+                    createdAt = Instant.fromEpochMilliseconds(1659379200000).toString(),
                 ),
             ),
         )
@@ -60,8 +64,8 @@ class VaultTests {
 
     @Test
     fun shouldReturnNullForNullOrEmptyHistoricalPnl() {
-        val nullHistoricalPnl = IndexerVaultHistoricalPnlResponse(vaultOfVaultsPnl = null)
-        val emptyHistoricalPnl = IndexerVaultHistoricalPnlResponse(vaultOfVaultsPnl = iListOf())
+        val nullHistoricalPnl = IndexerMegavaultHistoricalPnlResponse(megavaultPnl = null)
+        val emptyHistoricalPnl = IndexerMegavaultHistoricalPnlResponse(megavaultPnl = arrayOf())
 
         val nullVaultDetails = calculateVaultSummary(nullHistoricalPnl)
         val emptyVaultDetails = calculateVaultSummary(emptyHistoricalPnl)
@@ -77,37 +81,37 @@ class VaultTests {
         val thirtyDaysAgoTimestamp = latestTimestamp - 30.days.inWholeMilliseconds
         val twentyNineDaysAgoTimestamp = latestTimestamp - 29.days.inWholeMilliseconds
 
-        val historicalPnl = IndexerVaultHistoricalPnlResponse(
-            vaultOfVaultsPnl = iListOf(
+        val historicalPnl = IndexerMegavaultHistoricalPnlResponse(
+            megavaultPnl = arrayOf(
                 IndexerPnlTicksResponseObject(
                     equity = "10000.0",
                     totalPnl = "1000.0",
                     netTransfers = "0.0",
-                    createdAt = latestTimestamp.toString(),
+                    createdAt = Instant.fromEpochMilliseconds(latestTimestamp).toString(),
                 ),
                 IndexerPnlTicksResponseObject(
                     equity = "9700.0",
                     totalPnl = "700.0",
                     netTransfers = "0.0",
-                    createdAt = twentyNineDaysAgoTimestamp.toString(),
+                    createdAt = Instant.fromEpochMilliseconds(twentyNineDaysAgoTimestamp).toString(),
                 ),
                 IndexerPnlTicksResponseObject(
                     equity = "9500.0",
                     totalPnl = "500.0",
                     netTransfers = "0.0",
-                    createdAt = thirtyDaysAgoTimestamp.toString(),
+                    createdAt = Instant.fromEpochMilliseconds(thirtyDaysAgoTimestamp).toString(),
                 ),
                 IndexerPnlTicksResponseObject(
                     equity = "9300.0",
                     totalPnl = "300.0",
                     netTransfers = "0.0",
-                    createdAt = thirtyOneDaysAgoTimestamp.toString(),
+                    createdAt = Instant.fromEpochMilliseconds(thirtyOneDaysAgoTimestamp).toString(),
                 ),
                 IndexerPnlTicksResponseObject(
                     equity = "9000.0",
                     totalPnl = "0.0",
                     netTransfers = "0.0",
-                    createdAt = (thirtyDaysAgoTimestamp - 7.days.inWholeMilliseconds).toString(),
+                    createdAt = Instant.fromEpochMilliseconds((thirtyDaysAgoTimestamp - 7.days.inWholeMilliseconds)).toString(),
                 ),
             ),
         )
@@ -121,12 +125,12 @@ class VaultTests {
     @Test
     fun shouldCalculateVaultPositionCorrectly() {
         val position = IndexerVaultPosition(
-            market = "BTC-USD",
+            ticker = "BTC-USD",
             assetPosition = IndexerAssetPositionResponseObject(
                 symbol = "USDC",
                 side = IndexerPositionSide.SHORT,
                 size = "40000.0",
-                assetId = "USDC",
+                assetId = "0",
                 subaccountNumber = NUM_PARENT_SUBACCOUNTS,
             ),
             perpetualPosition = IndexerPerpetualPositionResponseObject(
@@ -151,28 +155,28 @@ class VaultTests {
         )
 
         val history = IndexerVaultHistoricalPnl(
-            marketId = "BTC-USD",
-            historicalPnl = iListOf(
+            ticker = "BTC-USD",
+            historicalPnl = arrayOf(
                 IndexerPnlTicksResponseObject(
                     id = "1",
                     equity = "10500.0",
                     totalPnl = "500.0",
                     netTransfers = "0.0",
-                    createdAt = "1659465600000",
+                    createdAt = Instant.fromEpochMilliseconds(1659465600000).toString(),
                 ),
                 IndexerPnlTicksResponseObject(
                     id = "2",
                     equity = "10000.0",
                     totalPnl = "0.0",
                     netTransfers = "0.0",
-                    createdAt = "1659379200000",
+                    createdAt = Instant.fromEpochMilliseconds(1659379200000).toString(),
                 ),
             ),
         )
 
         val market = PerpetualMarket(
             id = "BTC-USD",
-            assetId = "BTC",
+            assetId = "0",
             market = "BTC-USD",
             displayId = null,
             oraclePrice = 55000.0,

@@ -5,6 +5,7 @@ import indexer.codegen.IndexerTransferBetweenResponse
 import indexer.codegen.IndexerTransferResponseObject
 import indexer.codegen.IndexerTransferType
 import kollections.iListOf
+import kotlinx.datetime.Instant
 import kotlin.test.Test
 import kotlin.test.assertEquals
 
@@ -15,10 +16,10 @@ class VaultAccountTests {
     fun calculateUserVaultInfo_basic() {
         val vaultInfo = AccountVaultResponse(
             address = "0x123",
-            shares = 100.0,
-            locked_shares = 50.0,
-            equity = 10000.0,
-            withdrawable_amount = 5000.0,
+            shares = NumShares(numShares = 100.0),
+            shareUnlocks = arrayOf(ShareUnlock(unlockBlockHeight = 0.0, shares = NumShares(numShares = 50.0))),
+            equity = 10000.0 * 1_000_000,
+            withdrawableEquity = 5000.0 * 1_000_000,
         )
 
         val vaultTransfers = IndexerTransferBetweenResponse(
@@ -27,15 +28,15 @@ class VaultAccountTests {
             transfersSubset = arrayOf(
                 IndexerTransferResponseObject(
                     id = "1",
-                    createdAt = "1659465600000",
+                    createdAt = Instant.fromEpochMilliseconds(1659465600000).toString(),
                     size = "6000.0",
-                    type = IndexerTransferType.TRANSFEROUT,
+                    type = IndexerTransferType.TRANSFER_OUT,
                 ),
                 IndexerTransferResponseObject(
                     id = "2",
-                    createdAt = "1659552000000",
+                    createdAt = Instant.fromEpochMilliseconds(1659552000000).toString(),
                     size = "2000.0",
-                    type = IndexerTransferType.TRANSFERIN,
+                    type = IndexerTransferType.TRANSFER_IN,
                 ),
             ),
         )

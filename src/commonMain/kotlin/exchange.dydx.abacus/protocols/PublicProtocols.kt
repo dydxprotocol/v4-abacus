@@ -204,6 +204,7 @@ enum class AnalyticsEvent {
     TradePlaceOrderClick,
     TradeCancelOrderClick,
     TradeCancelAllOrdersClick,
+    TradeCloseAllPositionsClick,
     TradePlaceOrder,
     TradeCancelOrder,
     TradePlaceOrderSubmissionConfirmed,

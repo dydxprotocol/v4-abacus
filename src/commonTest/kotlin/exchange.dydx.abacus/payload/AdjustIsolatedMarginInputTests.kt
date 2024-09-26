@@ -9,6 +9,8 @@ import exchange.dydx.abacus.state.app.adaptors.AbUrl
 import exchange.dydx.abacus.state.model.AdjustIsolatedMarginInputField
 import exchange.dydx.abacus.state.model.adjustIsolatedMargin
 import exchange.dydx.abacus.tests.extensions.parseOnChainEquityTiers
+import exchange.dydx.abacus.tests.extensions.rest
+import exchange.dydx.abacus.tests.extensions.socket
 import kotlin.test.BeforeTest
 import kotlin.test.Test
 import kotlin.test.assertEquals

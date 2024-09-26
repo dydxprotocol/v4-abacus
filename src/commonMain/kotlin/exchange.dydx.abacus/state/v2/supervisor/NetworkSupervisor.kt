@@ -9,7 +9,6 @@ import exchange.dydx.abacus.utils.AnalyticsUtils
 import exchange.dydx.abacus.utils.IMap
 import exchange.dydx.abacus.utils.ParsingHelper
 import exchange.dydx.abacus.utils.filterNotNull
-import exchange.dydx.abacus.utils.iMapOf
 import kollections.iListOf
 
 internal open class NetworkSupervisor(
@@ -85,7 +84,7 @@ internal open class NetworkSupervisor(
     }
 
     internal fun tracking(eventName: String, params: IMap<String, Any?>?) {
-        val requiredParams = helper.validatorUrl?.let { iMapOf("validatorUrl" to it) } ?: iMapOf()
+        val requiredParams = helper.apiStateParams()
         val mergedParams = params?.let { ParsingHelper.merge(params.filterNotNull(), requiredParams) } ?: requiredParams
         val paramsAsString = helper.jsonEncoder.encode(mergedParams)
         helper.ioImplementations.threading?.async(ThreadingType.main) {

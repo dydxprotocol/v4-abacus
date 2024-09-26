@@ -68,12 +68,20 @@ sed -i '' 's/TAKEPROFIT/TAKE_PROFIT/' generated/src/main/kotlin/indexer/codegen/
 # replace TAKEPROFITMARKET with TAKE_PROFIT_MARKET in IndexerAPIOrderType.kt
 sed -i '' 's/TAKEPROFITMARKET/TAKE_PROFIT_MARKET/' generated/src/main/kotlin/indexer/codegen/OrderType.kt
 
+# replace TRANSFERIN with TRANSFER_IN in TransferType.kt
+sed -i '' 's/TRANSFERIN/TRANSFER_IN/' generated/src/main/kotlin/indexer/codegen/TransferType.kt
+
+# replace TRANSFEROUT with TRANSFER_OUT in TransferType.kt
+sed -i '' 's/TRANSFEROUT/TRANSFER_OUT/' generated/src/main/kotlin/indexer/codegen/TransferType.kt
+
 # replace PerpetualPositionsMap with Map<String, PerpetualPositionResponseObject> in SubaccountResponseObject.kt
 sed -i '' 's/\ PerpetualPositionsMap/\ Map<String, IndexerPerpetualPositionResponseObject>/g' generated/src/main/kotlin/indexer/codegen/SubaccountResponseObject.kt
 
 # replace AssetPositionsMap with Map<String, AssetPositionResponseObject> in SubaccountResponseObject.kt
 sed -i '' 's/\ AssetPositionsMap/\ Map<String, IndexerAssetPositionResponseObject>/g' generated/src/main/kotlin/indexer/codegen/SubaccountResponseObject.kt
 
+# add import kotlinx.serialization.SerialName to the top of CandleResolution.kt
+sed -i '' 's/package indexer.codegen/package indexer.codegen\n\nimport kotlinx.serialization.SerialName/' generated/src/main/kotlin/indexer/codegen/CandleResolution.kt
 # add import kotlinx.serialization.Serializable to the top of CandleResolution.kt
 sed -i '' 's/package indexer.codegen/package indexer.codegen\n\nimport kotlinx.serialization.Serializable/' generated/src/main/kotlin/indexer/codegen/CandleResolution.kt
 

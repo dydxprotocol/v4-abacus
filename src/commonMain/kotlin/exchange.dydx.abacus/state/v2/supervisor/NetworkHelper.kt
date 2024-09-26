@@ -25,6 +25,7 @@ import exchange.dydx.abacus.utils.JsonEncoder
 import exchange.dydx.abacus.utils.ParsingHelper
 import exchange.dydx.abacus.utils.ServerTime
 import exchange.dydx.abacus.utils.UIImplementations
+import exchange.dydx.abacus.utils.iMapOf
 import kollections.iListOf
 import kollections.iSetOf
 import kollections.toIMap
@@ -554,5 +555,17 @@ class NetworkHelper(
                 callback(true, null, data)
             }
         }
+    }
+
+    internal fun apiStateParams(): IMap<String, Any>? {
+        val indexerTime = lastIndexerCallTime?.toEpochMilliseconds()
+        val validatorTime = lastValidatorCallTime?.toEpochMilliseconds()
+        val interval = indexerTime?.let { Clock.System.now().toEpochMilliseconds() - it }
+        return iMapOf(
+            "lastSuccessfulIndexerRPC" to indexerTime?.toDouble(),
+            "lastSuccessfulFullNodeRPC" to validatorTime?.toDouble(),
+            "elapsedTime" to interval?.toDouble(),
+            "validatorUrl" to validatorUrl,
+        ) as IMap<String, Any>?
     }
 }
