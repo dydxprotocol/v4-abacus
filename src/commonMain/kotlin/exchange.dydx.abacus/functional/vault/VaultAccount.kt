@@ -9,6 +9,7 @@ import indexer.codegen.IndexerTransferType.TRANSFER_IN
 import indexer.codegen.IndexerTransferType.TRANSFER_OUT
 import indexer.codegen.IndexerTransferType.WITHDRAWAL
 import kollections.toIList
+import kotlinx.datetime.Clock
 import kotlinx.serialization.Serializable
 import kotlin.js.JsExport
 
@@ -45,6 +46,7 @@ data class VaultAccount(
     val allTimeReturnUsdc: Double?,
     val vaultTransfers: IList<VaultTransfer>?,
     val totalVaultTransfersCount: Int?,
+    val vaultShareUnlocks: IList<VaultShareUnlock>?,
 )
 
 @JsExport
@@ -54,6 +56,13 @@ data class VaultTransfer(
     val amountUsdc: Double?,
     val type: VaultTransferType?,
     val id: String?,
+)
+
+@JsExport
+@Serializable
+data class VaultShareUnlock(
+    val timestampMs: Double?,
+    val amountUsdc: Double?,
 )
 
 @JsExport
@@ -77,13 +86,16 @@ object VaultAccountCalculator {
 
     fun calculateUserVaultInfo(
         vaultInfo: AccountVaultResponse,
-        vaultTransfers: IndexerTransferBetweenResponse
+        vaultTransfers: IndexerTransferBetweenResponse,
+        latestBlockHeight: Double,
     ): VaultAccount {
         val presentValue = vaultInfo.equity?.let { it / 1_000_000 }
         val netTransfers = parser.asDouble(vaultTransfers.totalNetTransfers)
         val withdrawable = vaultInfo.withdrawableEquity?.let { it / 1_000_000 }
         val allTimeReturn =
             if (presentValue != null && netTransfers != null) (presentValue - netTransfers) else null
+
+        val impliedShareValue: Double = if (vaultInfo.shares?.numShares != null && presentValue != null) presentValue / vaultInfo.shares.numShares else 0.0
 
         return VaultAccount(
             balanceUsdc = presentValue,
@@ -104,6 +116,12 @@ object VaultAccountCalculator {
                     id = el.id,
                 )
             }?.toIList(),
+            vaultShareUnlocks = vaultInfo.shareUnlocks?.map { el ->
+                VaultShareUnlock(
+                    timestampMs = if (el.unlockBlockHeight != null) Clock.System.now().toEpochMilliseconds() + (el.unlockBlockHeight - latestBlockHeight) * 1000 else null,
+                    amountUsdc = el.shares?.numShares?.let { it * impliedShareValue },
+                )
+            }?.sortedBy { it.timestampMs }?.toIList(),
         )
     }
 }
