@@ -5,6 +5,7 @@ import exchange.dydx.abacus.state.model.TradingStateMachine
 import exchange.dydx.abacus.state.model.onMegaVaultPnl
 import exchange.dydx.abacus.state.model.onVaultMarketPnls
 import exchange.dydx.abacus.state.model.onVaultMarketPositions
+import exchange.dydx.abacus.state.model.onVaultTransferHistory
 import exchange.dydx.abacus.utils.AnalyticsUtils
 import exchange.dydx.abacus.utils.CoroutineTimer
 import exchange.dydx.abacus.utils.Logger
@@ -30,8 +31,17 @@ internal class VaultSupervisor(
     internal val configs: VaultConfigs,
 ) : NetworkSupervisor(stateMachine, helper, analyticsUtils) {
 
+    var accountAddress: String? = null
+        set(value) {
+            if (value != accountAddress && indexerConnected) {
+                stopPollingIndexerData()
+                startPollingIndexerData(value)
+            }
+        }
+
     companion object {
         private const val POLLING_DURATION = 60.0
+        private const val MEGAVAULT_MODULE_ADDRESS = "dydx18tkxrnrkqc2t0lr3zxr5g6a4hdvqksylxqje4r"
     }
 
     private var indexerTimer: LocalTimerProtocol? = null
@@ -45,58 +55,49 @@ internal class VaultSupervisor(
     override fun didSetIndexerConnected(indexerConnected: Boolean) {
         super.didSetIndexerConnected(indexerConnected)
 
+        if (indexerConnected) {
+            startPollingIndexerData(accountAddress)
+        } else {
+            stopPollingIndexerData()
+        }
+    }
+
+    private fun startPollingIndexerData(accountAddress: String?) {
         if (!configs.retrieveVault) {
             return
         }
 
-        if (indexerConnected) {
-            val timer = helper.ioImplementations.timer ?: CoroutineTimer.instance
-            indexerTimer = timer.schedule(delay = 1.0, repeat = Companion.POLLING_DURATION) {
-                if (readyToConnect) {
-                    retrieveMegaVaultPnl()
-                    retrieveVaultMarketPnls()
-                    retrieveVaultMarketPositions()
+        val timer = helper.ioImplementations.timer ?: CoroutineTimer.instance
+        indexerTimer = timer.schedule(delay = 1.0, repeat = Companion.POLLING_DURATION) {
+            if (readyToConnect) {
+                retrieveMegaVaultPnl()
+                retrieveVaultMarketPnls()
+                retrieveVaultMarketPositions()
+                if (accountAddress != null) {
+                    retrieveTransferHistory(accountAddress)
                 }
-                true // Repeat
             }
-        } else {
-            indexerTimer = null
+            true // Repeat
         }
     }
 
+    private fun stopPollingIndexerData() {
+        indexerTimer = null
+    }
+
     private fun retrieveMegaVaultPnl() {
-        if (configs.useMocks) {
-            val mock = IndexerMegavaultHistoricalPnlResponse(
-                megavaultPnl = arrayOf(
-                    IndexerPnlTicksResponseObject(
-                        equity = "10000.0",
-                        totalPnl = "1000.0",
-                        netTransfers = "0.0",
-                        createdAt = Instant.fromEpochMilliseconds(1659465600000).toString(),
-                    ),
-                    IndexerPnlTicksResponseObject(
-                        equity = "5000.0",
-                        totalPnl = "500",
-                        netTransfers = "0.0",
-                        createdAt = Instant.fromEpochMilliseconds(1659379200000).toString(),
-                    ),
-                ),
-            )
-            stateMachine.onMegaVaultPnl(Json.encodeToString(mock))
-        } else {
-            val url = helper.configs.publicApiUrl("vaultHistoricalPnl")
-            if (url != null) {
-                helper.get(
-                    url = url,
-                    params = mapOf("resolution" to "day"),
-                    headers = null,
-                ) { _, response, httpCode, _ ->
-                    if (helper.success(httpCode) && response != null) {
-                        stateMachine.onMegaVaultPnl(response)
-                    } else {
-                        Logger.e {
-                            "Failed to retrieve mega vault pnl: $httpCode, $response"
-                        }
+        val url = helper.configs.publicApiUrl("vaultHistoricalPnl")
+        if (url != null) {
+            helper.get(
+                url = url,
+                params = mapOf("resolution" to "day"),
+                headers = null,
+            ) { _, response, httpCode, _ ->
+                if (helper.success(httpCode) && response != null) {
+                    stateMachine.onMegaVaultPnl(response)
+                } else {
+                    Logger.e {
+                        "Failed to retrieve mega vault pnl: $httpCode, $response"
                     }
                 }
             }
@@ -104,44 +105,18 @@ internal class VaultSupervisor(
     }
 
     private fun retrieveVaultMarketPnls() {
-        if (configs.useMocks) {
-            val btcHistory = IndexerVaultHistoricalPnl(
-                ticker = "BTC-USD",
-                historicalPnl = arrayOf(
-                    IndexerPnlTicksResponseObject(
-                        id = "1",
-                        equity = "10500.0",
-                        totalPnl = "500.0",
-                        netTransfers = "0.0",
-                        createdAt = Instant.fromEpochMilliseconds(1659465600000).toString(),
-                    ),
-                    IndexerPnlTicksResponseObject(
-                        id = "2",
-                        equity = "10000.0",
-                        totalPnl = "0.0",
-                        netTransfers = "0.0",
-                        createdAt = Instant.fromEpochMilliseconds(1659379200000).toString(),
-                    ),
-                ),
-            )
-            val marketPnls = IndexerVaultsHistoricalPnlResponse(
-                vaultsPnl = arrayOf(btcHistory),
-            )
-            stateMachine.onVaultMarketPnls(Json.encodeToString(marketPnls))
-        } else {
-            val url = helper.configs.publicApiUrl("vaultMarketPnls")
-            if (url != null) {
-                helper.get(
-                    url = url,
-                    params = mapOf("resolution" to "day"),
-                    headers = null,
-                ) { _, response, httpCode, _ ->
-                    if (helper.success(httpCode) && response != null) {
-                        stateMachine.onVaultMarketPnls(response)
-                    } else {
-                        Logger.e {
-                            "Failed to retrieve vault market pnls: $httpCode, $response"
-                        }
+        val url = helper.configs.publicApiUrl("vaultMarketPnls")
+        if (url != null) {
+            helper.get(
+                url = url,
+                params = mapOf("resolution" to "day"),
+                headers = null,
+            ) { _, response, httpCode, _ ->
+                if (helper.success(httpCode) && response != null) {
+                    stateMachine.onVaultMarketPnls(response)
+                } else {
+                    Logger.e {
+                        "Failed to retrieve vault market pnls: $httpCode, $response"
                     }
                 }
             }
@@ -149,54 +124,42 @@ internal class VaultSupervisor(
     }
 
     private fun retrieveVaultMarketPositions() {
-        if (configs.useMocks) {
-            val btcPosition = IndexerVaultPosition(
-                ticker = "BTC-USD",
-                assetPosition = IndexerAssetPositionResponseObject(
-                    symbol = "USDC",
-                    side = IndexerPositionSide.SHORT,
-                    size = "40000.0",
-                    assetId = "0",
-                    subaccountNumber = NUM_PARENT_SUBACCOUNTS,
+        val url = helper.configs.publicApiUrl("vaultPositions")
+        if (url != null) {
+            helper.get(
+                url = url,
+                params = null,
+                headers = null,
+            ) { _, response, httpCode, _ ->
+                if (helper.success(httpCode) && response != null) {
+                    stateMachine.onVaultMarketPositions(response)
+                } else {
+                    Logger.e {
+                        "Failed to retrieve vault market positions: $httpCode, $response"
+                    }
+                }
+            }
+        }
+    }
+
+    private fun retrieveTransferHistory(accountAddress: String) {
+        val url = helper.configs.publicApiUrl("transfers")
+        if (url != null) {
+            helper.get(
+                url = url,
+                params = mapOf(
+                    "sourceAddress" to accountAddress,
+                    "sourceSubaccountNumber" to "0",
+                    "recipientAddress" to MEGAVAULT_MODULE_ADDRESS,
+                    "recipientSubaccountNumber" to "0",
                 ),
-                perpetualPosition = IndexerPerpetualPositionResponseObject(
-                    market = "BTC-USD",
-                    status = IndexerPerpetualPositionStatus.OPEN,
-                    side = IndexerPositionSide.LONG,
-                    size = "1.0",
-                    maxSize = null,
-                    entryPrice = "50000.0",
-                    realizedPnl = null,
-                    createdAt = "2023-08-01T00:00:00Z",
-                    createdAtHeight = "1000",
-                    sumOpen = null,
-                    sumClose = null,
-                    netFunding = null,
-                    unrealizedPnl = "5000.0",
-                    closedAt = null,
-                    exitPrice = null,
-                    subaccountNumber = NUM_PARENT_SUBACCOUNTS,
-                ),
-                equity = "15000.0",
-            )
-            val megaVaultPosition = IndexerMegavaultPositionResponse(
-                positions = arrayOf(btcPosition),
-            )
-            stateMachine.onVaultMarketPositions(Json.encodeToString(megaVaultPosition))
-        } else {
-            val url = helper.configs.publicApiUrl("vaultPositions")
-            if (url != null) {
-                helper.get(
-                    url = url,
-                    params = null,
-                    headers = null,
-                ) { _, response, httpCode, _ ->
-                    if (helper.success(httpCode) && response != null) {
-                        stateMachine.onVaultMarketPositions(response)
-                    } else {
-                        Logger.e {
-                            "Failed to retrieve vault market positions: $httpCode, $response"
-                        }
+                headers = null,
+            ) { _, response, httpCode, _ ->
+                if (helper.success(httpCode) && response != null) {
+                    stateMachine.onVaultTransferHistory(response)
+                } else {
+                    Logger.e {
+                        "Failed to retrieve transfer history: $httpCode, $response"
                     }
                 }
             }

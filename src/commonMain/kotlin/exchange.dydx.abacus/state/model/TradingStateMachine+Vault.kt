@@ -34,6 +34,14 @@ internal fun TradingStateMachine.onVaultMarketPositions(
     return updateVaultState(internalState, newState)
 }
 
+internal fun TradingStateMachine.onVaultTransferHistory(
+    payload: String
+): StateChanges {
+    val positionResponse = parser.asTypedObject<IndexerMegavaultPositionResponse>(payload)
+    val newState = vaultProcessor.processVaultMarketPositions(internalState.vault, positionResponse)
+    return updateVaultState(internalState, newState)
+}
+
 private fun updateVaultState(
     state: InternalState,
     newVaultState: InternalVaultState?
