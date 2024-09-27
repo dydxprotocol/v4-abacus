@@ -1,7 +1,9 @@
 package exchange.dydx.abacus.state.v2.supervisor
 
 import exchange.dydx.abacus.protocols.LocalTimerProtocol
+import exchange.dydx.abacus.protocols.TransactionType
 import exchange.dydx.abacus.state.model.TradingStateMachine
+import exchange.dydx.abacus.state.model.onAccountOwnerShares
 import exchange.dydx.abacus.state.model.onMegaVaultPnl
 import exchange.dydx.abacus.state.model.onVaultMarketPnls
 import exchange.dydx.abacus.state.model.onVaultMarketPositions
@@ -19,9 +21,16 @@ internal class VaultSupervisor(
 
     var accountAddress: String? = null
         set(value) {
-            if (value != accountAddress && indexerConnected) {
-                stopPollingIndexerData()
-                startPollingIndexerData(value)
+            if (value != accountAddress) {
+                if (indexerConnected) {
+                    stopPollingIndexerData()
+                    startPollingIndexerData(value)
+                }
+                if (validatorConnected) {
+                    stopPollingValidatorData()
+                    startPollingValidatorData(value)
+                }
+                field = value
             }
         }
 
@@ -38,6 +47,14 @@ internal class VaultSupervisor(
             }
         }
 
+    private var validatorTimer: LocalTimerProtocol? = null
+        set(value) {
+            if (field !== value) {
+                field?.cancel()
+                field = value
+            }
+        }
+
     override fun didSetIndexerConnected(indexerConnected: Boolean) {
         super.didSetIndexerConnected(indexerConnected)
 
@@ -45,6 +62,16 @@ internal class VaultSupervisor(
             startPollingIndexerData(accountAddress)
         } else {
             stopPollingIndexerData()
+        }
+    }
+
+    override fun didSetValidatorConnected(validatorConnected: Boolean) {
+        super.didSetValidatorConnected(validatorConnected)
+
+        if (validatorConnected) {
+            startPollingValidatorData(accountAddress)
+        } else {
+            stopPollingValidatorData()
         }
     }
 
@@ -69,6 +96,26 @@ internal class VaultSupervisor(
 
     private fun stopPollingIndexerData() {
         indexerTimer = null
+    }
+
+    private fun startPollingValidatorData(accountAddress: String?) {
+        if (!configs.retrieveVault) {
+            return
+        }
+
+        val timer = helper.ioImplementations.timer ?: CoroutineTimer.instance
+        validatorTimer = timer.schedule(delay = 1.0, repeat = Companion.POLLING_DURATION) {
+            if (readyToConnect) {
+                if (accountAddress != null) {
+                    retrieveAccountShares(accountAddress)
+                }
+            }
+            true // Repeat
+        }
+    }
+
+    private fun stopPollingValidatorData() {
+        validatorTimer = null
     }
 
     private fun retrieveMegaVaultPnl() {
@@ -148,6 +195,23 @@ internal class VaultSupervisor(
                         "Failed to retrieve transfer history: $httpCode, $response"
                     }
                 }
+            }
+        }
+    }
+
+    private fun retrieveAccountShares(accountAddress: String) {
+        val payload =
+            helper.jsonEncoder.encode(
+                mapOf(
+                    "address" to accountAddress,
+                ),
+            )
+        helper.transaction(TransactionType.GetMegavaultOwnerShares, payload) { response ->
+            val error = helper.parseTransactionResponse(response)
+            if (error != null) {
+                Logger.e { "getMegavaultOwnerShares error: $error" }
+            } else {
+                stateMachine.onAccountOwnerShares(response)
             }
         }
     }

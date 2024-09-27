@@ -9,6 +9,7 @@ import indexer.codegen.IndexerMegavaultHistoricalPnlResponse
 import indexer.codegen.IndexerMegavaultPositionResponse
 import indexer.codegen.IndexerTransferBetweenResponse
 import indexer.codegen.IndexerVaultsHistoricalPnlResponse
+import indexer.models.chain.OnChainAccountVaultResponse
 import kollections.iListOf
 
 internal fun TradingStateMachine.onMegaVaultPnl(
@@ -40,6 +41,14 @@ internal fun TradingStateMachine.onVaultTransferHistory(
 ): StateChanges {
     val transferBetweenResponse = parser.asTypedObject<IndexerTransferBetweenResponse>(payload)
     val newState = vaultProcessor.processTransferBetween(internalState.vault, transferBetweenResponse)
+    return updateVaultState(internalState, newState)
+}
+
+internal fun TradingStateMachine.onAccountOwnerShares(
+    payload: String
+): StateChanges {
+    val accountVaultResponse = parser.asTypedObject<OnChainAccountVaultResponse>(payload)
+    val newState = vaultProcessor.processAccountOwnerShares(internalState.vault, accountVaultResponse)
     return updateVaultState(internalState, newState)
 }
 
