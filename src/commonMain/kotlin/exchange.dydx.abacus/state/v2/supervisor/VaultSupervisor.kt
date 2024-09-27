@@ -3,6 +3,7 @@ package exchange.dydx.abacus.state.v2.supervisor
 import exchange.dydx.abacus.protocols.LocalTimerProtocol
 import exchange.dydx.abacus.protocols.TransactionType
 import exchange.dydx.abacus.state.model.TradingStateMachine
+import exchange.dydx.abacus.state.model.onAccountOwnerShares
 import exchange.dydx.abacus.state.model.onMegaVaultPnl
 import exchange.dydx.abacus.state.model.onVaultMarketPnls
 import exchange.dydx.abacus.state.model.onVaultMarketPositions
@@ -205,12 +206,12 @@ internal class VaultSupervisor(
                     "address" to accountAddress,
                 ),
             )
-        helper.transaction(TransactionType.GetMegavaultOwnerShares, payload) {
-            val error = helper.parseTransactionResponse(it)
+        helper.transaction(TransactionType.GetMegavaultOwnerShares, payload) { response ->
+            val error = helper.parseTransactionResponse(response)
             if (error != null) {
                 Logger.e { "getMegavaultOwnerShares error: $error" }
             } else {
-                Logger.d { "getMegavaultOwnerShares success." }
+                stateMachine.onAccountOwnerShares(response)
             }
         }
     }

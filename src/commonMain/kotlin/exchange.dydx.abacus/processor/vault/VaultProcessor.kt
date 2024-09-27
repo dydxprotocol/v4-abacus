@@ -13,6 +13,7 @@ import indexer.codegen.IndexerMegavaultHistoricalPnlResponse
 import indexer.codegen.IndexerMegavaultPositionResponse
 import indexer.codegen.IndexerTransferBetweenResponse
 import indexer.codegen.IndexerVaultsHistoricalPnlResponse
+import indexer.models.chain.OnChainAccountVaultResponse
 
 internal class VaultProcessor(
     parser: ParserProtocol,
@@ -97,6 +98,21 @@ internal class VaultProcessor(
 
         return if (payload != existing?.transfers) {
             existing?.copy(transfers = payload) ?: InternalVaultState(transfers = payload)
+        } else {
+            existing
+        }
+    }
+
+    fun processAccountOwnerShares(
+        existing: InternalVaultState?,
+        payload: OnChainAccountVaultResponse?,
+    ): InternalVaultState? {
+        if (payload == null) {
+            return existing
+        }
+
+        return if (payload != existing?.account) {
+            existing?.copy(account = payload) ?: InternalVaultState(account = payload)
         } else {
             existing
         }
