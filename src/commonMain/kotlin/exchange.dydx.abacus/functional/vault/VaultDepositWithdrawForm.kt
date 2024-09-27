@@ -177,6 +177,7 @@ data class VaultFormSummaryData(
     val marginUsage: Double?,
     val freeCollateral: Double?,
     val vaultBalance: Double?,
+    val withdrawableVaultBalance: Double?,
     val estimatedSlippage: Double?,
     val estimatedAmountReceived: Double?
 )
@@ -229,6 +230,10 @@ object VaultDepositWithdrawFormValidator {
         val postOpVaultBalance = when (formData.action) {
             VaultFormAction.DEPOSIT -> (vaultAccount?.balanceUsdc ?: 0.0) + amount
             VaultFormAction.WITHDRAW -> (vaultAccount?.balanceUsdc ?: 0.0) - amount
+        }
+        val postOpWithdrawableVaultBalance = when (formData.action) {
+            VaultFormAction.DEPOSIT -> (vaultAccount?.withdrawableUsdc ?: 0.0) + amount
+            VaultFormAction.WITHDRAW -> (vaultAccount?.withdrawableUsdc ?: 0.0) - amount
         }
 
         val (postOpFreeCollateral, postOpMarginUsage) = if (accountData?.freeCollateral != null && accountData.marginUsage != null) {
@@ -346,6 +351,7 @@ object VaultDepositWithdrawFormValidator {
             marginUsage = postOpMarginUsage,
             freeCollateral = postOpFreeCollateral,
             vaultBalance = postOpVaultBalance,
+            withdrawableVaultBalance = postOpWithdrawableVaultBalance,
             estimatedSlippage = slippagePercent,
             estimatedAmountReceived = if (formData.action === VaultFormAction.WITHDRAW && withdrawnAmountIncludingSlippage != null) withdrawnAmountIncludingSlippage else null,
         )
