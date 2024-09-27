@@ -141,7 +141,7 @@ internal class AccountInputValidator(
         wallet: InternalWalletState,
         subaccountNumber: Int?,
     ): ValidationError? {
-        val isChildSubaccountForIsolatedMargin = subaccountNumber == null || subaccountNumber >= NUM_PARENT_SUBACCOUNTS
+        val isChildSubaccountForIsolatedMargin = subaccountNumber != null && subaccountNumber >= NUM_PARENT_SUBACCOUNTS
         val subaccount = wallet.account.subaccounts[subaccountNumber]
         val equity = subaccount?.calculated?.get(CalculationPeriod.current)?.equity
 
@@ -171,7 +171,7 @@ internal class AccountInputValidator(
     ): Map<String, Any>? {
         val equity = parser.asDouble(parser.value(subaccount, "equity.current"))
         val subaccountNumber = parser.asInt(subaccount?.get("subaccountNumber"))
-        val isChildSubaccountForIsolatedMargin = subaccountNumber == null || subaccountNumber >= NUM_PARENT_SUBACCOUNTS
+        val isChildSubaccountForIsolatedMargin = subaccountNumber != null && subaccountNumber >= NUM_PARENT_SUBACCOUNTS
 
         return if (equity != null && equity > 0) {
             null
