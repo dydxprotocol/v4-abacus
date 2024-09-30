@@ -24,6 +24,21 @@ class VaultFormTests {
     }
 
     @Test
+    fun testShareCalculation() {
+        assertEquals(
+            VaultDepositWithdrawFormValidator.calculateSharesToWithdraw(
+                vaultAccount = makeVaultAccount(
+                    balanceUsdc = 500.0,
+                    balanceShares = 250.0,
+                    withdrawableUsdc = 500.0,
+                ),
+                amount = 100.0,
+            ),
+            50.0,
+        )
+    }
+
+    @Test
     fun testDepositValidation() {
         val result = VaultDepositWithdrawFormValidator.validateVaultForm(
             formData = VaultFormData(
