@@ -99,6 +99,14 @@ object VaultFormValidationErrors {
         textKey = "APP.VAULTS.DEPOSIT_TOO_HIGH",
     )
 
+    fun depositTooLow() = createError(
+        code = "DEPOSIT_TOO_LOW",
+        type = ErrorType.error,
+        fields = listOf("amount"),
+        titleKey = "APP.TRADE.MODIFY_SIZE_FIELD",
+        textKey = "APP.VAULTS.DEPOSIT_TOO_LOW",
+    )
+
     fun withdrawTooHigh() = createError(
         code = "WITHDRAW_TOO_HIGH",
         type = ErrorType.error,
@@ -197,6 +205,8 @@ object VaultDepositWithdrawFormValidator {
     private const val SLIPPAGE_PERCENT_WARN = 0.01
     private const val SLIPPAGE_PERCENT_ACK = 0.04
     private const val SLIPPAGE_TOLERANCE = 0.01
+
+    private const val MIN_DEPOSIT_FE_THRESHOLD = 20.0
 
     fun getVaultDepositWithdrawSlippageResponse(apiResponse: String): OnChainVaultDepositWithdrawSlippageResponse? {
         return parser.asTypedObject<OnChainVaultDepositWithdrawSlippageResponse>(apiResponse)
@@ -297,6 +307,9 @@ object VaultDepositWithdrawFormValidator {
             VaultFormAction.DEPOSIT -> {
                 if (postOpFreeCollateral != null && postOpFreeCollateral < 0) {
                     errors.add(VaultFormValidationErrors.depositTooHigh())
+                }
+                if (amount > 0 && amount < MIN_DEPOSIT_FE_THRESHOLD) {
+                    errors.add(VaultFormValidationErrors.depositTooLow())
                 }
             }
             VaultFormAction.WITHDRAW -> {
