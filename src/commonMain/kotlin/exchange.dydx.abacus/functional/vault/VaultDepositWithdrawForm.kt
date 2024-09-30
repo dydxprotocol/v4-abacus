@@ -212,6 +212,18 @@ object VaultDepositWithdrawFormValidator {
         return parser.asTypedObject<OnChainVaultDepositWithdrawSlippageResponse>(apiResponse)
     }
 
+    fun calculateSharesToWithdraw(
+        vaultAccount: VaultAccount?,
+        amount: Double
+    ): Double {
+        if (vaultAccount?.balanceUsdc == null || vaultAccount.balanceUsdc == 0.0 ||
+            vaultAccount.balanceShares == null || vaultAccount.balanceShares == 0.0
+        ) {
+            return 0.0
+        }
+        return (amount / (vaultAccount.balanceUsdc / vaultAccount.balanceShares)).toLong().toDouble()
+    }
+
     fun validateVaultForm(
         formData: VaultFormData,
         accountData: VaultFormAccountData?,
