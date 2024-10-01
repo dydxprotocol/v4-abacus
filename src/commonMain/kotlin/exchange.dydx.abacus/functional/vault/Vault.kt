@@ -140,7 +140,7 @@ object VaultCalculator {
 
         return VaultDetails(
             totalValue = totalValue,
-            thirtyDayReturnPercent = thirtyDayReturnPercent * 365.days.inWholeMilliseconds / timeDifferenceMs,
+            thirtyDayReturnPercent = if (timeDifferenceMs > 0) thirtyDayReturnPercent * 365.days.inWholeMilliseconds / timeDifferenceMs else 0.0,
             history = history.toIList(),
         )
     }
