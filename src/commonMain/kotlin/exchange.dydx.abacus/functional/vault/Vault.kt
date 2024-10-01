@@ -126,6 +126,11 @@ object VaultCalculator {
         val thirtyDaysAgoTotalPnl = thirtyDaysAgoEntry.totalPnl ?: 0.0
 
         val pnlDifference = latestTotalPnl - thirtyDaysAgoTotalPnl
+        val timeDifferenceMs = if (latestEntry.date != null && thirtyDaysAgoEntry.date != null) {
+            latestEntry.date - thirtyDaysAgoEntry.date
+        } else {
+            0.0
+        }
         val thirtyDaysAgoEquity = thirtyDaysAgoEntry.equity ?: 0.0
         val thirtyDayReturnPercent = if (thirtyDaysAgoEquity != 0.0) {
             (pnlDifference / thirtyDaysAgoEquity)
@@ -135,7 +140,7 @@ object VaultCalculator {
 
         return VaultDetails(
             totalValue = totalValue,
-            thirtyDayReturnPercent = thirtyDayReturnPercent,
+            thirtyDayReturnPercent = thirtyDayReturnPercent * 365.days.inWholeMilliseconds / timeDifferenceMs,
             history = history.toIList(),
         )
     }
