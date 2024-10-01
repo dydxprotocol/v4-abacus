@@ -216,12 +216,11 @@ object VaultDepositWithdrawFormValidator {
         vaultAccount: VaultAccount?,
         amount: Double
     ): Double {
-        if (vaultAccount?.balanceUsdc == null || vaultAccount.balanceUsdc == 0.0 ||
-            vaultAccount.balanceShares == null || vaultAccount.balanceShares == 0.0
-        ) {
+        val shareValue = vaultAccount?.shareValue ?: 0.0
+        if (shareValue == 0.0) {
             return 0.0
         }
-        return (amount / (vaultAccount.balanceUsdc / vaultAccount.balanceShares)).toLong().toDouble()
+        return (amount / shareValue).toLong().toDouble()
     }
 
     fun validateVaultForm(
