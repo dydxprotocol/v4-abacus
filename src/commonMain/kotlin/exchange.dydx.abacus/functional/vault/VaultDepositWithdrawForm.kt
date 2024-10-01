@@ -216,12 +216,11 @@ object VaultDepositWithdrawFormValidator {
         vaultAccount: VaultAccount?,
         amount: Double
     ): Double {
-        if (vaultAccount?.balanceUsdc == null || vaultAccount.balanceUsdc == 0.0 ||
-            vaultAccount.balanceShares == null || vaultAccount.balanceShares == 0.0
-        ) {
+        val shareValue = vaultAccount?.shareValue ?: 0.0
+        if (shareValue == 0.0) {
             return 0.0
         }
-        return (amount / (vaultAccount.balanceUsdc / vaultAccount.balanceShares)).toLong().toDouble()
+        return (amount / shareValue).toLong().toDouble()
     }
 
     fun validateVaultForm(
@@ -236,11 +235,7 @@ object VaultDepositWithdrawFormValidator {
         // Calculate post-operation values and slippage
         val amount = formData.amount ?: 0.0
 
-        val shareValue = if (vaultAccount?.balanceUsdc != null && vaultAccount.balanceShares != null && vaultAccount.balanceShares > 0) {
-            vaultAccount.balanceUsdc / vaultAccount.balanceShares
-        } else {
-            null
-        }
+        val shareValue = vaultAccount?.shareValue
         val sharesToAttemptWithdraw = if (amount > 0 && shareValue != null && shareValue > 0) {
             // shares must be whole numbers
             floor(amount / shareValue)
