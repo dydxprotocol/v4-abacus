@@ -452,6 +452,7 @@ class AsyncAbacusStateManagerV2(
                 dataNotification = dataNotification,
                 presentationProtocol = presentationProtocol,
             )
+            adaptor?.gasToken = gasToken
             pushNotificationToken?.let { token ->
                 adaptor?.registerPushNotification(token, pushNotificationLanguageCode)
             }
