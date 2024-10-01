@@ -123,7 +123,7 @@ class VaultFormTests {
                     ),
                 ),
                 summaryData = VaultFormSummaryData(
-                    needSlippageAck = true,
+                    needSlippageAck = false,
                     marginUsage = 0.4766444232602478,
                     freeCollateral = 1098.0,
                     vaultBalance = 400.0,
@@ -170,7 +170,7 @@ class VaultFormTests {
                 ),
                 submissionData = null,
                 summaryData = VaultFormSummaryData(
-                    needSlippageAck = true,
+                    needSlippageAck = false,
                     marginUsage = 0.4766444232602478,
                     freeCollateral = 1098.0,
                     vaultBalance = 400.0,

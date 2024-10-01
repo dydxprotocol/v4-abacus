@@ -288,7 +288,7 @@ object VaultDepositWithdrawFormValidator {
         } else {
             0.0
         }
-        val needSlippageAck = slippagePercent >= SLIPPAGE_PERCENT_WARN
+        val needSlippageAck = slippagePercent >= SLIPPAGE_PERCENT_ACK
 
         // Perform validation checks and populate errors list
         if (accountData == null) {
@@ -336,11 +336,11 @@ object VaultDepositWithdrawFormValidator {
                         VaultFormValidationErrors.slippageResponseWrongShares(),
                     )
                 }
-                if (needSlippageAck) {
+                if (slippagePercent >= SLIPPAGE_PERCENT_WARN) {
                     errors.add(VaultFormValidationErrors.slippageTooHigh(slippagePercent))
-                    if (slippagePercent >= SLIPPAGE_PERCENT_ACK && !formData.acknowledgedSlippage && formData.inConfirmationStep) {
-                        errors.add(VaultFormValidationErrors.mustAckSlippage())
-                    }
+                }
+                if (needSlippageAck && !formData.acknowledgedSlippage && formData.inConfirmationStep) {
+                    errors.add(VaultFormValidationErrors.mustAckSlippage())
                 }
             }
         }
