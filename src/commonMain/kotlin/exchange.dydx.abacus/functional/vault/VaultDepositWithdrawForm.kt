@@ -288,7 +288,7 @@ object VaultDepositWithdrawFormValidator {
         } else {
             0.0
         }
-        val needSlippageAck = slippagePercent >= SLIPPAGE_PERCENT_WARN
+        val needSlippageAck = slippagePercent >= SLIPPAGE_PERCENT_ACK
 
         // Perform validation checks and populate errors list
         if (accountData == null) {
