@@ -24,7 +24,15 @@ data class VaultAccount(
     val vaultTransfers: IList<VaultTransfer>?,
     val totalVaultTransfersCount: Int?,
     val vaultShareUnlocks: IList<VaultShareUnlock>?,
-)
+) {
+    val shareValue: Double?
+        get() =
+            if (balanceShares != null && balanceUsdc != null && balanceShares > 0) {
+                balanceUsdc / balanceShares
+            } else {
+                null
+            }
+}
 
 @JsExport
 @Serializable
