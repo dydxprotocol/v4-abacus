@@ -55,7 +55,7 @@ internal class VaultFormValidationErrors(
     ): ValidationError {
         val paramsMap = mutableMapOf<String, String>()
         for (param in textKeyParams ?: emptyList()) {
-            if ( param.value != null) {
+            if (param.value != null) {
                 paramsMap[param.key] = param.value
             }
         }
@@ -78,7 +78,7 @@ internal class VaultFormValidationErrors(
                     ErrorString(
                         stringKey = it,
                         params = textKeyParams?.toIList(),
-                        localized = localizer?.localizeWithParams(it, paramsMap)
+                        localized = localizer?.localizeWithParams(it, paramsMap),
                     )
                 },
                 action = null,

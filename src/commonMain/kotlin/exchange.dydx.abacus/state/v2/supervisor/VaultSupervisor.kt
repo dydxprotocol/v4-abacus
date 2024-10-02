@@ -55,6 +55,13 @@ internal class VaultSupervisor(
             }
         }
 
+    fun refreshVaultAccount() {
+        if (accountAddress != null && validatorConnected) {
+            stopPollingValidatorData()
+            startPollingValidatorData(accountAddress)
+        }
+    }
+
     override fun didSetIndexerConnected(indexerConnected: Boolean) {
         super.didSetIndexerConnected(indexerConnected)
 

@@ -690,6 +690,10 @@ internal class StateManagerAdaptorV2(
         accounts.registerPushNotification(token, languageCode)
     }
 
+    internal fun refreshVaultAccount() {
+        vault.refreshVaultAccount()
+    }
+
     private fun updateRestriction(indexerRestriction: UsageRestriction?) {
         restriction = indexerRestriction ?: accounts.addressRestriction ?: UsageRestriction.noRestriction
     }
