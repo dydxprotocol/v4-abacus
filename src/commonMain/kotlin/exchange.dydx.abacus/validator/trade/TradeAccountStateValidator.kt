@@ -290,6 +290,9 @@ internal class TradeAccountStateValidator(
             return false
         }
         val type = trade.type ?: return false
+        // does not apply to trigger/stop trades
+        if (type.isSlTp) return false
+
         val price = if (type == OrderType.Market) {
             trade.marketOrder?.worstPrice
         } else {
@@ -347,6 +350,7 @@ internal class TradeAccountStateValidator(
     ): Boolean {
         if (orders != null) {
             val type = parser.asString(trade["type"]) ?: return false
+            if (listOf("STOP_MARKET", "TAKE_PROFIT_MARKET", "STOP_LIMIT", "TAKE_PROFIT").contains(type)) return false
             val price = parser.asDouble(
                 parser.value(
                     trade,
