@@ -392,7 +392,7 @@ Order is reduce-only
 
 ## cancelReason
 
-If order was canceled, the reason for canncellation
+If order was canceled, the reason for cancellation
 
 # SubaccountOrderResources
 

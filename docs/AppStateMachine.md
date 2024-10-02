@@ -11,7 +11,7 @@ Abacus supports both v3 and v4 environments, including production and testing en
 let selections = appStateMachine.availableEnvironments()
 selections returns an array of SelectionOption, which contains a value and a stringKey
 
-FE apps should display a picker display the localized stringKey value. When user makes the selction, call
+FE apps should display a picker display the localized stringKey value. When user makes the selection, call
 
 let response = appStateMachine.setEnvironment(environment)
 FE apps should handle the response, which has a type of [AppStateResponse](AppStateResponse.md)
