@@ -685,4 +685,8 @@ class AsyncAbacusStateManagerV2(
         pushNotificationLanguageCode = languageCode
         adaptor?.registerPushNotification(token, languageCode)
     }
+
+    override fun refreshVaultAccount() {
+        adaptor?.refreshVaultAccount()
+    }
 }
