@@ -10,8 +10,8 @@ interface LocalizerProtocol {
     fun localize(path: String, paramsAsJson: String? = null): String
 }
 
-fun LocalizerProtocol.localizeWithParams(path: String, params: Map<String, String>): String? =
-    localize(path = path, paramsAsJson = params.toJsonPrettyPrint())
+fun LocalizerProtocol.localizeWithParams(path: String, params: Map<String, String>?): String =
+    if (params == null) localize(path = path) else localize(path = path, paramsAsJson = params.toJsonPrettyPrint())
 
 interface AbacusLocalizerProtocol : LocalizerProtocol {
     val languages: List<SelectionOption>
