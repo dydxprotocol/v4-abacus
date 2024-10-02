@@ -6,7 +6,9 @@ import exchange.dydx.abacus.output.input.ErrorResources
 import exchange.dydx.abacus.output.input.ErrorString
 import exchange.dydx.abacus.output.input.ErrorType
 import exchange.dydx.abacus.output.input.ValidationError
+import exchange.dydx.abacus.protocols.LocalizerProtocol
 import exchange.dydx.abacus.protocols.asTypedObject
+import exchange.dydx.abacus.protocols.localizeWithParams
 import exchange.dydx.abacus.utils.IList
 import exchange.dydx.abacus.utils.Parser
 import exchange.dydx.abacus.utils.format
@@ -40,7 +42,9 @@ data class VaultFormAccountData(
     val canViewAccount: Boolean?,
 )
 
-object VaultFormValidationErrors {
+internal class VaultFormValidationErrors(
+    private val localizer: LocalizerProtocol? = null,
+) {
     private fun createError(
         code: String,
         type: ErrorType,
@@ -49,6 +53,12 @@ object VaultFormValidationErrors {
         textKey: String? = null,
         textKeyParams: List<ErrorParam>? = null
     ): ValidationError {
+        val paramsMap = mutableMapOf<String, String>()
+        for (param in textKeyParams ?: emptyList()) {
+            if ( param.value != null) {
+                paramsMap[param.key] = param.value
+            }
+        }
         return ValidationError(
             code = code,
             type = type,
@@ -57,12 +67,18 @@ object VaultFormValidationErrors {
             link = null,
             linkText = null,
             resources = ErrorResources(
-                title = titleKey?.let { ErrorString(stringKey = it, params = null, localized = null) },
+                title = titleKey?.let {
+                    ErrorString(
+                        stringKey = it,
+                        params = null,
+                        localized = localizer?.localize(it),
+                    )
+                },
                 text = textKey?.let {
                     ErrorString(
                         stringKey = it,
                         params = textKeyParams?.toIList(),
-                        localized = null,
+                        localized = localizer?.localizeWithParams(it, paramsMap)
                     )
                 },
                 action = null,
@@ -227,8 +243,10 @@ object VaultDepositWithdrawFormValidator {
         formData: VaultFormData,
         accountData: VaultFormAccountData?,
         vaultAccount: VaultAccount?,
-        slippageResponse: OnChainVaultDepositWithdrawSlippageResponse?
+        slippageResponse: OnChainVaultDepositWithdrawSlippageResponse?,
+        localizer: LocalizerProtocol? = null,
     ): VaultFormValidationResult {
+        val vaultFormValidationErrors = VaultFormValidationErrors(localizer)
         val errors = mutableListOf<ValidationError>()
         var submissionData: VaultDepositWithdrawSubmissionData? = null
 
@@ -287,55 +305,55 @@ object VaultDepositWithdrawFormValidator {
 
         // Perform validation checks and populate errors list
         if (accountData == null) {
-            errors.add(VaultFormValidationErrors.accountDataMissing(accountData?.canViewAccount))
+            errors.add(vaultFormValidationErrors.accountDataMissing(accountData?.canViewAccount))
         }
 
         if (amount == 0.0) {
-            errors.add(VaultFormValidationErrors.amountEmpty(formData.action))
+            errors.add(vaultFormValidationErrors.amountEmpty(formData.action))
         }
 
         // can't actually submit if we are missing key validation information
         if (formData.inConfirmationStep && formData.action === VaultFormAction.WITHDRAW) {
             if (vaultAccount == null) {
-                errors.add(VaultFormValidationErrors.vaultAccountMissing())
+                errors.add(vaultFormValidationErrors.vaultAccountMissing())
             }
             if (slippageResponse == null || sharesToAttemptWithdraw == null) {
-                errors.add(VaultFormValidationErrors.slippageResponseMissing())
+                errors.add(vaultFormValidationErrors.slippageResponseMissing())
             }
         }
 
         if (formData.inConfirmationStep && formData.action === VaultFormAction.DEPOSIT) {
             if (accountData?.marginUsage == null || accountData.freeCollateral == null) {
-                errors.add(VaultFormValidationErrors.accountDataMissing(accountData?.canViewAccount))
+                errors.add(vaultFormValidationErrors.accountDataMissing(accountData?.canViewAccount))
             }
         }
 
         when (formData.action) {
             VaultFormAction.DEPOSIT -> {
                 if (postOpFreeCollateral != null && postOpFreeCollateral < 0) {
-                    errors.add(VaultFormValidationErrors.depositTooHigh())
+                    errors.add(vaultFormValidationErrors.depositTooHigh())
                 }
                 if (amount > 0 && amount < MIN_DEPOSIT_FE_THRESHOLD) {
-                    errors.add(VaultFormValidationErrors.depositTooLow())
+                    errors.add(vaultFormValidationErrors.depositTooLow())
                 }
             }
             VaultFormAction.WITHDRAW -> {
                 if (postOpVaultBalance != null && postOpVaultBalance < 0) {
-                    errors.add(VaultFormValidationErrors.withdrawTooHigh())
+                    errors.add(vaultFormValidationErrors.withdrawTooHigh())
                 }
                 if (postOpVaultBalance != null && postOpVaultBalance >= 0 && amount > 0 && vaultAccount?.withdrawableUsdc != null && amount > vaultAccount.withdrawableUsdc) {
-                    errors.add(VaultFormValidationErrors.withdrawingLockedBalance())
+                    errors.add(vaultFormValidationErrors.withdrawingLockedBalance())
                 }
                 if (sharesToAttemptWithdraw != null && slippageResponse != null && sharesToAttemptWithdraw != slippageResponse.sharesToWithdraw.numShares) {
                     errors.add(
-                        VaultFormValidationErrors.slippageResponseWrongShares(),
+                        vaultFormValidationErrors.slippageResponseWrongShares(),
                     )
                 }
                 if (slippagePercent >= SLIPPAGE_PERCENT_WARN) {
-                    errors.add(VaultFormValidationErrors.slippageTooHigh(slippagePercent))
+                    errors.add(vaultFormValidationErrors.slippageTooHigh(slippagePercent))
                 }
                 if (needSlippageAck && !formData.acknowledgedSlippage && formData.inConfirmationStep) {
-                    errors.add(VaultFormValidationErrors.mustAckSlippage())
+                    errors.add(vaultFormValidationErrors.mustAckSlippage())
                 }
             }
         }
