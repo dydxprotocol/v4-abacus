@@ -41,6 +41,7 @@ data class VaultTransfer(
     val amountUsdc: Double?,
     val type: VaultTransferType?,
     val id: String?,
+    val transactionHash: String?,
 )
 
 @JsExport
@@ -106,6 +107,7 @@ object VaultAccountCalculator {
                         DEPOSIT, WITHDRAWAL, null -> null
                     },
                     id = el.id,
+                    transactionHash = el.transactionHash,
                 )
             }?.toIList(),
             vaultShareUnlocks = vaultInfo.shareUnlocks?.map { el ->
