@@ -231,7 +231,7 @@ class VaultFormTests {
     }
 
     @Test
-    fun testLowWithdraw() {
+    fun testLowDeposit() {
         val result = VaultDepositWithdrawFormValidator.validateVaultForm(
             formData = VaultFormData(
                 action = VaultFormAction.DEPOSIT,
@@ -266,6 +266,101 @@ class VaultFormTests {
                     withdrawableVaultBalance = 510.0,
                     estimatedSlippage = 0.0,
                     estimatedAmountReceived = null,
+                ),
+            ),
+            result,
+        )
+    }
+
+    @Test
+    fun testLowWithdraw() {
+        val result = VaultDepositWithdrawFormValidator.validateVaultForm(
+            formData = VaultFormData(
+                action = VaultFormAction.WITHDRAW,
+                amount = 10.0,
+                acknowledgedSlippage = false,
+                inConfirmationStep = false,
+            ),
+            accountData = VaultFormAccountData(
+                marginUsage = 0.5,
+                freeCollateral = 1000.0,
+                canViewAccount = true,
+            ),
+            vaultAccount = makeVaultAccount(
+                balanceUsdc = 1000.0,
+                withdrawableUsdc = 500.0,
+                balanceShares = 500.0,
+            ),
+            slippageResponse = OnChainVaultDepositWithdrawSlippageResponse(
+                sharesToWithdraw = OnChainNumShares(numShares = 5.0),
+                expectedQuoteQuantums = 10.0 * 1_000_000,
+            ),
+        )
+
+        assertEquals(
+            VaultFormValidationResult(
+                errors = iListOf(
+                    VaultFormValidationErrors().withdrawTooLow(),
+                ),
+                submissionData = null,
+                summaryData = VaultFormSummaryData(
+                    needSlippageAck = false,
+                    marginUsage = 0.49751243781094523,
+                    freeCollateral = 1010.0,
+                    vaultBalance = 990.0,
+                    withdrawableVaultBalance = 490.0,
+                    estimatedSlippage = 0.0,
+                    estimatedAmountReceived = 10.0,
+                ),
+            ),
+            result,
+        )
+    }
+
+    @Test
+    fun testLowWithdrawFull() {
+        val result = VaultDepositWithdrawFormValidator.validateVaultForm(
+            formData = VaultFormData(
+                action = VaultFormAction.WITHDRAW,
+                amount = 10.0,
+                acknowledgedSlippage = false,
+                inConfirmationStep = false,
+            ),
+            accountData = VaultFormAccountData(
+                marginUsage = 0.5,
+                freeCollateral = 1000.0,
+                canViewAccount = true,
+            ),
+            vaultAccount = makeVaultAccount(
+                balanceUsdc = 1000.0,
+                withdrawableUsdc = 10.0,
+                balanceShares = 500.0,
+            ),
+            slippageResponse = OnChainVaultDepositWithdrawSlippageResponse(
+                sharesToWithdraw = OnChainNumShares(numShares = 5.0),
+                expectedQuoteQuantums = 10.0 * 1_000_000,
+            ),
+        )
+
+        assertEquals(
+            VaultFormValidationResult(
+                errors = listOf<ValidationError>().toIList(),
+                submissionData = VaultDepositWithdrawSubmissionData(
+                    withdraw = VaultWithdrawData(
+                        subaccountTo = "0",
+                        shares = 5.0,
+                        minAmount = 9.90,
+                    ),
+                    deposit = null,
+                ),
+                summaryData = VaultFormSummaryData(
+                    needSlippageAck = false,
+                    marginUsage = 0.49751243781094523,
+                    freeCollateral = 1010.0,
+                    vaultBalance = 990.0,
+                    withdrawableVaultBalance = 0.0,
+                    estimatedSlippage = 0.0,
+                    estimatedAmountReceived = 10.0,
                 ),
             ),
             result,

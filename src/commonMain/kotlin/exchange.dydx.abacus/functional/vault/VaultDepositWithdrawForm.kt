@@ -131,6 +131,14 @@ internal class VaultFormValidationErrors(
         textKey = "APP.VAULTS.WITHDRAW_TOO_HIGH",
     )
 
+    fun withdrawTooLow() = createError(
+        code = "WITHDRAW_TOO_LOW",
+        type = ErrorType.error,
+        fields = listOf("amount"),
+        titleKey = "APP.TRADE.MODIFY_SIZE_FIELD",
+        textKey = "APP.VAULTS.WITHDRAW_TOO_LOW",
+    )
+
     fun withdrawingLockedBalance() = createError(
         code = "WITHDRAWING_LOCKED_BALANCE",
         type = ErrorType.error,
@@ -341,7 +349,14 @@ object VaultDepositWithdrawFormValidator {
                 if (postOpVaultBalance != null && postOpVaultBalance < 0) {
                     errors.add(vaultFormValidationErrors.withdrawTooHigh())
                 }
-                if (postOpVaultBalance != null && postOpVaultBalance >= 0 && amount > 0 && vaultAccount?.withdrawableUsdc != null && amount > vaultAccount.withdrawableUsdc) {
+                if (amount > 0 && amount < MIN_DEPOSIT_FE_THRESHOLD &&
+                    vaultAccount?.withdrawableUsdc != null && vaultAccount.withdrawableUsdc >= MIN_DEPOSIT_FE_THRESHOLD
+                ) {
+                    errors.add(vaultFormValidationErrors.withdrawTooLow())
+                }
+                if (postOpVaultBalance != null && postOpVaultBalance >= 0 && amount > 0 &&
+                    vaultAccount?.withdrawableUsdc != null && amount > vaultAccount.withdrawableUsdc
+                ) {
                     errors.add(vaultFormValidationErrors.withdrawingLockedBalance())
                 }
                 if (sharesToAttemptWithdraw != null && slippageResponse != null && sharesToAttemptWithdraw != slippageResponse.sharesToWithdraw.numShares) {
