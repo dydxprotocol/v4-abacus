@@ -301,7 +301,7 @@ object VaultDepositWithdrawFormValidator {
         } else {
             0.0
         }
-        val needSlippageAck = slippagePercent >= SLIPPAGE_PERCENT_ACK && formData.inConfirmationStep
+        val needSlippageAck = slippagePercent >= SLIPPAGE_PERCENT_ACK && formData.inConfirmationStep && !formData.acknowledgedSlippage
 
         // Perform validation checks and populate errors list
         if (accountData == null) {
