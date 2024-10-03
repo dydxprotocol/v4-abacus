@@ -35,7 +35,7 @@ internal class VaultSupervisor(
         }
 
     companion object {
-        private const val POLLING_DURATION = 60.0
+        private const val POLLING_DURATION = 20.0
         private const val MEGAVAULT_MODULE_ADDRESS = "dydx18tkxrnrkqc2t0lr3zxr5g6a4hdvqksylxqje4r"
     }
 
@@ -58,7 +58,9 @@ internal class VaultSupervisor(
     fun refreshVaultAccount() {
         if (accountAddress != null && validatorConnected) {
             stopPollingValidatorData()
+            stopPollingIndexerData()
             startPollingValidatorData(accountAddress)
+            startPollingIndexerData(accountAddress)
         }
     }
 
