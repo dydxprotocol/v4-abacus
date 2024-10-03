@@ -271,4 +271,56 @@ class VaultFormTests {
             result,
         )
     }
+
+    @Test
+    fun testValidHighSlippageWithdraw() {
+        val result = VaultDepositWithdrawFormValidator.validateVaultForm(
+            formData = VaultFormData(
+                action = VaultFormAction.WITHDRAW,
+                amount = 500.0,
+                acknowledgedSlippage = true,
+                inConfirmationStep = true,
+            ),
+            accountData = VaultFormAccountData(
+                marginUsage = 0.5,
+                freeCollateral = 1000.0,
+                canViewAccount = true,
+            ),
+            vaultAccount = makeVaultAccount(
+                balanceUsdc = 500.0,
+                withdrawableUsdc = 500.0,
+                balanceShares = 500.0,
+            ),
+            slippageResponse = OnChainVaultDepositWithdrawSlippageResponse(
+                sharesToWithdraw = OnChainNumShares(numShares = 500.0),
+                expectedQuoteQuantums = 400.0 * 1_000_000,
+            ),
+        )
+
+        assertEquals(
+            VaultFormValidationResult(
+                errors = iListOf(
+                    VaultFormValidationErrors().slippageTooHigh(0.1999),
+                ),
+                submissionData = VaultDepositWithdrawSubmissionData(
+                    deposit=null,
+                    withdraw=VaultWithdrawData(
+                        subaccountTo = "0",
+                        shares =500.0,
+                        minAmount = 396.0
+                    )
+                ),
+                summaryData = VaultFormSummaryData(
+                    needSlippageAck = true,
+                    marginUsage = 0.41666666666666663,
+                    freeCollateral = 1400.0,
+                    vaultBalance = 0.0,
+                    withdrawableVaultBalance = 0.0,
+                    estimatedSlippage = 0.19999999999999996,
+                    estimatedAmountReceived = 400.0,
+                ),
+            ),
+            result,
+        )
+    }
 }
