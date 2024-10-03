@@ -273,7 +273,7 @@ class VaultFormTests {
     }
 
     @Test
-    fun testValidHighSlippageWithdraw() {
+    fun testValidHighSlippageWithdrawWithAck() {
         val result = VaultDepositWithdrawFormValidator.validateVaultForm(
             formData = VaultFormData(
                 action = VaultFormAction.WITHDRAW,
@@ -303,12 +303,12 @@ class VaultFormTests {
                     VaultFormValidationErrors().slippageTooHigh(0.1999),
                 ),
                 submissionData = VaultDepositWithdrawSubmissionData(
-                    deposit=null,
-                    withdraw=VaultWithdrawData(
+                    deposit = null,
+                    withdraw = VaultWithdrawData(
                         subaccountTo = "0",
-                        shares =500.0,
-                        minAmount = 396.0
-                    )
+                        shares = 500.0,
+                        minAmount = 396.0,
+                    ),
                 ),
                 summaryData = VaultFormSummaryData(
                     needSlippageAck = true,
