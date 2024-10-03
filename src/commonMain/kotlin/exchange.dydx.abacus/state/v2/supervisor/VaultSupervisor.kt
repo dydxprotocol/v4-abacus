@@ -58,7 +58,9 @@ internal class VaultSupervisor(
     fun refreshVaultAccount() {
         if (accountAddress != null && validatorConnected) {
             stopPollingValidatorData()
+            stopPollingIndexerData()
             startPollingValidatorData(accountAddress)
+            startPollingIndexerData(accountAddress)
         }
     }
 
