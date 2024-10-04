@@ -16,6 +16,7 @@ import indexer.models.chain.OnChainVaultDepositWithdrawSlippageResponse
 import kollections.toIList
 import kotlinx.serialization.Serializable
 import kotlin.js.JsExport
+import kotlin.math.abs
 import kotlin.math.floor
 
 @JsExport
@@ -349,10 +350,15 @@ object VaultDepositWithdrawFormValidator {
                 if (postOpVaultBalance != null && postOpVaultBalance < 0) {
                     errors.add(vaultFormValidationErrors.withdrawTooHigh())
                 }
-                if (amount > 0 && amount < MIN_DEPOSIT_FE_THRESHOLD &&
-                    vaultAccount?.withdrawableUsdc != null && vaultAccount.withdrawableUsdc >= MIN_DEPOSIT_FE_THRESHOLD
-                ) {
-                    errors.add(vaultFormValidationErrors.withdrawTooLow())
+                if (amount > 0 && amount < MIN_DEPOSIT_FE_THRESHOLD) {
+                    // only allowed if withdrawing entire balance
+                    if (!(
+                            vaultAccount?.withdrawableUsdc != null &&
+                                abs(vaultAccount.withdrawableUsdc - amount) <= 0.01
+                            )
+                    ) {
+                        errors.add(vaultFormValidationErrors.withdrawTooLow())
+                    }
                 }
                 if (postOpVaultBalance != null && postOpVaultBalance >= 0 && amount > 0 &&
                     vaultAccount?.withdrawableUsdc != null && amount > vaultAccount.withdrawableUsdc
