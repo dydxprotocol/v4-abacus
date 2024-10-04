@@ -368,6 +368,51 @@ class VaultFormTests {
     }
 
     @Test
+    fun testLowWithdrawNonFull() {
+        val result = VaultDepositWithdrawFormValidator.validateVaultForm(
+            formData = VaultFormData(
+                action = VaultFormAction.WITHDRAW,
+                amount = 6.0,
+                acknowledgedSlippage = false,
+                inConfirmationStep = false,
+            ),
+            accountData = VaultFormAccountData(
+                marginUsage = 0.5,
+                freeCollateral = 1000.0,
+                canViewAccount = true,
+            ),
+            vaultAccount = makeVaultAccount(
+                balanceUsdc = 1000.0,
+                withdrawableUsdc = 10.0,
+                balanceShares = 500.0,
+            ),
+            slippageResponse = OnChainVaultDepositWithdrawSlippageResponse(
+                sharesToWithdraw = OnChainNumShares(numShares = 3.0),
+                expectedQuoteQuantums = 6.0 * 1_000_000,
+            ),
+        )
+
+        assertEquals(
+            VaultFormValidationResult(
+                errors = iListOf(
+                    VaultFormValidationErrors().withdrawTooLow(),
+                ),
+                submissionData = null,
+                summaryData = VaultFormSummaryData(
+                    needSlippageAck = false,
+                    marginUsage = 0.4985044865403788,
+                    freeCollateral = 1006.0,
+                    vaultBalance = 994.0,
+                    withdrawableVaultBalance = 4.0,
+                    estimatedSlippage = 0.0,
+                    estimatedAmountReceived = 6.0,
+                ),
+            ),
+            result,
+        )
+    }
+
+    @Test
     fun testValidHighSlippageWithdrawWithAck() {
         val result = VaultDepositWithdrawFormValidator.validateVaultForm(
             formData = VaultFormData(
