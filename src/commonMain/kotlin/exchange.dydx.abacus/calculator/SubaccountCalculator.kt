@@ -245,7 +245,20 @@ internal class SubaccountCalculator(val parser: ParserProtocol) {
     ) {
         for (period in periods) {
             val quoteBalance = parser.asDouble(value(subaccount, "quoteBalance", period))
-            if (quoteBalance != null) {
+
+            var hasPositionCalculated = false
+            positions?.let {
+                for ((key, position) in positions) {
+                    val valueTotal = parser.asDouble(value(position, "valueTotal", period))
+                    if (valueTotal != null) {
+                        hasPositionCalculated = true
+                        break
+                    }
+                }
+            }
+            val positionsReady = positions.isNullOrEmpty() || hasPositionCalculated
+
+            if (quoteBalance != null && positionsReady) {
                 var notionalTotal = Numeric.double.ZERO
                 var valueTotal = Numeric.double.ZERO
                 var initialRiskTotal = Numeric.double.ZERO
@@ -464,12 +477,9 @@ internal class SubaccountCalculator(val parser: ParserProtocol) {
     ) {
         for (period in periods) {
             val quoteBalance = parser.asDouble(value(subaccount, "quoteBalance", period))
-            if (quoteBalance != null) {
-                val equity =
-                    parser.asDouble(value(subaccount, "equity", period)) ?: Numeric.double.ZERO
-                val initialRiskTotal =
-                    parser.asDouble(value(subaccount, "initialRiskTotal", period))
-                        ?: Numeric.double.ZERO
+            val equity = parser.asDouble(value(subaccount, "equity", period))
+            val initialRiskTotal = parser.asDouble(value(subaccount, "initialRiskTotal", period))
+            if (quoteBalance != null && equity != null && initialRiskTotal != null) {
                 val imf =
                     parser.asDouble(configs?.get("initialMarginFraction"))
                         ?: parser.asDouble(0.05)!!
