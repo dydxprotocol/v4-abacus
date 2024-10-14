@@ -44,7 +44,7 @@ class VaultTests {
 
         val expectedVaultDetails = VaultDetails(
             totalValue = 10000.0,
-            thirtyDayReturnPercent = 0.1,
+            thirtyDayReturnPercent = 0.1 * 365,
             history = iListOf(
                 VaultHistoryEntry(
                     date = 1659465600000.0,
@@ -119,7 +119,7 @@ class VaultTests {
         val vaultDetails = calculateVaultSummary(historicalPnl)
 
         assertNotNull(vaultDetails)
-        assertEquals(0.05263157894736842, vaultDetails.thirtyDayReturnPercent)
+        assertEquals(0.6403508771929824, vaultDetails.thirtyDayReturnPercent)
     }
 
     @Test

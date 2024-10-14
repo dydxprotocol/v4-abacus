@@ -767,6 +767,14 @@ enum class OrderType(val rawValue: String) {
         operator fun invoke(rawValue: String?) =
             entries.firstOrNull { it.rawValue == rawValue }
     }
+
+    val isSlTp: Boolean
+        get() = listOf(
+            StopMarket,
+            TakeProfitMarket,
+            StopLimit,
+            TakeProfitLimit,
+        ).contains(this)
 }
 
 @JsExport

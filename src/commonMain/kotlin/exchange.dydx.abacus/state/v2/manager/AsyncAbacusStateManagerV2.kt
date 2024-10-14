@@ -452,6 +452,7 @@ class AsyncAbacusStateManagerV2(
                 dataNotification = dataNotification,
                 presentationProtocol = presentationProtocol,
             )
+            adaptor?.gasToken = gasToken
             pushNotificationToken?.let { token ->
                 adaptor?.registerPushNotification(token, pushNotificationLanguageCode)
             }
@@ -683,5 +684,9 @@ class AsyncAbacusStateManagerV2(
         pushNotificationToken = token
         pushNotificationLanguageCode = languageCode
         adaptor?.registerPushNotification(token, languageCode)
+    }
+
+    override fun refreshVaultAccount() {
+        adaptor?.refreshVaultAccount()
     }
 }

@@ -105,6 +105,7 @@ interface AsyncAbacusStateManagerProtocol {
     fun getChainById(chainId: String): TransferChainInfo?
 
     fun registerPushNotification(token: String, languageCode: String?)
+    fun refreshVaultAccount()
 }
 
 @JsExport

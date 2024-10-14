@@ -102,7 +102,6 @@ internal class ConnectionsSupervisor(
             indexerConfig = null
             validatorConnected = false
             socketConnected = false
-            validatorUrl = null
             disconnectSocket()
         }
     }
@@ -175,14 +174,8 @@ internal class ConnectionsSupervisor(
     }
 
     private fun bestEffortConnectChain() {
-        if (validatorUrl == null) {
-            val endpointUrls = helper.configs.validatorUrls()
-            validatorUrl = endpointUrls?.firstOrNull()
-        }
         findOptimalNode { url ->
-            if (url != this.validatorUrl) {
-                this.validatorUrl = url
-            }
+            this.validatorUrl = url
         }
     }
 
@@ -391,7 +384,6 @@ internal class ConnectionsSupervisor(
             val timer = helper.ioImplementations.timer ?: CoroutineTimer.instance
             chainTimer = timer.schedule(serverPollingDuration, null) {
                 if (readyToConnect) {
-                    validatorUrl = null
                     bestEffortConnectChain()
                 }
                 false

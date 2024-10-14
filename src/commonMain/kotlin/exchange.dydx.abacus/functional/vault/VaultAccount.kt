@@ -8,32 +8,10 @@ import indexer.codegen.IndexerTransferType.DEPOSIT
 import indexer.codegen.IndexerTransferType.TRANSFER_IN
 import indexer.codegen.IndexerTransferType.TRANSFER_OUT
 import indexer.codegen.IndexerTransferType.WITHDRAWAL
+import indexer.models.chain.OnChainAccountVaultResponse
 import kollections.toIList
 import kotlinx.serialization.Serializable
 import kotlin.js.JsExport
-
-@JsExport
-@Serializable
-data class ShareUnlock(
-    val shares: NumShares?,
-    val unlockBlockHeight: Double?,
-)
-
-@JsExport
-@Serializable
-data class NumShares(
-    val numShares: Double?,
-)
-
-@JsExport
-@Serializable
-data class AccountVaultResponse(
-    val address: String? = null,
-    val shares: NumShares? = null,
-    val shareUnlocks: Array<ShareUnlock>? = null,
-    val equity: Double? = null,
-    val withdrawableEquity: Double? = null,
-)
 
 @JsExport
 @Serializable
@@ -45,7 +23,16 @@ data class VaultAccount(
     val allTimeReturnUsdc: Double?,
     val vaultTransfers: IList<VaultTransfer>?,
     val totalVaultTransfersCount: Int?,
-)
+    val vaultShareUnlocks: IList<VaultShareUnlock>?,
+) {
+    val shareValue: Double?
+        get() =
+            if (balanceShares != null && balanceUsdc != null && balanceShares > 0) {
+                balanceUsdc / balanceShares
+            } else {
+                null
+            }
+}
 
 @JsExport
 @Serializable
@@ -54,6 +41,14 @@ data class VaultTransfer(
     val amountUsdc: Double?,
     val type: VaultTransferType?,
     val id: String?,
+    val transactionHash: String?,
+)
+
+@JsExport
+@Serializable
+data class VaultShareUnlock(
+    val unlockBlockHeight: Double?,
+    val amountUsdc: Double?,
 )
 
 @JsExport
@@ -67,8 +62,8 @@ enum class VaultTransferType {
 object VaultAccountCalculator {
     private val parser = Parser()
 
-    fun getAccountVaultResponse(apiResponse: String): AccountVaultResponse? {
-        return parser.asTypedObject<AccountVaultResponse>(apiResponse)
+    fun getAccountVaultResponse(apiResponse: String): OnChainAccountVaultResponse? {
+        return parser.asTypedObject<OnChainAccountVaultResponse>(apiResponse)
     }
 
     fun getTransfersBetweenResponse(apiResponse: String): IndexerTransferBetweenResponse? {
@@ -76,14 +71,24 @@ object VaultAccountCalculator {
     }
 
     fun calculateUserVaultInfo(
-        vaultInfo: AccountVaultResponse,
-        vaultTransfers: IndexerTransferBetweenResponse
+        vaultInfo: OnChainAccountVaultResponse,
+        vaultTransfers: IndexerTransferBetweenResponse,
     ): VaultAccount {
         val presentValue = vaultInfo.equity?.let { it / 1_000_000 }
         val netTransfers = parser.asDouble(vaultTransfers.totalNetTransfers)
         val withdrawable = vaultInfo.withdrawableEquity?.let { it / 1_000_000 }
         val allTimeReturn =
             if (presentValue != null && netTransfers != null) (presentValue - netTransfers) else null
+
+        val impliedShareValue: Double = if (
+            vaultInfo.shares?.numShares != null &&
+            vaultInfo.shares.numShares > 0 &&
+            presentValue != null
+        ) {
+            presentValue / vaultInfo.shares.numShares
+        } else {
+            0.0
+        }
 
         return VaultAccount(
             balanceUsdc = presentValue,
@@ -102,8 +107,15 @@ object VaultAccountCalculator {
                         DEPOSIT, WITHDRAWAL, null -> null
                     },
                     id = el.id,
+                    transactionHash = el.transactionHash,
                 )
             }?.toIList(),
+            vaultShareUnlocks = vaultInfo.shareUnlocks?.map { el ->
+                VaultShareUnlock(
+                    unlockBlockHeight = el.unlockBlockHeight,
+                    amountUsdc = el.shares?.numShares?.let { it * impliedShareValue },
+                )
+            }?.sortedBy { it.unlockBlockHeight }?.toIList(),
         )
     }
 }

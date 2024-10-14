@@ -27,7 +27,7 @@ class V4VaultTests : V4BaseTests() {
 
         val vaultDetails = vault?.details
         assertEquals(10000.0, vaultDetails?.totalValue)
-        assertEquals(0.1, vaultDetails?.thirtyDayReturnPercent)
+        assertEquals(0.1 * 365, vaultDetails?.thirtyDayReturnPercent)
         assertEquals(2, vaultDetails?.history?.size)
         assertEquals(1000.0, vaultDetails?.history?.get(0)?.totalPnl)
         assertEquals(500.0, vaultDetails?.history?.get(1)?.totalPnl)
@@ -42,7 +42,7 @@ class V4VaultTests : V4BaseTests() {
 
     private fun testMegaVaultPnlReceived() {
         perp.rest(
-            url = AbUrl.fromString("$testRestUrl/v4/vault/megavault/historicalPnl"),
+            url = AbUrl.fromString("$testRestUrl/v4/vault/v1/megavault/historicalPnl"),
             payload = mock.vaultMocks.megaVaultPnlMocks,
             subaccountNumber = 0,
             height = null,
@@ -50,7 +50,7 @@ class V4VaultTests : V4BaseTests() {
 
         val vault = perp.internalState.vault
         assertEquals(10000.0, vault?.details?.totalValue)
-        assertEquals(0.1, vault?.details?.thirtyDayReturnPercent)
+        assertEquals(0.1 * 365, vault?.details?.thirtyDayReturnPercent)
         assertEquals(2, vault?.details?.history?.size)
         assertEquals(1000.0, vault?.details?.history?.get(0)?.totalPnl)
         assertEquals(500.0, vault?.details?.history?.get(1)?.totalPnl)
@@ -58,7 +58,7 @@ class V4VaultTests : V4BaseTests() {
 
     private fun testVaultMarketPnlsReceived() {
         perp.rest(
-            url = AbUrl.fromString("$testRestUrl/v4/vault/vaults/historicalPnl"),
+            url = AbUrl.fromString("$testRestUrl/v4/vault/v1/vaults/historicalPnl"),
             payload = mock.vaultMocks.vaultMarketPnlsMocks,
             subaccountNumber = 0,
             height = null,
@@ -74,7 +74,7 @@ class V4VaultTests : V4BaseTests() {
 
     private fun testVaultMarketPositionsReceived() {
         perp.rest(
-            url = AbUrl.fromString("$testRestUrl/v4/vault/positions"),
+            url = AbUrl.fromString("$testRestUrl/v4/vault/v1/megavault/positions"),
             payload = mock.vaultMocks.vaultMarketPositionsMocks,
             subaccountNumber = 0,
             height = null,

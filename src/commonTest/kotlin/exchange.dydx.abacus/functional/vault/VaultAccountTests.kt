@@ -4,6 +4,9 @@ import exchange.dydx.abacus.functional.vault.VaultAccountCalculator.calculateUse
 import indexer.codegen.IndexerTransferBetweenResponse
 import indexer.codegen.IndexerTransferResponseObject
 import indexer.codegen.IndexerTransferType
+import indexer.models.chain.OnChainAccountVaultResponse
+import indexer.models.chain.OnChainNumShares
+import indexer.models.chain.OnChainShareUnlock
 import kollections.iListOf
 import kotlinx.datetime.Instant
 import kotlin.test.Test
@@ -14,10 +17,10 @@ class VaultAccountTests {
 
     @Test
     fun calculateUserVaultInfo_basic() {
-        val vaultInfo = AccountVaultResponse(
+        val vaultInfo = OnChainAccountVaultResponse(
             address = "0x123",
-            shares = NumShares(numShares = 100.0),
-            shareUnlocks = arrayOf(ShareUnlock(unlockBlockHeight = 0.0, shares = NumShares(numShares = 50.0))),
+            shares = OnChainNumShares(numShares = 100.0),
+            shareUnlocks = arrayOf(OnChainShareUnlock(unlockBlockHeight = 0.0, shares = OnChainNumShares(numShares = 50.0))),
             equity = 10000.0 * 1_000_000,
             withdrawableEquity = 5000.0 * 1_000_000,
         )
@@ -31,12 +34,14 @@ class VaultAccountTests {
                     createdAt = Instant.fromEpochMilliseconds(1659465600000).toString(),
                     size = "6000.0",
                     type = IndexerTransferType.TRANSFER_OUT,
+                    transactionHash = "tx1",
                 ),
                 IndexerTransferResponseObject(
                     id = "2",
                     createdAt = Instant.fromEpochMilliseconds(1659552000000).toString(),
                     size = "2000.0",
                     type = IndexerTransferType.TRANSFER_IN,
+                    transactionHash = "tx2",
                 ),
             ),
         )
@@ -56,14 +61,17 @@ class VaultAccountTests {
                     amountUsdc = 6000.0,
                     type = VaultTransferType.DEPOSIT,
                     id = "1",
+                    transactionHash = "tx1",
                 ),
                 VaultTransfer(
                     timestampMs = 1659552000000.0,
                     amountUsdc = 2000.0,
                     type = VaultTransferType.WITHDRAWAL,
                     id = "2",
+                    transactionHash = "tx2",
                 ),
             ),
+            vaultShareUnlocks = iListOf(VaultShareUnlock(unlockBlockHeight = 0.0, amountUsdc = 5000.0)),
         )
 
         assertEquals(expectedVaultAccount, vaultAccount)

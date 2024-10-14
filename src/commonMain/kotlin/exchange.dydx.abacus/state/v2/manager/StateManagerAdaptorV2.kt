@@ -291,6 +291,7 @@ internal class StateManagerAdaptorV2(
         }
         set(value) {
             accounts.accountAddress = value
+            vault.accountAddress = value
         }
 
     internal var walletConnectionType: WalletConnectionType?
@@ -687,6 +688,10 @@ internal class StateManagerAdaptorV2(
 
     internal fun registerPushNotification(token: String, languageCode: String?) {
         accounts.registerPushNotification(token, languageCode)
+    }
+
+    internal fun refreshVaultAccount() {
+        vault.refreshVaultAccount()
     }
 
     private fun updateRestriction(indexerRestriction: UsageRestriction?) {

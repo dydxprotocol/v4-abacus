@@ -51,7 +51,7 @@ internal class TransferInputCalculatorV2(
 
                 val slippage = parser.asDouble(parser.value(route, "slippage"))
                 val exchangeRate = parser.asDouble(parser.value(route, "exchangeRate"))
-                val estimatedRouteDuration = parser.asDouble(parser.value(route, "estimatedRouteDuration"))
+                val estimatedRouteDurationSeconds = parser.asDouble(parser.value(route, "estimatedRouteDurationSeconds"))
                 val bridgeFee = parser.asDouble(parser.value(route, "bridgeFee"))
                 val gasFee = parser.asDouble(parser.value(route, "gasFee"))
                 val toAmount = parser.asDouble(parser.value(route, "toAmount"))
@@ -74,7 +74,7 @@ internal class TransferInputCalculatorV2(
                     fee = fee,
                     slippage = slippage,
                     exchangeRate = exchangeRate,
-                    estimatedRouteDuration = estimatedRouteDuration,
+                    estimatedRouteDurationSeconds = estimatedRouteDurationSeconds,
                     usdcSize = usdcSize,
                     bridgeFee = bridgeFee,
                     gasFee = gasFee,
@@ -94,7 +94,7 @@ internal class TransferInputCalculatorV2(
 
                 val slippage = parser.asDouble(parser.value(route, "slippage"))
                 val exchangeRate = parser.asDouble(parser.value(route, "exchangeRate"))
-                val estimatedRouteDuration = parser.asDouble(parser.value(route, "estimatedRouteDuration"))
+                val estimatedRouteDurationSeconds = parser.asDouble(parser.value(route, "estimatedRouteDurationSeconds"))
                 val bridgeFee = parser.asDouble(parser.value(route, "bridgeFee"))
                 val gasFee = parser.asDouble(parser.value(route, "gasFee"))
                 val toAmount = parser.asDouble(parser.value(route, "toAmount"))
@@ -109,7 +109,7 @@ internal class TransferInputCalculatorV2(
                     fee = fee,
                     slippage = slippage,
                     exchangeRate = exchangeRate,
-                    estimatedRouteDuration = estimatedRouteDuration,
+                    estimatedRouteDurationSeconds = estimatedRouteDurationSeconds,
                     usdcSize = usdcSize,
                     bridgeFee = bridgeFee,
                     gasFee = gasFee,
@@ -131,7 +131,7 @@ internal class TransferInputCalculatorV2(
                     fee = null,
                     slippage = null,
                     exchangeRate = null,
-                    estimatedRouteDuration = null,
+                    estimatedRouteDurationSeconds = null,
                     bridgeFee = null,
                     toAmount = null,
                     toAmountMin = null,

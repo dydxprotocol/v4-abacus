@@ -6,13 +6,17 @@ import exchange.dydx.abacus.output.input.ErrorResources
 import exchange.dydx.abacus.output.input.ErrorString
 import exchange.dydx.abacus.output.input.ErrorType
 import exchange.dydx.abacus.output.input.ValidationError
+import exchange.dydx.abacus.protocols.LocalizerProtocol
 import exchange.dydx.abacus.protocols.asTypedObject
+import exchange.dydx.abacus.protocols.localizeWithParams
 import exchange.dydx.abacus.utils.IList
 import exchange.dydx.abacus.utils.Parser
 import exchange.dydx.abacus.utils.format
+import indexer.models.chain.OnChainVaultDepositWithdrawSlippageResponse
 import kollections.toIList
 import kotlinx.serialization.Serializable
 import kotlin.js.JsExport
+import kotlin.math.abs
 import kotlin.math.floor
 
 @JsExport
@@ -39,14 +43,9 @@ data class VaultFormAccountData(
     val canViewAccount: Boolean?,
 )
 
-@JsExport
-@Serializable
-data class VaultDepositWithdrawSlippageResponse(
-    val sharesToWithdraw: NumShares,
-    val expectedQuoteQuantums: Double,
-)
-
-object VaultFormValidationErrors {
+internal class VaultFormValidationErrors(
+    private val localizer: LocalizerProtocol? = null,
+) {
     private fun createError(
         code: String,
         type: ErrorType,
@@ -55,6 +54,12 @@ object VaultFormValidationErrors {
         textKey: String? = null,
         textKeyParams: List<ErrorParam>? = null
     ): ValidationError {
+        val paramsMap = mutableMapOf<String, String>()
+        for (param in textKeyParams ?: emptyList()) {
+            if (param.value != null) {
+                paramsMap[param.key] = param.value
+            }
+        }
         return ValidationError(
             code = code,
             type = type,
@@ -63,12 +68,18 @@ object VaultFormValidationErrors {
             link = null,
             linkText = null,
             resources = ErrorResources(
-                title = titleKey?.let { ErrorString(stringKey = it, params = null, localized = null) },
+                title = titleKey?.let {
+                    ErrorString(
+                        stringKey = it,
+                        params = null,
+                        localized = localizer?.localize(it),
+                    )
+                },
                 text = textKey?.let {
                     ErrorString(
                         stringKey = it,
                         params = textKeyParams?.toIList(),
-                        localized = null,
+                        localized = localizer?.localizeWithParams(it, paramsMap),
                     )
                 },
                 action = null,
@@ -105,12 +116,28 @@ object VaultFormValidationErrors {
         textKey = "APP.VAULTS.DEPOSIT_TOO_HIGH",
     )
 
+    fun depositTooLow() = createError(
+        code = "DEPOSIT_TOO_LOW",
+        type = ErrorType.error,
+        fields = listOf("amount"),
+        titleKey = "APP.TRADE.MODIFY_SIZE_FIELD",
+        textKey = "APP.VAULTS.DEPOSIT_TOO_LOW",
+    )
+
     fun withdrawTooHigh() = createError(
         code = "WITHDRAW_TOO_HIGH",
         type = ErrorType.error,
         fields = listOf("amount"),
         titleKey = "APP.TRADE.MODIFY_SIZE_FIELD",
         textKey = "APP.VAULTS.WITHDRAW_TOO_HIGH",
+    )
+
+    fun withdrawTooLow() = createError(
+        code = "WITHDRAW_TOO_LOW",
+        type = ErrorType.error,
+        fields = listOf("amount"),
+        titleKey = "APP.TRADE.MODIFY_SIZE_FIELD",
+        textKey = "APP.VAULTS.WITHDRAW_TOO_LOW",
     )
 
     fun withdrawingLockedBalance() = createError(
@@ -183,6 +210,7 @@ data class VaultFormSummaryData(
     val marginUsage: Double?,
     val freeCollateral: Double?,
     val vaultBalance: Double?,
+    val withdrawableVaultBalance: Double?,
     val estimatedSlippage: Double?,
     val estimatedAmountReceived: Double?
 )
@@ -203,27 +231,38 @@ object VaultDepositWithdrawFormValidator {
     private const val SLIPPAGE_PERCENT_ACK = 0.04
     private const val SLIPPAGE_TOLERANCE = 0.01
 
-    fun getVaultDepositWithdrawSlippageResponse(apiResponse: String): VaultDepositWithdrawSlippageResponse? {
-        return parser.asTypedObject<VaultDepositWithdrawSlippageResponse>(apiResponse)
+    private const val MIN_DEPOSIT_FE_THRESHOLD = 20.0
+
+    fun getVaultDepositWithdrawSlippageResponse(apiResponse: String): OnChainVaultDepositWithdrawSlippageResponse? {
+        return parser.asTypedObject<OnChainVaultDepositWithdrawSlippageResponse>(apiResponse)
+    }
+
+    fun calculateSharesToWithdraw(
+        vaultAccount: VaultAccount?,
+        amount: Double
+    ): Double {
+        val shareValue = vaultAccount?.shareValue ?: 0.0
+        if (shareValue == 0.0) {
+            return 0.0
+        }
+        return (amount / shareValue).toLong().toDouble()
     }
 
     fun validateVaultForm(
         formData: VaultFormData,
         accountData: VaultFormAccountData?,
         vaultAccount: VaultAccount?,
-        slippageResponse: VaultDepositWithdrawSlippageResponse?
+        slippageResponse: OnChainVaultDepositWithdrawSlippageResponse?,
+        localizer: LocalizerProtocol? = null,
     ): VaultFormValidationResult {
+        val vaultFormValidationErrors = VaultFormValidationErrors(localizer)
         val errors = mutableListOf<ValidationError>()
         var submissionData: VaultDepositWithdrawSubmissionData? = null
 
         // Calculate post-operation values and slippage
         val amount = formData.amount ?: 0.0
 
-        val shareValue = if (vaultAccount?.balanceUsdc != null && vaultAccount.balanceShares != null && vaultAccount.balanceShares > 0) {
-            vaultAccount.balanceUsdc / vaultAccount.balanceShares
-        } else {
-            null
-        }
+        val shareValue = vaultAccount?.shareValue
         val sharesToAttemptWithdraw = if (amount > 0 && shareValue != null && shareValue > 0) {
             // shares must be whole numbers
             floor(amount / shareValue)
@@ -235,6 +274,10 @@ object VaultDepositWithdrawFormValidator {
         val postOpVaultBalance = when (formData.action) {
             VaultFormAction.DEPOSIT -> (vaultAccount?.balanceUsdc ?: 0.0) + amount
             VaultFormAction.WITHDRAW -> (vaultAccount?.balanceUsdc ?: 0.0) - amount
+        }
+        val postOpWithdrawableVaultBalance = when (formData.action) {
+            VaultFormAction.DEPOSIT -> (vaultAccount?.withdrawableUsdc ?: 0.0) + amount
+            VaultFormAction.WITHDRAW -> (vaultAccount?.withdrawableUsdc ?: 0.0) - amount
         }
 
         val (postOpFreeCollateral, postOpMarginUsage) = if (accountData?.freeCollateral != null && accountData.marginUsage != null) {
@@ -267,56 +310,71 @@ object VaultDepositWithdrawFormValidator {
         } else {
             0.0
         }
-        val needSlippageAck = slippagePercent >= SLIPPAGE_PERCENT_WARN
+        val needSlippageAck = slippagePercent >= SLIPPAGE_PERCENT_ACK && formData.inConfirmationStep
 
         // Perform validation checks and populate errors list
         if (accountData == null) {
-            errors.add(VaultFormValidationErrors.accountDataMissing(accountData?.canViewAccount))
+            errors.add(vaultFormValidationErrors.accountDataMissing(accountData?.canViewAccount))
         }
 
         if (amount == 0.0) {
-            errors.add(VaultFormValidationErrors.amountEmpty(formData.action))
+            errors.add(vaultFormValidationErrors.amountEmpty(formData.action))
         }
 
         // can't actually submit if we are missing key validation information
         if (formData.inConfirmationStep && formData.action === VaultFormAction.WITHDRAW) {
             if (vaultAccount == null) {
-                errors.add(VaultFormValidationErrors.vaultAccountMissing())
+                errors.add(vaultFormValidationErrors.vaultAccountMissing())
             }
             if (slippageResponse == null || sharesToAttemptWithdraw == null) {
-                errors.add(VaultFormValidationErrors.slippageResponseMissing())
+                errors.add(vaultFormValidationErrors.slippageResponseMissing())
             }
         }
 
         if (formData.inConfirmationStep && formData.action === VaultFormAction.DEPOSIT) {
             if (accountData?.marginUsage == null || accountData.freeCollateral == null) {
-                errors.add(VaultFormValidationErrors.accountDataMissing(accountData?.canViewAccount))
+                errors.add(vaultFormValidationErrors.accountDataMissing(accountData?.canViewAccount))
             }
         }
 
         when (formData.action) {
             VaultFormAction.DEPOSIT -> {
                 if (postOpFreeCollateral != null && postOpFreeCollateral < 0) {
-                    errors.add(VaultFormValidationErrors.depositTooHigh())
+                    errors.add(vaultFormValidationErrors.depositTooHigh())
+                }
+                if (amount > 0 && amount < MIN_DEPOSIT_FE_THRESHOLD) {
+                    errors.add(vaultFormValidationErrors.depositTooLow())
                 }
             }
             VaultFormAction.WITHDRAW -> {
                 if (postOpVaultBalance != null && postOpVaultBalance < 0) {
-                    errors.add(VaultFormValidationErrors.withdrawTooHigh())
+                    errors.add(vaultFormValidationErrors.withdrawTooHigh())
                 }
-                if (postOpVaultBalance != null && postOpVaultBalance >= 0 && amount > 0 && vaultAccount?.withdrawableUsdc != null && amount > vaultAccount.withdrawableUsdc) {
-                    errors.add(VaultFormValidationErrors.withdrawingLockedBalance())
+                if (amount > 0 && amount < MIN_DEPOSIT_FE_THRESHOLD) {
+                    // only allowed if withdrawing entire balance
+                    if (!(
+                            vaultAccount?.withdrawableUsdc != null &&
+                                abs(vaultAccount.withdrawableUsdc - amount) <= 0.01
+                            )
+                    ) {
+                        errors.add(vaultFormValidationErrors.withdrawTooLow())
+                    }
+                }
+                if (postOpVaultBalance != null && postOpVaultBalance >= 0 && amount > 0 &&
+                    vaultAccount?.withdrawableUsdc != null && amount > vaultAccount.withdrawableUsdc
+                ) {
+                    errors.add(vaultFormValidationErrors.withdrawingLockedBalance())
                 }
                 if (sharesToAttemptWithdraw != null && slippageResponse != null && sharesToAttemptWithdraw != slippageResponse.sharesToWithdraw.numShares) {
                     errors.add(
-                        VaultFormValidationErrors.slippageResponseWrongShares(),
+                        vaultFormValidationErrors.slippageResponseWrongShares(),
                     )
                 }
-                if (needSlippageAck) {
-                    errors.add(VaultFormValidationErrors.slippageTooHigh(slippagePercent))
-                    if (slippagePercent >= SLIPPAGE_PERCENT_ACK && !formData.acknowledgedSlippage && formData.inConfirmationStep) {
-                        errors.add(VaultFormValidationErrors.mustAckSlippage())
-                    }
+                if (slippagePercent >= SLIPPAGE_PERCENT_WARN) {
+                    errors.add(vaultFormValidationErrors.slippageTooHigh(slippagePercent))
+                }
+                if (needSlippageAck && !formData.acknowledgedSlippage && formData.inConfirmationStep) {
+                    errors.add(vaultFormValidationErrors.mustAckSlippage())
                 }
             }
         }
@@ -352,6 +410,7 @@ object VaultDepositWithdrawFormValidator {
             marginUsage = postOpMarginUsage,
             freeCollateral = postOpFreeCollateral,
             vaultBalance = postOpVaultBalance,
+            withdrawableVaultBalance = postOpWithdrawableVaultBalance,
             estimatedSlippage = slippagePercent,
             estimatedAmountReceived = if (formData.action === VaultFormAction.WITHDRAW && withdrawnAmountIncludingSlippage != null) withdrawnAmountIncludingSlippage else null,
         )
