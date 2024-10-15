@@ -39,6 +39,94 @@ class VaultFormTests {
     }
 
     @Test
+    fun testShareCalculationCloseToZero() {
+        assertEquals(
+            VaultDepositWithdrawFormValidator.calculateSharesToWithdraw(
+                vaultAccount = makeVaultAccount(
+                    balanceUsdc = 600.0,
+                    balanceShares = 600000.0,
+                    withdrawableUsdc = 500.0,
+                ),
+                amount = 500.0,
+            ),
+            500000.0,
+        )
+
+        assertEquals(
+            VaultDepositWithdrawFormValidator.calculateSharesToWithdraw(
+                vaultAccount = makeVaultAccount(
+                    balanceUsdc = 600.0,
+                    balanceShares = 600000.0,
+                    withdrawableUsdc = 500.0,
+                ),
+                amount = 499.02,
+            ),
+            499020.0,
+        )
+
+        assertEquals(
+            VaultDepositWithdrawFormValidator.calculateSharesToWithdraw(
+                vaultAccount = makeVaultAccount(
+                    balanceUsdc = 600.0,
+                    balanceShares = 600000.0,
+                    withdrawableUsdc = 500.0,
+                ),
+                amount = 499.07,
+            ),
+            499070.0,
+        )
+
+        assertEquals(
+            VaultDepositWithdrawFormValidator.calculateSharesToWithdraw(
+                vaultAccount = makeVaultAccount(
+                    balanceUsdc = 600.0,
+                    balanceShares = 600000.0,
+                    withdrawableUsdc = 500.0,
+                ),
+                amount = 499.02,
+            ),
+            499020.0,
+        )
+
+        assertEquals(
+            VaultDepositWithdrawFormValidator.calculateSharesToWithdraw(
+                vaultAccount = makeVaultAccount(
+                    balanceUsdc = 600.0,
+                    balanceShares = 600000.0,
+                    withdrawableUsdc = 500.0,
+                ),
+                amount = 499.989,
+            ),
+            // actually off by one because of double precision + cast to long
+            499988.0,
+        )
+
+        assertEquals(
+            VaultDepositWithdrawFormValidator.calculateSharesToWithdraw(
+                vaultAccount = makeVaultAccount(
+                    balanceUsdc = 600.0,
+                    balanceShares = 600000.0,
+                    withdrawableUsdc = 500.0,
+                ),
+                amount = 499.99,
+            ),
+            500000.0,
+        )
+
+        assertEquals(
+            VaultDepositWithdrawFormValidator.calculateSharesToWithdraw(
+                vaultAccount = makeVaultAccount(
+                    balanceUsdc = 600.0,
+                    balanceShares = 600000.0,
+                    withdrawableUsdc = 500.0,
+                ),
+                amount = 499.992,
+            ),
+            500000.0,
+        )
+    }
+
+    @Test
     fun testDepositValidation() {
         val result = VaultDepositWithdrawFormValidator.validateVaultForm(
             formData = VaultFormData(

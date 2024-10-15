@@ -17,7 +17,6 @@ import kollections.toIList
 import kotlinx.serialization.Serializable
 import kotlin.js.JsExport
 import kotlin.math.abs
-import kotlin.math.floor
 
 @JsExport
 @Serializable
@@ -248,7 +247,7 @@ object VaultDepositWithdrawFormValidator {
 
         val amountToUse = if (vaultAccount?.withdrawableUsdc != null &&
             vaultAccount.withdrawableUsdc - amount >= 0 &&
-            vaultAccount.withdrawableUsdc - amount < 0.01
+            vaultAccount.withdrawableUsdc - amount <= 0.01
         ) {
             vaultAccount.withdrawableUsdc
         } else {
