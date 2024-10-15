@@ -245,7 +245,17 @@ object VaultDepositWithdrawFormValidator {
         if (shareValue == 0.0) {
             return 0.0
         }
-        return (amount / shareValue).toLong().toDouble()
+
+        val amountToUse = if (vaultAccount?.withdrawableUsdc != null &&
+            vaultAccount.withdrawableUsdc - amount >= 0 &&
+            vaultAccount.withdrawableUsdc - amount < 0.01
+        ) {
+            vaultAccount.withdrawableUsdc
+        } else {
+            amount
+        }
+
+        return (amountToUse / shareValue).toLong().toDouble()
     }
 
     fun validateVaultForm(
@@ -260,15 +270,8 @@ object VaultDepositWithdrawFormValidator {
         var submissionData: VaultDepositWithdrawSubmissionData? = null
 
         // Calculate post-operation values and slippage
-        val amount = formData.amount ?: 0.0
-
-        val shareValue = vaultAccount?.shareValue
-        val sharesToAttemptWithdraw = if (amount > 0 && shareValue != null && shareValue > 0) {
-            // shares must be whole numbers
-            floor(amount / shareValue)
-        } else {
-            null
-        }
+        val sharesToAttemptWithdraw = calculateSharesToWithdraw(vaultAccount, formData.amount ?: 0.0)
+        val amount = sharesToAttemptWithdraw * (vaultAccount?.shareValue ?: 0.0)
 
         val withdrawnAmountIncludingSlippage = slippageResponse?.expectedQuoteQuantums?.let { it / 1_000_000.0 }
         val postOpVaultBalance = when (formData.action) {
