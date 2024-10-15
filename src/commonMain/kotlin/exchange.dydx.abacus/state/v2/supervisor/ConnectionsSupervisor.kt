@@ -7,6 +7,7 @@ import exchange.dydx.abacus.protocols.TransactionType
 import exchange.dydx.abacus.state.manager.GasToken
 import exchange.dydx.abacus.state.manager.IndexerURIs
 import exchange.dydx.abacus.state.manager.NetworkState
+import exchange.dydx.abacus.state.manager.StatsigConfig
 import exchange.dydx.abacus.state.manager.SystemUtils
 import exchange.dydx.abacus.state.model.TradingStateMachine
 import exchange.dydx.abacus.utils.AnalyticsUtils
@@ -243,6 +244,9 @@ internal class ConnectionsSupervisor(
         params.safeSet("CHAINTOKEN_DENOM", chainTokenDenom)
         params.safeSet("CHAINTOKEN_DECIMALS", chainTokenDecimals)
         params.safeSet("txnMemo", "dYdX Frontend (${SystemUtils.platform.rawValue})")
+
+        params.safeSet("enableTimestampNonce", StatsigConfig.ff_enable_timestamp_nonce)
+
         val jsonString = JsonEncoder().encode(params) ?: return
 
         helper.ioImplementations.threading?.async(ThreadingType.main) {

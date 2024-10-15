@@ -549,6 +549,7 @@ class V4Environment(
 data object StatsigConfig {
     var dc_max_safe_bridge_fees: Float = Float.POSITIVE_INFINITY
     var ff_enable_limit_close: Boolean = false
+    var ff_enable_timestamp_nonce: Boolean = false
 }
 
 @JsExport

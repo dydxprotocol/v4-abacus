@@ -2,6 +2,7 @@ package indexer.models.chain
 
 import exchange.dydx.abacus.protocols.asTypedObject
 import exchange.dydx.abacus.utils.Parser
+import exchange.dydx.abacus.utils.QUANTUM_MULTIPLIER
 import kotlinx.serialization.Serializable
 
 // Define the structure of the error message
@@ -61,4 +62,11 @@ data class OnChainTransactionSuccessResponse(
             return parser.asTypedObject<OnChainTransactionSuccessResponse>(payload)
         }
     }
+
+    val actualWithdrawalAmount: Double?
+        get() {
+            val withdrawalEvent = events?.firstOrNull { it.type == "withdraw_from_megavault" }
+            val amountAttribute = withdrawalEvent?.attributes?.firstOrNull { it.key == "redeemed_quote_quantums" }
+            return parser.asDouble(parser.asDecimal(amountAttribute?.value)?.div(QUANTUM_MULTIPLIER))
+        }
 }
