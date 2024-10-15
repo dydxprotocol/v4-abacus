@@ -271,7 +271,8 @@ object VaultDepositWithdrawFormValidator {
         val sharesToAttemptWithdraw = if (formData.action == VaultFormAction.WITHDRAW &&
             vaultAccount != null &&
             (vaultAccount.shareValue ?: 0.0) > 0.0 &&
-            formData.amount != null) {
+            formData.amount != null
+        ) {
             calculateSharesToWithdraw(vaultAccount, formData.amount)
         } else {
             null
