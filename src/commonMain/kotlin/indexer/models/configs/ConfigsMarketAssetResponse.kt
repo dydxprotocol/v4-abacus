@@ -19,6 +19,7 @@ data class ConfigsMarketAsset(
 /**
  * @description Asset from MetadataService Info response
  */
+@Suppress("ConstructorParameterNaming")
 @Serializable
 data class ConfigsAssetMetadata(
     val name: String,
