@@ -7,6 +7,7 @@ import exchange.dydx.abacus.protocols.LocalizerProtocol
 import exchange.dydx.abacus.protocols.ParserProtocol
 import exchange.dydx.abacus.utils.mutable
 import exchange.dydx.abacus.utils.safeSet
+import indexer.models.configs.ConfigsAssetMetadata
 import indexer.models.configs.ConfigsMarketAsset
 
 internal interface AssetProcessorProtocol {
@@ -86,6 +87,92 @@ internal class AssetProcessor(
             assetConfigurationsResourcesKeyMap,
         ).mutable()
         val imageUrl = "$deploymentUri/currencies/${assetId.lowercase()}.png"
+        val primaryDescriptionKey = "__ASSETS.$assetId.PRIMARY"
+        val secondaryDescriptionKey = "__ASSETS.$assetId.SECONDARY"
+        resources.safeSet("imageUrl", imageUrl)
+        resources.safeSet("primaryDescriptionKey", primaryDescriptionKey)
+        resources.safeSet("secondaryDescriptionKey", secondaryDescriptionKey)
+        received["id"] = assetId
+        received["resources"] = resources
+
+        return received
+    }
+}
+internal interface AssetMetadataProcessorProtocol {
+    fun process(
+        assetId: String,
+        payload: ConfigsAssetMetadata,
+    ): Asset
+}
+
+internal class AssetMetadataProcessor(
+    parser: ParserProtocol,
+    private val localizer: LocalizerProtocol?
+) : BaseProcessor(parser), AssetMetadataProcessorProtocol {
+    private val assetConfigurationsResourcesKeyMap = mapOf(
+        "string" to mapOf(
+            "website" to "websiteLink",
+            "technical_doc" to "whitepaperLink",
+            "cmc" to "coinMarketCapsLink",
+        ),
+    )
+
+    private val assetConfigurationsKeyMap = mapOf(
+        "string" to mapOf(
+            "name" to "name",
+        ),
+        "strings" to mapOf(
+            "sector_tags" to "tags",
+        ),
+    )
+
+    override fun process(
+        assetId: String,
+        payload: ConfigsAssetMetadata,
+    ): Asset {
+        val imageUrl = "https://mainnet-metadata-service-logos.s3.ap-northeast-1.amazonaws.com/$assetId.png"
+        val primaryDescriptionKey = "__ASSETS.$assetId.PRIMARY"
+        val secondaryDescriptionKey = "__ASSETS.$assetId.SECONDARY"
+        val primaryDescription = localizer?.localize(primaryDescriptionKey)
+        val secondaryDescription = localizer?.localize(secondaryDescriptionKey)
+
+        return Asset(
+            id = assetId,
+            name = payload.name,
+            tags = payload.sector_tags,
+            resources = AssetResources(
+                websiteLink = payload.urls["website"],
+                whitepaperLink = payload.urls["technical_doc"],
+                coinMarketCapsLink = payload.urls["cmc"],
+                imageUrl = imageUrl,
+                primaryDescriptionKey = primaryDescriptionKey,
+                secondaryDescriptionKey = secondaryDescriptionKey,
+                primaryDescription = primaryDescription,
+                secondaryDescription = secondaryDescription,
+            ),
+        )
+    }
+
+    override fun received(
+        existing: Map<String, Any>?,
+        payload: Map<String, Any>
+    ): Map<String, Any>? {
+        return existing
+    }
+
+    internal fun receivedConfigurations(
+        assetId: String,
+        asset: Map<String, Any>?,
+        payload: Map<String, Any>,
+    ): Map<String, Any> {
+        val received = transform(asset, payload, assetConfigurationsKeyMap)
+        val urls = payload["urls"] as Map<String, String?>
+        val resources = transform(
+            parser.asNativeMap(asset?.get("resources")),
+            urls,
+            assetConfigurationsResourcesKeyMap,
+        ).mutable()
+        val imageUrl = "https://mainnet-metadata-service-logos.s3.ap-northeast-1.amazonaws.com/$assetId.png"
         val primaryDescriptionKey = "__ASSETS.$assetId.PRIMARY"
         val secondaryDescriptionKey = "__ASSETS.$assetId.SECONDARY"
         resources.safeSet("imageUrl", imageUrl)
