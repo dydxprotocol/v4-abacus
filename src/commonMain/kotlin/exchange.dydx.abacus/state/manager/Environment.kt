@@ -553,6 +553,11 @@ data object StatsigConfig {
 }
 
 @JsExport
+data object AutoSweepConfig {
+    var disable_autosweep: Boolean = false
+}
+
+@JsExport
 class AppSettings(
     val ios: AppSetting?,
     val android: AppSetting?,
