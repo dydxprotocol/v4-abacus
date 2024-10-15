@@ -1,6 +1,7 @@
 package indexer.models.configs
 
 import exchange.dydx.abacus.utils.IList
+import exchange.dydx.abacus.utils.IMap
 import kotlinx.serialization.Serializable
 
 /**
@@ -13,4 +14,17 @@ data class ConfigsMarketAsset(
     val whitepaperLink: String? = null,
     val coinMarketCapsLink: String? = null,
     val tags: IList<String>? = null,
+)
+
+/**
+ * @description Asset from MetadataService Info response
+ */
+@Suppress("ConstructorParameterNaming")
+@Serializable
+data class ConfigsAssetMetadata(
+    val name: String,
+    val logo: String,
+    val urls: IMap<String, String?>,
+    val sector_tags: IList<String>? = null,
+//    val exchanges: IList<Any>
 )

@@ -6,16 +6,36 @@ import exchange.dydx.abacus.processor.utils.MarketId
 import exchange.dydx.abacus.protocols.LocalizerProtocol
 import exchange.dydx.abacus.protocols.ParserProtocol
 import exchange.dydx.abacus.utils.mutable
+import indexer.models.configs.ConfigsAssetMetadata
 import indexer.models.configs.ConfigsMarketAsset
 
 internal class AssetsProcessor(
     parser: ParserProtocol,
-    localizer: LocalizerProtocol?
+    localizer: LocalizerProtocol?,
+    val metadataService: Boolean = false,
 ) : BaseProcessor(parser) {
     private val assetProcessor = AssetProcessor(parser = parser, localizer = localizer)
+    private val assetMetadataProcessor = AssetMetadataProcessor(parser = parser, localizer = localizer)
 
     override fun environmentChanged() {
         assetProcessor.environment = environment
+        assetMetadataProcessor.environment = environment
+    }
+
+    internal fun processMetadataConfigurations(
+        existing: MutableMap<String, Asset>,
+        payload: Map<String, ConfigsAssetMetadata>,
+    ): MutableMap<String, Asset> {
+        for ((assetId, data) in payload) {
+            val asset = assetMetadataProcessor.process(
+                assetId = assetId,
+                payload = data,
+            )
+
+            existing[assetId] = asset
+        }
+
+        return existing
     }
 
     internal fun processConfigurations(
@@ -50,12 +70,20 @@ internal class AssetsProcessor(
             if (assetId != null) {
                 val marketPayload = parser.asNativeMap(data)
                 if (marketPayload != null) {
-                    val receivedAsset = assetProcessor.receivedConfigurations(
-                        assetId,
-                        parser.asNativeMap(existing?.get(assetId)),
-                        marketPayload,
-                        deploymentUri,
-                    )
+                    val receivedAsset = if (metadataService) {
+                        assetMetadataProcessor.receivedConfigurations(
+                            assetId,
+                            parser.asNativeMap(existing?.get(assetId)),
+                            marketPayload,
+                        )
+                    } else {
+                        assetProcessor.receivedConfigurations(
+                            assetId,
+                            parser.asNativeMap(existing?.get(assetId)),
+                            marketPayload,
+                            deploymentUri,
+                        )
+                    }
                     assets[assetId] = receivedAsset
                 }
             }

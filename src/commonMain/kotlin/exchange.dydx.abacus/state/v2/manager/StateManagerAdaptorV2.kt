@@ -122,6 +122,7 @@ internal class StateManagerAdaptorV2(
         useParentSubaccount = appConfigs.accountConfigs.subaccountConfigs.useParentSubaccount,
         staticTyping = appConfigs.staticTyping,
         trackingProtocol = ioImplementations.tracking,
+        metadataService = appConfigs.metadataService,
     )
 
     internal val jsonEncoder = JsonEncoder()
