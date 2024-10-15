@@ -145,10 +145,35 @@ object VaultCalculator {
         )
     }
 
+    private fun maybeAddUsdcRow(positions: List<VaultPosition>, vaultTvl: Double?): List<VaultPosition> {
+        if (vaultTvl != null) {
+            val usdcTotal = vaultTvl - positions.sumOf { it.marginUsdc ?: 0.0 }
+
+            // add a usdc row
+            return positions + VaultPosition(
+                marketId = "USDC-USD",
+                marginUsdc = usdcTotal,
+                equityUsdc = usdcTotal,
+                currentLeverageMultiple = 1.0,
+                currentPosition = CurrentPosition(
+                    asset = usdcTotal,
+                    usdc = usdcTotal,
+                ),
+                thirtyDayPnl = ThirtyDayPnl(
+                    percent = 0.0,
+                    absolute = 0.0,
+                    sparklinePoints = null,
+                ),
+            )
+        }
+        return positions
+    }
+
     fun calculateVaultPositions(
         positions: IndexerMegavaultPositionResponse?,
         histories: IndexerVaultsHistoricalPnlResponse?,
-        markets: IMap<String, PerpetualMarket>?
+        markets: IMap<String, PerpetualMarket>?,
+        vaultTvl: Double?,
     ): VaultPositions? {
         if (positions?.positions == null) {
             return null
@@ -156,14 +181,18 @@ object VaultCalculator {
 
         val historiesMap = histories?.vaultsPnl?.associateBy { it.ticker }
 
+        var processedPositions = positions.positions.mapNotNull {
+            calculateVaultPosition(
+                it,
+                historiesMap?.get(it.ticker),
+                markets?.get(it.ticker),
+            )
+        }
+
+        processedPositions = maybeAddUsdcRow(processedPositions, vaultTvl)
+
         return VaultPositions(
-            positions = positions.positions.mapNotNull {
-                calculateVaultPosition(
-                    it,
-                    historiesMap?.get(it.ticker),
-                    markets?.get(it.ticker),
-                )
-            }.toIList(),
+            positions = processedPositions.toIList(),
         )
     }
 
@@ -175,7 +204,7 @@ object VaultCalculator {
             return null
         }
 
-        val positions: List<VaultPosition>? = vault.positions?.mapNotNull { position ->
+        var positions: List<VaultPosition> = vault.positions.mapNotNull { position ->
             val ticker = position.ticker ?: return@mapNotNull null
             val history = vault.pnls.get(ticker)
             val market = markets?.get(ticker)
@@ -188,7 +217,10 @@ object VaultCalculator {
                 perpetualMarket = market,
             )
         }
-        return VaultPositions(positions = positions?.toIList())
+
+        positions = maybeAddUsdcRow(positions, vault.details?.totalValue)
+
+        return VaultPositions(positions = positions.toIList())
     }
 
     fun calculateVaultPosition(

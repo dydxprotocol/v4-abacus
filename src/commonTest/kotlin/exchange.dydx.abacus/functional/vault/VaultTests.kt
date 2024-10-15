@@ -1,17 +1,21 @@
 package exchange.dydx.abacus.functional.vault
 
 import exchange.dydx.abacus.functional.vault.VaultCalculator.calculateVaultPosition
+import exchange.dydx.abacus.functional.vault.VaultCalculator.calculateVaultPositions
 import exchange.dydx.abacus.functional.vault.VaultCalculator.calculateVaultSummary
 import exchange.dydx.abacus.output.PerpetualMarket
 import exchange.dydx.abacus.utils.NUM_PARENT_SUBACCOUNTS
+import exchange.dydx.abacus.utils.iMapOf
 import indexer.codegen.IndexerAssetPositionResponseObject
 import indexer.codegen.IndexerMegavaultHistoricalPnlResponse
+import indexer.codegen.IndexerMegavaultPositionResponse
 import indexer.codegen.IndexerPerpetualPositionResponseObject
 import indexer.codegen.IndexerPerpetualPositionStatus
 import indexer.codegen.IndexerPnlTicksResponseObject
 import indexer.codegen.IndexerPositionSide
 import indexer.codegen.IndexerVaultHistoricalPnl
 import indexer.codegen.IndexerVaultPosition
+import indexer.codegen.IndexerVaultsHistoricalPnlResponse
 import kollections.iListOf
 import kotlinx.datetime.Instant
 import kotlin.test.Test
@@ -206,5 +210,116 @@ class VaultTests {
         )
 
         assertEquals(expectedVaultPosition, vaultPosition)
+    }
+
+    @Test
+    fun shouldCalculateVaultPositionsCorrectly() {
+        val position = IndexerVaultPosition(
+            ticker = "BTC-USD",
+            assetPosition = IndexerAssetPositionResponseObject(
+                symbol = "USDC",
+                side = IndexerPositionSide.SHORT,
+                size = "40000.0",
+                assetId = "0",
+                subaccountNumber = NUM_PARENT_SUBACCOUNTS,
+            ),
+            perpetualPosition = IndexerPerpetualPositionResponseObject(
+                market = "BTC-USD",
+                status = IndexerPerpetualPositionStatus.OPEN,
+                side = IndexerPositionSide.LONG,
+                size = "1.0",
+                maxSize = null,
+                entryPrice = "50000.0",
+                realizedPnl = null,
+                createdAt = "2023-08-01T00:00:00Z",
+                createdAtHeight = "1000",
+                sumOpen = null,
+                sumClose = null,
+                netFunding = null,
+                unrealizedPnl = "5000.0",
+                closedAt = null,
+                exitPrice = null,
+                subaccountNumber = NUM_PARENT_SUBACCOUNTS,
+            ),
+            equity = "15000.0",
+        )
+
+        val history = IndexerVaultHistoricalPnl(
+            ticker = "BTC-USD",
+            historicalPnl = arrayOf(
+                IndexerPnlTicksResponseObject(
+                    id = "1",
+                    equity = "10500.0",
+                    totalPnl = "500.0",
+                    netTransfers = "0.0",
+                    createdAt = Instant.fromEpochMilliseconds(1659465600000).toString(),
+                ),
+                IndexerPnlTicksResponseObject(
+                    id = "2",
+                    equity = "10000.0",
+                    totalPnl = "0.0",
+                    netTransfers = "0.0",
+                    createdAt = Instant.fromEpochMilliseconds(1659379200000).toString(),
+                ),
+            ),
+        )
+
+        val market = PerpetualMarket(
+            id = "BTC-USD",
+            assetId = "0",
+            market = "BTC-USD",
+            displayId = null,
+            oraclePrice = 55000.0,
+            marketCaps = null,
+            priceChange24H = null,
+            priceChange24HPercent = null,
+            status = null,
+            configs = null,
+            perpetual = null,
+        )
+
+        val vaultPositions = calculateVaultPositions(
+            IndexerMegavaultPositionResponse(positions = arrayOf(position)),
+            IndexerVaultsHistoricalPnlResponse(vaultsPnl = arrayOf(history)),
+            iMapOf("BTC-USD" to market),
+            21000.0,
+        )
+
+        val expectedVaultPosition = VaultPosition(
+            marketId = "BTC-USD",
+            marginUsdc = 15000.0,
+            currentLeverageMultiple = 55.0 / 15.0,
+            currentPosition = CurrentPosition(
+                asset = 1.0,
+                usdc = 55000.0,
+            ),
+            thirtyDayPnl = ThirtyDayPnl(
+                percent = 0.05,
+                absolute = 500.0,
+                sparklinePoints = iListOf(0.0, 500.0),
+            ),
+        )
+
+        assertEquals(
+            iListOf(
+                expectedVaultPosition,
+                VaultPosition(
+                    marketId = "USDC-USD",
+                    marginUsdc = 6000.0,
+                    equityUsdc = 6000.0,
+                    currentLeverageMultiple = 1.0,
+                    currentPosition = CurrentPosition(
+                        asset = 6000.0,
+                        usdc = 6000.0,
+                    ),
+                    thirtyDayPnl = ThirtyDayPnl(
+                        percent = 0.0,
+                        absolute = 0.0,
+                        sparklinePoints = null,
+                    ),
+                ),
+            ),
+            vaultPositions?.positions,
+        )
     }
 }
