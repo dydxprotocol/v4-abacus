@@ -304,7 +304,7 @@ class VaultTests {
             iListOf(
                 expectedVaultPosition,
                 VaultPosition(
-                    marketId = "USDC",
+                    marketId = "USDC-USD",
                     marginUsdc = 6000.0,
                     equityUsdc = 6000.0,
                     currentLeverageMultiple = 1.0,
