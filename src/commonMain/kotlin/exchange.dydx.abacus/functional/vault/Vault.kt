@@ -145,6 +145,30 @@ object VaultCalculator {
         )
     }
 
+    private fun maybeAddUsdcRow(positions: List<VaultPosition>, vaultTvl: Double?): List<VaultPosition> {
+        if (vaultTvl != null) {
+            val usdcTotal = vaultTvl - positions.sumOf { it.marginUsdc ?: 0.0 }
+
+            // add a usdc row
+            return positions + VaultPosition(
+                marketId = "USDC-USD",
+                marginUsdc = usdcTotal,
+                equityUsdc = usdcTotal,
+                currentLeverageMultiple = 1.0,
+                currentPosition = CurrentPosition(
+                    asset = usdcTotal,
+                    usdc = usdcTotal,
+                ),
+                thirtyDayPnl = ThirtyDayPnl(
+                    percent = 0.0,
+                    absolute = 0.0,
+                    sparklinePoints = null,
+                ),
+            )
+        }
+        return positions
+    }
+
     fun calculateVaultPositions(
         positions: IndexerMegavaultPositionResponse?,
         histories: IndexerVaultsHistoricalPnlResponse?,
@@ -165,26 +189,7 @@ object VaultCalculator {
             )
         }
 
-        if (vaultTvl != null) {
-            val usdcTotal = vaultTvl - processedPositions.sumOf { it.marginUsdc ?: 0.0 }
-
-            // add a usdc row
-            processedPositions = processedPositions + VaultPosition(
-                marketId = "USDC-USD",
-                marginUsdc = usdcTotal,
-                equityUsdc = usdcTotal,
-                currentLeverageMultiple = 1.0,
-                currentPosition = CurrentPosition(
-                    asset = usdcTotal,
-                    usdc = usdcTotal,
-                ),
-                thirtyDayPnl = ThirtyDayPnl(
-                    percent = 0.0,
-                    absolute = 0.0,
-                    sparklinePoints = null,
-                ),
-            )
-        }
+        processedPositions = maybeAddUsdcRow(processedPositions, vaultTvl)
 
         return VaultPositions(
             positions = processedPositions.toIList(),
@@ -213,26 +218,7 @@ object VaultCalculator {
             )
         }
 
-        if (vault.details?.totalValue != null) {
-            val usdcTotal = vault.details.totalValue - positions.sumOf { it.marginUsdc ?: 0.0 }
-
-            // add a usdc row
-            positions = positions + VaultPosition(
-                marketId = "USDC-USD",
-                marginUsdc = usdcTotal,
-                equityUsdc = usdcTotal,
-                currentLeverageMultiple = 1.0,
-                currentPosition = CurrentPosition(
-                    asset = usdcTotal,
-                    usdc = usdcTotal,
-                ),
-                thirtyDayPnl = ThirtyDayPnl(
-                    percent = 0.0,
-                    absolute = 0.0,
-                    sparklinePoints = null,
-                ),
-            )
-        }
+        positions = maybeAddUsdcRow(positions, vault.details?.totalValue)
 
         return VaultPositions(positions = positions.toIList())
     }
