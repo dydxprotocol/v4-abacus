@@ -361,6 +361,49 @@ class VaultFormTests {
     }
 
     @Test
+    fun testDepositWithNoAccount() {
+        val result = VaultDepositWithdrawFormValidator.validateVaultForm(
+            formData = VaultFormData(
+                action = VaultFormAction.DEPOSIT,
+                amount = 100.0,
+                acknowledgedSlippage = true,
+                inConfirmationStep = true,
+            ),
+            accountData = VaultFormAccountData(
+                marginUsage = 0.5,
+                freeCollateral = 1000.0,
+                canViewAccount = true,
+            ),
+            // null vault account is expected on first deposit
+            vaultAccount = null,
+            slippageResponse = null,
+        )
+
+        assertEquals(
+            VaultFormValidationResult(
+                errors = listOf<ValidationError>().toIList(),
+                submissionData = VaultDepositWithdrawSubmissionData(
+                    deposit = VaultDepositData(
+                        subaccountFrom = "0",
+                        amount = 100.0,
+                    ),
+                    withdraw = null,
+                ),
+                summaryData = VaultFormSummaryData(
+                    needSlippageAck = false,
+                    marginUsage = 0.5263157894736843,
+                    freeCollateral = 900.0,
+                    vaultBalance = 100.0,
+                    withdrawableVaultBalance = 100.0,
+                    estimatedSlippage = 0.0,
+                    estimatedAmountReceived = null,
+                ),
+            ),
+            result,
+        )
+    }
+
+    @Test
     fun testLowWithdraw() {
         val result = VaultDepositWithdrawFormValidator.validateVaultForm(
             formData = VaultFormData(
