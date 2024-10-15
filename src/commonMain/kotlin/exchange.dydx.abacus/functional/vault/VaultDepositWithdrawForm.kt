@@ -268,9 +268,23 @@ object VaultDepositWithdrawFormValidator {
         val errors = mutableListOf<ValidationError>()
         var submissionData: VaultDepositWithdrawSubmissionData? = null
 
-        // Calculate post-operation values and slippage
-        val sharesToAttemptWithdraw = calculateSharesToWithdraw(vaultAccount, formData.amount ?: 0.0)
-        val amount = sharesToAttemptWithdraw * (vaultAccount?.shareValue ?: 0.0)
+        val sharesToAttemptWithdraw = if (formData.action == VaultFormAction.WITHDRAW &&
+            vaultAccount != null &&
+            (vaultAccount.shareValue ?: 0.0) > 0.0 &&
+            formData.amount != null) {
+            calculateSharesToWithdraw(vaultAccount, formData.amount)
+        } else {
+            null
+        }
+
+        val amount = when (formData.action) {
+            VaultFormAction.DEPOSIT -> formData.amount ?: 0.0
+            VaultFormAction.WITHDRAW -> if (sharesToAttemptWithdraw != null) {
+                sharesToAttemptWithdraw * (vaultAccount?.shareValue ?: 0.0)
+            } else {
+                formData.amount ?: 0.0
+            }
+        }
 
         val withdrawnAmountIncludingSlippage = slippageResponse?.expectedQuoteQuantums?.let { it / 1_000_000.0 }
         val postOpVaultBalance = when (formData.action) {
