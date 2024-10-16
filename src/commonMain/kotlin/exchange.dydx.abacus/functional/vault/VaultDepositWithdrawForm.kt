@@ -24,6 +24,7 @@ data class VaultFormData(
     val action: VaultFormAction,
     val amount: Double?,
     val acknowledgedSlippage: Boolean,
+    val acknowledgedTerms: Boolean,
     val inConfirmationStep: Boolean,
 )
 
@@ -164,6 +165,13 @@ internal class VaultFormValidationErrors(
         titleKey = "APP.VAULTS.ACKNOWLEDGE_HIGH_SLIPPAGE",
     )
 
+    fun mustAckTerms() = createError(
+        code = "MUST_ACK_TERMS",
+        type = ErrorType.error,
+        fields = listOf("acknowledgeTerms"),
+        titleKey = "APP.VAULTS.ACKNOWLEDGE_MEGAVAULT_TERMS",
+    )
+
     fun vaultAccountMissing() = createError(
         code = "VAULT_ACCOUNT_MISSING",
         type = ErrorType.error,
@@ -206,6 +214,7 @@ data class VaultWithdrawData(
 @Serializable
 data class VaultFormSummaryData(
     val needSlippageAck: Boolean?,
+    val needTermsAck: Boolean?,
     val marginUsage: Double?,
     val freeCollateral: Double?,
     val vaultBalance: Double?,
@@ -328,6 +337,7 @@ object VaultDepositWithdrawFormValidator {
             0.0
         }
         val needSlippageAck = slippagePercent >= SLIPPAGE_PERCENT_ACK && formData.inConfirmationStep
+        val needTermsAck = formData.action == VaultFormAction.DEPOSIT && formData.inConfirmationStep
 
         // Perform validation checks and populate errors list
         if (accountData == null) {
@@ -352,6 +362,10 @@ object VaultDepositWithdrawFormValidator {
             if (accountData?.marginUsage == null || accountData.freeCollateral == null) {
                 errors.add(vaultFormValidationErrors.accountDataMissing(accountData?.canViewAccount))
             }
+        }
+
+        if (needTermsAck && !formData.acknowledgedTerms) {
+            errors.add(vaultFormValidationErrors.mustAckTerms())
         }
 
         when (formData.action) {
@@ -424,6 +438,7 @@ object VaultDepositWithdrawFormValidator {
         // Prepare summary data
         val summaryData = VaultFormSummaryData(
             needSlippageAck = needSlippageAck,
+            needTermsAck = needTermsAck,
             marginUsage = postOpMarginUsage,
             freeCollateral = postOpFreeCollateral,
             vaultBalance = postOpVaultBalance,
