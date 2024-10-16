@@ -76,4 +76,58 @@ class VaultAccountTests {
 
         assertEquals(expectedVaultAccount, vaultAccount)
     }
+
+    @Test
+    fun calculateUserVaultInfo_empty() {
+        val vaultTransfers = IndexerTransferBetweenResponse(
+            totalResults = 2,
+            totalNetTransfers = "-500.0",
+            transfersSubset = arrayOf(
+                IndexerTransferResponseObject(
+                    id = "1",
+                    createdAt = Instant.fromEpochMilliseconds(1659465600000).toString(),
+                    size = "6000.0",
+                    type = IndexerTransferType.TRANSFER_OUT,
+                    transactionHash = "tx1",
+                ),
+                IndexerTransferResponseObject(
+                    id = "2",
+                    createdAt = Instant.fromEpochMilliseconds(1659552000000).toString(),
+                    size = "6500.0",
+                    type = IndexerTransferType.TRANSFER_IN,
+                    transactionHash = "tx2",
+                ),
+            ),
+        )
+
+        val vaultAccount = calculateUserVaultInfo(null, vaultTransfers)
+
+        val expectedVaultAccount = VaultAccount(
+            balanceUsdc = 0.0,
+            withdrawableUsdc = 0.0,
+            allTimeReturnUsdc = 500.0,
+            totalVaultTransfersCount = 2,
+            balanceShares = 0.0,
+            lockedShares = 0.0,
+            vaultTransfers = iListOf(
+                VaultTransfer(
+                    timestampMs = 1659465600000.0,
+                    amountUsdc = 6000.0,
+                    type = VaultTransferType.DEPOSIT,
+                    id = "1",
+                    transactionHash = "tx1",
+                ),
+                VaultTransfer(
+                    timestampMs = 1659552000000.0,
+                    amountUsdc = 6500.0,
+                    type = VaultTransferType.WITHDRAWAL,
+                    id = "2",
+                    transactionHash = "tx2",
+                ),
+            ),
+            vaultShareUnlocks = null,
+        )
+
+        assertEquals(expectedVaultAccount, vaultAccount)
+    }
 }
