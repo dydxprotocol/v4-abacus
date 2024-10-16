@@ -71,19 +71,17 @@ object VaultAccountCalculator {
     }
 
     fun calculateUserVaultInfo(
-        vaultInfo: OnChainAccountVaultResponse,
+        vaultInfo: OnChainAccountVaultResponse?,
         vaultTransfers: IndexerTransferBetweenResponse,
     ): VaultAccount {
-        val presentValue = vaultInfo.equity?.let { it / 1_000_000 }
+        val presentValue = (vaultInfo?.equity ?: 0.0) / 1_000_000
         val netTransfers = parser.asDouble(vaultTransfers.totalNetTransfers)
-        val withdrawable = vaultInfo.withdrawableEquity?.let { it / 1_000_000 }
-        val allTimeReturn =
-            if (presentValue != null && netTransfers != null) (presentValue - netTransfers) else null
+        val withdrawable = (vaultInfo?.withdrawableEquity ?: 0.0) / 1_000_000
+        val allTimeReturn = if (netTransfers != null) (presentValue - netTransfers) else null
 
         val impliedShareValue: Double = if (
-            vaultInfo.shares?.numShares != null &&
-            vaultInfo.shares.numShares > 0 &&
-            presentValue != null
+            vaultInfo?.shares?.numShares != null &&
+            vaultInfo.shares.numShares > 0
         ) {
             presentValue / vaultInfo.shares.numShares
         } else {
@@ -92,8 +90,8 @@ object VaultAccountCalculator {
 
         return VaultAccount(
             balanceUsdc = presentValue,
-            balanceShares = vaultInfo.shares?.numShares,
-            lockedShares = vaultInfo.shareUnlocks?.sumOf { el -> el.shares?.numShares ?: 0.0 },
+            balanceShares = vaultInfo?.shares?.numShares ?: 0.0,
+            lockedShares = vaultInfo?.shareUnlocks?.sumOf { el -> el.shares?.numShares ?: 0.0 } ?: 0.0,
             withdrawableUsdc = withdrawable,
             allTimeReturnUsdc = allTimeReturn,
             totalVaultTransfersCount = vaultTransfers.totalResults,
@@ -110,7 +108,7 @@ object VaultAccountCalculator {
                     transactionHash = el.transactionHash,
                 )
             }?.toIList(),
-            vaultShareUnlocks = vaultInfo.shareUnlocks?.map { el ->
+            vaultShareUnlocks = vaultInfo?.shareUnlocks?.map { el ->
                 VaultShareUnlock(
                     unlockBlockHeight = el.unlockBlockHeight,
                     amountUsdc = el.shares?.numShares?.let { it * impliedShareValue },
