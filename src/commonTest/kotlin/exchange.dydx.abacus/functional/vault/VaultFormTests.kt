@@ -133,6 +133,7 @@ class VaultFormTests {
                 action = VaultFormAction.DEPOSIT,
                 amount = 100.0,
                 acknowledgedSlippage = true,
+                acknowledgedTerms = true,
                 inConfirmationStep = true,
             ),
             accountData = VaultFormAccountData(
@@ -160,6 +161,7 @@ class VaultFormTests {
                 ),
                 summaryData = VaultFormSummaryData(
                     needSlippageAck = false,
+                    needTermsAck = true,
                     marginUsage = 0.5263157894736843,
                     freeCollateral = 900.0,
                     vaultBalance = 600.0,
@@ -179,6 +181,7 @@ class VaultFormTests {
                 action = VaultFormAction.WITHDRAW,
                 amount = 100.0,
                 acknowledgedSlippage = true,
+                acknowledgedTerms = false,
                 inConfirmationStep = true,
             ),
             accountData = VaultFormAccountData(
@@ -212,6 +215,7 @@ class VaultFormTests {
                 ),
                 summaryData = VaultFormSummaryData(
                     needSlippageAck = false,
+                    needTermsAck = false,
                     marginUsage = 0.4766444232602478,
                     freeCollateral = 1098.0,
                     vaultBalance = 400.0,
@@ -232,6 +236,7 @@ class VaultFormTests {
                 action = VaultFormAction.WITHDRAW,
                 amount = 100.0,
                 acknowledgedSlippage = true,
+                acknowledgedTerms = false,
                 inConfirmationStep = true,
             ),
             accountData = VaultFormAccountData(
@@ -259,6 +264,7 @@ class VaultFormTests {
                 submissionData = null,
                 summaryData = VaultFormSummaryData(
                     needSlippageAck = false,
+                    needTermsAck = false,
                     marginUsage = 0.4766444232602478,
                     freeCollateral = 1098.0,
                     vaultBalance = 400.0,
@@ -278,6 +284,7 @@ class VaultFormTests {
                 action = VaultFormAction.WITHDRAW,
                 amount = 600.0,
                 acknowledgedSlippage = false,
+                acknowledgedTerms = false,
                 inConfirmationStep = true,
             ),
             accountData = VaultFormAccountData(
@@ -306,6 +313,7 @@ class VaultFormTests {
                 submissionData = null,
                 summaryData = VaultFormSummaryData(
                     needSlippageAck = true,
+                    needTermsAck = false,
                     marginUsage = 0.4,
                     freeCollateral = 1500.0,
                     vaultBalance = -100.0,
@@ -325,6 +333,7 @@ class VaultFormTests {
                 action = VaultFormAction.DEPOSIT,
                 amount = 10.0,
                 acknowledgedSlippage = false,
+                acknowledgedTerms = false,
                 inConfirmationStep = false,
             ),
             accountData = VaultFormAccountData(
@@ -348,6 +357,7 @@ class VaultFormTests {
                 submissionData = null,
                 summaryData = VaultFormSummaryData(
                     needSlippageAck = false,
+                    needTermsAck = false,
                     marginUsage = 0.5025125628140703,
                     freeCollateral = 990.0,
                     vaultBalance = 1010.0,
@@ -367,6 +377,7 @@ class VaultFormTests {
                 action = VaultFormAction.DEPOSIT,
                 amount = 100.0,
                 acknowledgedSlippage = true,
+                acknowledgedTerms = true,
                 inConfirmationStep = true,
             ),
             accountData = VaultFormAccountData(
@@ -391,6 +402,7 @@ class VaultFormTests {
                 ),
                 summaryData = VaultFormSummaryData(
                     needSlippageAck = false,
+                    needTermsAck = true,
                     marginUsage = 0.5263157894736843,
                     freeCollateral = 900.0,
                     vaultBalance = 100.0,
@@ -410,6 +422,7 @@ class VaultFormTests {
                 action = VaultFormAction.WITHDRAW,
                 amount = 10.0,
                 acknowledgedSlippage = false,
+                acknowledgedTerms = false,
                 inConfirmationStep = false,
             ),
             accountData = VaultFormAccountData(
@@ -436,6 +449,7 @@ class VaultFormTests {
                 submissionData = null,
                 summaryData = VaultFormSummaryData(
                     needSlippageAck = false,
+                    needTermsAck = false,
                     marginUsage = 0.49751243781094523,
                     freeCollateral = 1010.0,
                     vaultBalance = 990.0,
@@ -455,6 +469,7 @@ class VaultFormTests {
                 action = VaultFormAction.WITHDRAW,
                 amount = 10.0,
                 acknowledgedSlippage = false,
+                acknowledgedTerms = false,
                 inConfirmationStep = false,
             ),
             accountData = VaultFormAccountData(
@@ -486,6 +501,7 @@ class VaultFormTests {
                 ),
                 summaryData = VaultFormSummaryData(
                     needSlippageAck = false,
+                    needTermsAck = false,
                     marginUsage = 0.49751243781094523,
                     freeCollateral = 1010.0,
                     vaultBalance = 990.0,
@@ -505,6 +521,7 @@ class VaultFormTests {
                 action = VaultFormAction.WITHDRAW,
                 amount = 6.0,
                 acknowledgedSlippage = false,
+                acknowledgedTerms = false,
                 inConfirmationStep = false,
             ),
             accountData = VaultFormAccountData(
@@ -531,6 +548,7 @@ class VaultFormTests {
                 submissionData = null,
                 summaryData = VaultFormSummaryData(
                     needSlippageAck = false,
+                    needTermsAck = false,
                     marginUsage = 0.4985044865403788,
                     freeCollateral = 1006.0,
                     vaultBalance = 994.0,
@@ -550,6 +568,7 @@ class VaultFormTests {
                 action = VaultFormAction.WITHDRAW,
                 amount = 500.0,
                 acknowledgedSlippage = true,
+                acknowledgedTerms = false,
                 inConfirmationStep = true,
             ),
             accountData = VaultFormAccountData(
@@ -583,6 +602,7 @@ class VaultFormTests {
                 ),
                 summaryData = VaultFormSummaryData(
                     needSlippageAck = true,
+                    needTermsAck = false,
                     marginUsage = 0.41666666666666663,
                     freeCollateral = 1400.0,
                     vaultBalance = 0.0,
