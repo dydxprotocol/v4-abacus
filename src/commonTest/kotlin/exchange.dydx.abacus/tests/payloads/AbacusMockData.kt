@@ -82,6 +82,7 @@ class AbacusMockData {
             blogs = "https://www.dydx.foundation/blog",
             help = "https://help.dydx.exchange/",
             vaultLearnMore = "https://help.dydx.exchange/",
+            vaultTos = "https://help.dydx.exchange/",
             launchIncentive = "https://dydx.exchange/v4-launch-incentive",
             statusPage = "https://status.v4testnet.dydx.exchange/",
             withdrawalGateLearnMore = "https://help.dydx.exchange/en/articles/8981384-withdrawals-on-dydx-chain#h_23e97bc665",
