@@ -256,7 +256,7 @@ object VaultDepositWithdrawFormValidator {
         }
 
         val amountToUse = if (vaultAccount?.withdrawableUsdc != null &&
-            vaultAccount.withdrawableUsdc - amount >= 0 &&
+            vaultAccount.withdrawableUsdc - amount >= -EPSILON_FOR_ERRORS &&
             vaultAccount.withdrawableUsdc - amount <= 0.01
         ) {
             vaultAccount.withdrawableUsdc
