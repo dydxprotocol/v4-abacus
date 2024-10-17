@@ -8,8 +8,8 @@ internal class SkipChainProcessor(private val parser: ParserProtocol) {
         payload: Map<String, Any>
     ): SelectionOption {
         return SelectionOption(
-            stringKey = parser.asString(payload["network_identifier"]) ?: parser.asString(payload["chain_name"]),
-            string = parser.asString(payload["network_identifier"]) ?: parser.asString(payload["chain_name"]),
+            stringKey = parser.asString(payload["network_identifier"]) ?: parser.asString(payload["pretty_name"]),
+            string = parser.asString(payload["network_identifier"]) ?: parser.asString(payload["pretty_name"]),
             type = parser.asString(payload["chain_id"]) ?: "",
             iconUrl = parser.asString(payload["logo_uri"]),
         )
