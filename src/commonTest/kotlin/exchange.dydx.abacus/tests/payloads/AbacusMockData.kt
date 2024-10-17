@@ -68,6 +68,7 @@ class AbacusMockData {
             faucet = null,
             squid = null,
             skip = null,
+            metadataService = null,
             nobleValidator = null,
             geo = null,
         ),

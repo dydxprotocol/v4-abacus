@@ -55,8 +55,7 @@ class V4StateManagerConfigs(
                          "status":"/v1/status"
                       },
                       "configs":{
-                         "markets":"/configs/markets.json",
-                         "assets": "https://66iv2m87ol.execute-api.ap-northeast-1.amazonaws.com/mainnet/metadata-service/v1/info"
+                         "markets":"/configs/markets.json"
                       },
                       "launchIncentive":{
                          "graphql":"/query/ccar-perpetuals",
@@ -178,5 +177,10 @@ class V4StateManagerConfigs(
         val api = environment.links?.launchIncentive ?: return null
         val path = launchIncentivePath(type) ?: return null
         return "$api$path"
+    }
+
+    fun metadataServiceInfo(): String? {
+        val metadataServiceUrl = environment.endpoints.metadataService ?: return null
+        return "$metadataServiceUrl/info"
     }
 }

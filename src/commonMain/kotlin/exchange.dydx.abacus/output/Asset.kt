@@ -5,6 +5,7 @@ import exchange.dydx.abacus.protocols.ParserProtocol
 import exchange.dydx.abacus.utils.IList
 import exchange.dydx.abacus.utils.Logger
 import kollections.JsExport
+import kollections.iListOf
 import kotlinx.serialization.Serializable
 
 @JsExport
@@ -111,4 +112,17 @@ data class Asset(
             return null
         }
     }
+}
+
+@JsExport
+@Serializable
+enum class AssetTags(val rawValue: String) {
+    MEMES("memes"),
+    AI("ai-big-data"),
+    GAMING("gaming"),
+    RWA("real-world-assets"),
+    DEPIN("depin"),
+    LAYER1("layer-1"),
+    LAYER2("layer-2"),
+    DEFI("defi"),
 }
