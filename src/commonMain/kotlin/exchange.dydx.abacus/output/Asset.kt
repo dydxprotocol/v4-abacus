@@ -5,7 +5,6 @@ import exchange.dydx.abacus.protocols.ParserProtocol
 import exchange.dydx.abacus.utils.IList
 import exchange.dydx.abacus.utils.Logger
 import kollections.JsExport
-import kollections.iListOf
 import kotlinx.serialization.Serializable
 
 @JsExport
