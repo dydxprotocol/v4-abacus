@@ -238,7 +238,7 @@ object VaultDepositWithdrawFormValidator {
     private const val SLIPPAGE_PERCENT_WARN = 0.01
     private const val SLIPPAGE_PERCENT_ACK = 0.04
     private const val SLIPPAGE_TOLERANCE = 0.01
-    private const val EPSILON_FOR_ERRORS = 0.001
+    private const val EPSILON_FOR_ERRORS = 0.0001
 
     private const val MIN_DEPOSIT_FE_THRESHOLD = 20.0
 
