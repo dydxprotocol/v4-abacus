@@ -130,7 +130,7 @@ internal class AssetMetadataProcessor(
         assetId: String,
         payload: ConfigsAssetMetadata,
     ): Asset {
-        val imageUrl = "https://mainnet-metadata-service-logos.s3.ap-northeast-1.amazonaws.com/$assetId.png"
+        val imageUrl = payload.logo
         val primaryDescriptionKey = "__ASSETS.$assetId.PRIMARY"
         val secondaryDescriptionKey = "__ASSETS.$assetId.SECONDARY"
         val primaryDescription = localizer?.localize(primaryDescriptionKey)
@@ -172,7 +172,7 @@ internal class AssetMetadataProcessor(
             urls,
             assetConfigurationsResourcesKeyMap,
         ).mutable()
-        val imageUrl = "https://mainnet-metadata-service-logos.s3.ap-northeast-1.amazonaws.com/$assetId.png"
+        val imageUrl = payload["logo"]
         val primaryDescriptionKey = "__ASSETS.$assetId.PRIMARY"
         val secondaryDescriptionKey = "__ASSETS.$assetId.SECONDARY"
         resources.safeSet("imageUrl", imageUrl)

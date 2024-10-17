@@ -34,6 +34,7 @@ data class EnvironmentEndpoints(
     val faucet: String?,
     val squid: String?,
     val skip: String?,
+    val metadataService: String?,
     val nobleValidator: String?,
     val geo: String?,
 ) {
@@ -51,6 +52,7 @@ data class EnvironmentEndpoints(
             val faucet = parser.asString(data["faucet"])
             val squid = parser.asString(data["0xsquid"])
             val skip = parser.asString(data["skip"])
+            val metadataService = parser.asString(data["metadataService"])
             val nobleValidator = parser.asString(data["nobleValidator"])
             val geo = parser.asString(data["geo"])
             return EnvironmentEndpoints(
@@ -59,6 +61,7 @@ data class EnvironmentEndpoints(
                 faucet = faucet,
                 squid = squid,
                 skip = skip,
+                metadataService = metadataService,
                 nobleValidator = nobleValidator,
                 geo = geo,
             )

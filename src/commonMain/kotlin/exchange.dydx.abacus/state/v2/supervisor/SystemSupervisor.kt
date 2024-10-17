@@ -92,7 +92,7 @@ internal class SystemSupervisor(
     private fun retrieveMarketConfigs() {
         if (stateMachine.metadataService) {
             val oldState = stateMachine.state
-            val url = helper.configs.configsUrl("assets")
+            val url = helper.configs.metadataServiceInfo()
             if (url != null) {
                 helper.post(url, null, null) { _, response, httpCode, _ ->
                     if (helper.success(httpCode) && response != null) {
