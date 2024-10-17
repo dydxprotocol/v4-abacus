@@ -238,6 +238,7 @@ object VaultDepositWithdrawFormValidator {
     private const val SLIPPAGE_PERCENT_WARN = 0.01
     private const val SLIPPAGE_PERCENT_ACK = 0.04
     private const val SLIPPAGE_TOLERANCE = 0.01
+    private const val EPSILON_FOR_ERRORS = 0.001
 
     private const val MIN_DEPOSIT_FE_THRESHOLD = 20.0
 
@@ -370,7 +371,7 @@ object VaultDepositWithdrawFormValidator {
 
         when (formData.action) {
             VaultFormAction.DEPOSIT -> {
-                if (postOpFreeCollateral != null && postOpFreeCollateral < 0) {
+                if (postOpFreeCollateral != null && postOpFreeCollateral < -EPSILON_FOR_ERRORS) {
                     errors.add(vaultFormValidationErrors.depositTooHigh())
                 }
                 if (amount > 0 && amount < MIN_DEPOSIT_FE_THRESHOLD) {
@@ -378,7 +379,7 @@ object VaultDepositWithdrawFormValidator {
                 }
             }
             VaultFormAction.WITHDRAW -> {
-                if (postOpVaultBalance != null && postOpVaultBalance < 0) {
+                if (postOpVaultBalance < -EPSILON_FOR_ERRORS) {
                     errors.add(vaultFormValidationErrors.withdrawTooHigh())
                 }
                 if (amount > 0 && amount < MIN_DEPOSIT_FE_THRESHOLD) {
@@ -391,7 +392,7 @@ object VaultDepositWithdrawFormValidator {
                         errors.add(vaultFormValidationErrors.withdrawTooLow())
                     }
                 }
-                if (postOpVaultBalance != null && postOpVaultBalance >= 0 && amount > 0 &&
+                if (postOpVaultBalance >= -EPSILON_FOR_ERRORS && amount > 0 &&
                     vaultAccount?.withdrawableUsdc != null && amount > vaultAccount.withdrawableUsdc
                 ) {
                     errors.add(vaultFormValidationErrors.withdrawingLockedBalance())
