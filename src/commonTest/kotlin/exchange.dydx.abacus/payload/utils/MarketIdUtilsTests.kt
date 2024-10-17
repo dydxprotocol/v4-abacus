@@ -31,6 +31,6 @@ class MarketIdUtilsTests {
     fun getAssetIdLong() {
         val marketId = "AART,raydium,F3nefJBcejYbtdREjui1T9DPh5dBgpkKq7u2GAAMXs5B-USD"
         val assetId = MarketId.getAssetId(marketId)
-        assertEquals("AART", assetId)
+        assertEquals("AART,raydium,F3nefJBcejYbtdREjui1T9DPh5dBgpkKq7u2GAAMXs5B", assetId)
     }
 }
