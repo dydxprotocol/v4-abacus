@@ -393,7 +393,7 @@ object VaultDepositWithdrawFormValidator {
                     }
                 }
                 if (postOpVaultBalance >= -EPSILON_FOR_ERRORS && amount > 0 &&
-                    vaultAccount?.withdrawableUsdc != null && amount > vaultAccount.withdrawableUsdc
+                    vaultAccount?.withdrawableUsdc != null && vaultAccount.withdrawableUsdc - amount < -EPSILON_FOR_ERRORS
                 ) {
                     errors.add(vaultFormValidationErrors.withdrawingLockedBalance())
                 }
