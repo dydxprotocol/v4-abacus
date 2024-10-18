@@ -63,8 +63,10 @@ kotlin {
     jvm {
         compilations.all {
             kotlinOptions.jvmTarget = "1.8"
+            kotlinOptions.freeCompilerArgs += "-Xjdk-release=1.8"
             kotlinOptions.moduleName = "abacus"
         }
+
         withJava()
         testRuns["test"].executionTask.configure {
             useJUnitPlatform()
