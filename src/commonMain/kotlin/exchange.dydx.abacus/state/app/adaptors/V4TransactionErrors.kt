@@ -6,6 +6,7 @@ import exchange.dydx.abacus.responses.ParsingErrorType
 class V4TransactionErrors {
     companion object {
         private const val QUERY_RESULT_ERROR_PREFIX = "Query failed"
+        private const val OUT_OF_GAS_ERROR_RAW_LOG_PREFIX = "out of gas"
         private val FAILED_SUBACCOUNT_UPDATE_RESULT_PATTERN = Regex("""Subaccount with id \{[^}]+\} failed with UpdateResult:\s*([A-Za-z]+):""")
 
         fun error(code: Int?, message: String?, codespace: String? = null): ParsingError? {
@@ -41,6 +42,17 @@ class V4TransactionErrors {
                     "Subaccount update error: $it",
                     if (matchedUpdateResult != null) "ERRORS.QUERY_ERROR_SUBACCOUNTS_${matchedUpdateResult.toString().uppercase()}" else null,
                 )
+            }
+        }
+
+        fun parseErrorFromRawLog(rawLog: String): ParsingError? {
+            return if (rawLog.startsWith(OUT_OF_GAS_ERROR_RAW_LOG_PREFIX)) {
+                return ParsingError(
+                    ParsingErrorType.BackendError,
+                    "Out of gas: inaccurate gas estimation for transaction",
+                )
+            } else {
+                null
             }
         }
     }
