@@ -783,6 +783,11 @@ enum class OrderSide(val rawValue: String) {
     Buy("BUY"),
     Sell("SELL");
 
+    fun opposite() = when (this) {
+        Buy -> Sell
+        Sell -> Buy
+    }
+
     companion object {
         operator fun invoke(rawValue: String?) =
             OrderSide.values().firstOrNull { it.rawValue == rawValue }
