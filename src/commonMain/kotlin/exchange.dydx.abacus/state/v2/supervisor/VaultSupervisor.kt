@@ -30,6 +30,8 @@ internal class VaultSupervisor(
                     stopPollingValidatorData()
                     startPollingValidatorData(value)
                 }
+                stateMachine.internalState.vault = null
+
                 field = value
             }
         }
