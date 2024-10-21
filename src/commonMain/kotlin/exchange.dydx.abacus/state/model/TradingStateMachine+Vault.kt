@@ -48,7 +48,13 @@ internal fun TradingStateMachine.onAccountOwnerShares(
     payload: String
 ): StateChanges {
     val accountVaultResponse = parser.asTypedObject<OnChainAccountVaultResponse>(payload)
-    val newState = vaultProcessor.processAccountOwnerShares(internalState.vault, accountVaultResponse)
+    return onAccountOwnerShares(accountVaultResponse)
+}
+
+internal fun TradingStateMachine.onAccountOwnerShares(
+    response: OnChainAccountVaultResponse?
+): StateChanges {
+    val newState = vaultProcessor.processAccountOwnerShares(internalState.vault, response)
     return updateVaultState(internalState, newState)
 }
 
