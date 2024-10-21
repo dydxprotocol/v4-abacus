@@ -14,6 +14,7 @@ import exchange.dydx.abacus.calculator.v2.AdjustIsolatedMarginInputCalculatorV2
 import exchange.dydx.abacus.calculator.v2.TransferInputCalculatorV2
 import exchange.dydx.abacus.calculator.v2.TriggerOrdersInputCalculatorV2
 import exchange.dydx.abacus.calculator.v2.tradeinput.TradeInputCalculatorV2
+import exchange.dydx.abacus.functional.vault.VaultAccountCalculator
 import exchange.dydx.abacus.functional.vault.VaultCalculator
 import exchange.dydx.abacus.output.Asset
 import exchange.dydx.abacus.output.Configs
@@ -77,6 +78,7 @@ import exchange.dydx.abacus.utils.mutableMapOf
 import exchange.dydx.abacus.utils.safeSet
 import exchange.dydx.abacus.utils.typedSafeSet
 import exchange.dydx.abacus.validator.InputValidator
+import indexer.models.configs.ConfigsAssetMetadata
 import indexer.models.configs.ConfigsMarketAsset
 import kollections.JsExport
 import kollections.iListOf
@@ -99,6 +101,7 @@ open class TradingStateMachine(
     private val useParentSubaccount: Boolean,
     val staticTyping: Boolean = false,
     private val trackingProtocol: TrackingProtocol?,
+    val metadataService: Boolean = false,
 ) {
     internal var internalState: InternalState = InternalState()
 
@@ -112,6 +115,7 @@ open class TradingStateMachine(
         val processor = AssetsProcessor(
             parser = parser,
             localizer = localizer,
+            metadataService = metadataService,
         )
         processor.environment = environment
         processor
@@ -313,17 +317,30 @@ open class TradingStateMachine(
     ): StateChanges {
         val json = parser.decodeJsonObject(payload)
         if (staticTyping) {
-            val parsedAssetPayload = parser.asTypedStringMap<ConfigsMarketAsset>(json)
-            if (parsedAssetPayload == null) {
-                Logger.e { "Error parsing asset payload" }
-                return StateChanges.noChange
-            }
+            if (metadataService) {
+                val parsedAssetPayload = parser.asTypedStringMap<ConfigsAssetMetadata>(json)
+                if (parsedAssetPayload == null) {
+                    Logger.e { "Error parsing asset payload" }
+                    return StateChanges.noChange
+                }
+                return processMarketsConfigurationsWithMetadataService(
+                    payload = parsedAssetPayload,
+                    subaccountNumber = subaccountNumber,
+                    deploymentUri = deploymentUri,
+                )
+            } else {
+                val parsedAssetPayload = parser.asTypedStringMap<ConfigsMarketAsset>(json)
+                if (parsedAssetPayload == null) {
+                    Logger.e { "Error parsing asset payload" }
+                    return StateChanges.noChange
+                }
 
-            return processMarketsConfigurations(
-                payload = parsedAssetPayload,
-                subaccountNumber = subaccountNumber,
-                deploymentUri = deploymentUri,
-            )
+                return processMarketsConfigurations(
+                    payload = parsedAssetPayload,
+                    subaccountNumber = subaccountNumber,
+                    deploymentUri = deploymentUri,
+                )
+            }
         } else {
             return if (json != null) {
                 receivedMarketsConfigurationsDeprecated(json, subaccountNumber, deploymentUri)
@@ -1370,7 +1387,14 @@ open class TradingStateMachine(
                     vault = internalState.vault,
                     markets = marketsSummary?.markets,
                 )
-                vault = Vault(details = internalState.vault?.details, positions = positions)
+                val accountInfo = internalState.vault?.account
+                val transfers = internalState.vault?.transfers
+                val account = if (accountInfo != null && transfers != null) {
+                    VaultAccountCalculator.calculateUserVaultInfo(vaultInfo = accountInfo, vaultTransfers = transfers)
+                } else {
+                    null
+                }
+                vault = Vault(details = internalState.vault?.details, positions = positions, account = account)
             } else {
                 vault = null
             }

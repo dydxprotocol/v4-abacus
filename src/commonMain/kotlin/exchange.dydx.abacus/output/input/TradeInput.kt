@@ -767,6 +767,14 @@ enum class OrderType(val rawValue: String) {
         operator fun invoke(rawValue: String?) =
             entries.firstOrNull { it.rawValue == rawValue }
     }
+
+    val isSlTp: Boolean
+        get() = listOf(
+            StopMarket,
+            TakeProfitMarket,
+            StopLimit,
+            TakeProfitLimit,
+        ).contains(this)
 }
 
 @JsExport
@@ -774,6 +782,11 @@ enum class OrderType(val rawValue: String) {
 enum class OrderSide(val rawValue: String) {
     Buy("BUY"),
     Sell("SELL");
+
+    fun opposite() = when (this) {
+        Buy -> Sell
+        Sell -> Buy
+    }
 
     companion object {
         operator fun invoke(rawValue: String?) =

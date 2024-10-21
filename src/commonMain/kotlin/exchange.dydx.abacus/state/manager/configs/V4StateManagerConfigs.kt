@@ -29,7 +29,11 @@ class V4StateManagerConfigs(
                          "complianceScreen":"/v4/compliance/screen",
                          "complianceGeoblock":"/v4/compliance/geoblock",
                          "complianceGeoblockKeplr":"/v4/compliance/geoblock-keplr",
-                         "height":"/v4/height"
+                         "height":"/v4/height",
+                         "vaultPositions":"/v4/vault/v1/megavault/positions",
+                         "vaultHistoricalPnl":"/v4/vault/v1/megavault/historicalPnl",
+                         "vaultMarketPnls":"/v4/vault/v1/vaults/historicalPnl",
+                         "transfers":"/v4/transfers/between"
                       },
                       "private":{
                          "account":"/v4/addresses",
@@ -173,5 +177,10 @@ class V4StateManagerConfigs(
         val api = environment.links?.launchIncentive ?: return null
         val path = launchIncentivePath(type) ?: return null
         return "$api$path"
+    }
+
+    fun metadataServiceInfo(): String? {
+        val metadataServiceUrl = environment.endpoints.metadataService ?: return null
+        return "$metadataServiceUrl/info"
     }
 }

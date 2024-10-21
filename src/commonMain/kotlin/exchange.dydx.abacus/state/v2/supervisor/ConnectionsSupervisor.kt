@@ -7,6 +7,7 @@ import exchange.dydx.abacus.protocols.TransactionType
 import exchange.dydx.abacus.state.manager.GasToken
 import exchange.dydx.abacus.state.manager.IndexerURIs
 import exchange.dydx.abacus.state.manager.NetworkState
+import exchange.dydx.abacus.state.manager.StatsigConfig
 import exchange.dydx.abacus.state.manager.SystemUtils
 import exchange.dydx.abacus.state.model.TradingStateMachine
 import exchange.dydx.abacus.utils.AnalyticsUtils
@@ -102,7 +103,6 @@ internal class ConnectionsSupervisor(
             indexerConfig = null
             validatorConnected = false
             socketConnected = false
-            validatorUrl = null
             disconnectSocket()
         }
     }
@@ -175,14 +175,8 @@ internal class ConnectionsSupervisor(
     }
 
     private fun bestEffortConnectChain() {
-        if (validatorUrl == null) {
-            val endpointUrls = helper.configs.validatorUrls()
-            validatorUrl = endpointUrls?.firstOrNull()
-        }
         findOptimalNode { url ->
-            if (url != this.validatorUrl) {
-                this.validatorUrl = url
-            }
+            this.validatorUrl = url
         }
     }
 
@@ -250,6 +244,9 @@ internal class ConnectionsSupervisor(
         params.safeSet("CHAINTOKEN_DENOM", chainTokenDenom)
         params.safeSet("CHAINTOKEN_DECIMALS", chainTokenDecimals)
         params.safeSet("txnMemo", "dYdX Frontend (${SystemUtils.platform.rawValue})")
+
+        params.safeSet("enableTimestampNonce", StatsigConfig.ff_enable_timestamp_nonce)
+
         val jsonString = JsonEncoder().encode(params) ?: return
 
         helper.ioImplementations.threading?.async(ThreadingType.main) {
@@ -391,7 +388,6 @@ internal class ConnectionsSupervisor(
             val timer = helper.ioImplementations.timer ?: CoroutineTimer.instance
             chainTimer = timer.schedule(serverPollingDuration, null) {
                 if (readyToConnect) {
-                    validatorUrl = null
                     bestEffortConnectChain()
                 }
                 false

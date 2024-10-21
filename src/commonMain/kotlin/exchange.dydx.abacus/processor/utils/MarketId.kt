@@ -25,13 +25,10 @@ internal object MarketId {
     internal fun getAssetId(
         marketId: String,
     ): String? {
-        val displayId = getDisplayId(marketId)
-        val elements = displayId.split("-")
-        val baseAssetLongForm = elements.first()
-        val baseAssetElements = baseAssetLongForm.split(",")
+        val elements = marketId.split("-")
 
-        return if (baseAssetElements.isNotEmpty()) {
-            baseAssetElements.first()
+        return if (elements.isNotEmpty()) {
+            elements.first()
         } else {
             null
         }

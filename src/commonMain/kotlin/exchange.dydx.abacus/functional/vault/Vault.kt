@@ -100,7 +100,7 @@ object VaultCalculator {
         }
 
         val vaultOfVaultsPnl =
-            historical!!.megavaultPnl!!.sortedByDescending { parser.asDouble(it.createdAt) }
+            historical!!.megavaultPnl!!.sortedByDescending { parser.asDatetime(it.createdAt)?.toEpochMilliseconds() ?: 0 }
 
         val history = vaultOfVaultsPnl.mapNotNull { entry ->
             parser.asDatetime(entry.createdAt)?.toEpochMilliseconds()?.toDouble()?.let { createdAt ->
@@ -126,6 +126,11 @@ object VaultCalculator {
         val thirtyDaysAgoTotalPnl = thirtyDaysAgoEntry.totalPnl ?: 0.0
 
         val pnlDifference = latestTotalPnl - thirtyDaysAgoTotalPnl
+        val timeDifferenceMs = if (latestEntry.date != null && thirtyDaysAgoEntry.date != null) {
+            latestEntry.date - thirtyDaysAgoEntry.date
+        } else {
+            0.0
+        }
         val thirtyDaysAgoEquity = thirtyDaysAgoEntry.equity ?: 0.0
         val thirtyDayReturnPercent = if (thirtyDaysAgoEquity != 0.0) {
             (pnlDifference / thirtyDaysAgoEquity)
@@ -135,15 +140,40 @@ object VaultCalculator {
 
         return VaultDetails(
             totalValue = totalValue,
-            thirtyDayReturnPercent = thirtyDayReturnPercent,
+            thirtyDayReturnPercent = if (timeDifferenceMs > 0) thirtyDayReturnPercent * 365.days.inWholeMilliseconds / timeDifferenceMs else 0.0,
             history = history.toIList(),
         )
+    }
+
+    private fun maybeAddUsdcRow(positions: List<VaultPosition>, vaultTvl: Double?): List<VaultPosition> {
+        if (vaultTvl != null) {
+            val usdcTotal = vaultTvl - positions.sumOf { it.marginUsdc ?: 0.0 }
+
+            // add a usdc row
+            return positions + VaultPosition(
+                marketId = "USDC-USD",
+                marginUsdc = usdcTotal,
+                equityUsdc = usdcTotal,
+                currentLeverageMultiple = 1.0,
+                currentPosition = CurrentPosition(
+                    asset = usdcTotal,
+                    usdc = usdcTotal,
+                ),
+                thirtyDayPnl = ThirtyDayPnl(
+                    percent = 0.0,
+                    absolute = 0.0,
+                    sparklinePoints = null,
+                ),
+            )
+        }
+        return positions
     }
 
     fun calculateVaultPositions(
         positions: IndexerMegavaultPositionResponse?,
         histories: IndexerVaultsHistoricalPnlResponse?,
-        markets: IMap<String, PerpetualMarket>?
+        markets: IMap<String, PerpetualMarket>?,
+        vaultTvl: Double?,
     ): VaultPositions? {
         if (positions?.positions == null) {
             return null
@@ -151,14 +181,18 @@ object VaultCalculator {
 
         val historiesMap = histories?.vaultsPnl?.associateBy { it.ticker }
 
+        var processedPositions = positions.positions.mapNotNull {
+            calculateVaultPosition(
+                it,
+                historiesMap?.get(it.ticker),
+                markets?.get(it.ticker),
+            )
+        }
+
+        processedPositions = maybeAddUsdcRow(processedPositions, vaultTvl)
+
         return VaultPositions(
-            positions = positions.positions.mapNotNull {
-                calculateVaultPosition(
-                    it,
-                    historiesMap?.get(it.ticker),
-                    markets?.get(it.ticker),
-                )
-            }.toIList(),
+            positions = processedPositions.toIList(),
         )
     }
 
@@ -170,7 +204,7 @@ object VaultCalculator {
             return null
         }
 
-        val positions: List<VaultPosition>? = vault.positions?.mapNotNull { position ->
+        var positions: List<VaultPosition> = vault.positions.mapNotNull { position ->
             val ticker = position.ticker ?: return@mapNotNull null
             val history = vault.pnls.get(ticker)
             val market = markets?.get(ticker)
@@ -183,7 +217,10 @@ object VaultCalculator {
                 perpetualMarket = market,
             )
         }
-        return VaultPositions(positions = positions?.toIList())
+
+        positions = maybeAddUsdcRow(positions, vault.details?.totalValue)
+
+        return VaultPositions(positions = positions.toIList())
     }
 
     fun calculateVaultPosition(
@@ -265,7 +302,7 @@ object VaultCalculator {
             return null
         }
 
-        val sortedPnl = historicalPnl.sortedByDescending { it.createdAt }
+        val sortedPnl = historicalPnl.sortedByDescending { parser.asDatetime(it.createdAt)?.toEpochMilliseconds() ?: 0 }
         val latestEntry = sortedPnl.first()
         val latestTime = parser.asDatetime(latestEntry.createdAt)?.toEpochMilliseconds() ?: Clock.System.now().toEpochMilliseconds()
         val thirtyDaysAgoTime = latestTime - 30.days.inWholeMilliseconds

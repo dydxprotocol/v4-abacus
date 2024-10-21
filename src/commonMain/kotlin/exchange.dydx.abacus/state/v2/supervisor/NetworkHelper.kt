@@ -533,11 +533,15 @@ class NetworkHelper(
             val result = parser.decodeJsonObject(response)
             if (result != null) {
                 val error = parser.asMap(result["error"])
+                val rawLog = parser.asString(result["rawLog"])
                 if (error != null) {
                     val message = parser.asString(error["message"])
                     val code = parser.asInt(error["code"])
                     val codespace = parser.asString(error["codespace"])
                     return V4TransactionErrors.error(code, message, codespace)
+                } else if (rawLog != null) {
+                    // certain tx results (e.g. out of gas) are not error but should still be treated as one
+                    return V4TransactionErrors.parseErrorFromRawLog(rawLog)
                 } else {
                     null
                 }
