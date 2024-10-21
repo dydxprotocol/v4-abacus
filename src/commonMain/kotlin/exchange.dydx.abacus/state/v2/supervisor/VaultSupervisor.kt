@@ -11,6 +11,8 @@ import exchange.dydx.abacus.state.model.onVaultTransferHistory
 import exchange.dydx.abacus.utils.AnalyticsUtils
 import exchange.dydx.abacus.utils.CoroutineTimer
 import exchange.dydx.abacus.utils.Logger
+import indexer.models.chain.OnChainAccountVaultResponse
+import indexer.models.chain.OnChainNumShares
 
 internal class VaultSupervisor(
     stateMachine: TradingStateMachine,
@@ -220,7 +222,18 @@ internal class VaultSupervisor(
         helper.transaction(TransactionType.GetMegavaultOwnerShares, payload) { response ->
             val error = helper.parseTransactionResponse(response)
             if (error != null) {
-                Logger.e { "getMegavaultOwnerShares error: $error" }
+                // If the account has no shares, the response will be a NotFound error
+                if (response.contains("code = NotFound")) {
+                    stateMachine.onAccountOwnerShares(OnChainAccountVaultResponse(
+                        address = accountAddress,
+                        shares = OnChainNumShares(numShares = 0.0),
+                        shareUnlocks = null,
+                        equity = 0.0,
+                        withdrawableEquity = 0.0,
+                    ))
+                } else {
+                    Logger.e { "getMegavaultOwnerShares error: $error" }
+                }
             } else {
                 stateMachine.onAccountOwnerShares(response)
             }
