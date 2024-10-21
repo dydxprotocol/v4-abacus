@@ -224,13 +224,15 @@ internal class VaultSupervisor(
             if (error != null) {
                 // If the account has no shares, the response will be a NotFound error
                 if (response.contains("code = NotFound")) {
-                    stateMachine.onAccountOwnerShares(OnChainAccountVaultResponse(
-                        address = accountAddress,
-                        shares = OnChainNumShares(numShares = 0.0),
-                        shareUnlocks = null,
-                        equity = 0.0,
-                        withdrawableEquity = 0.0,
-                    ))
+                    stateMachine.onAccountOwnerShares(
+                        OnChainAccountVaultResponse(
+                            address = accountAddress,
+                            shares = OnChainNumShares(numShares = 0.0),
+                            shareUnlocks = null,
+                            equity = 0.0,
+                            withdrawableEquity = 0.0,
+                        ),
+                    )
                 } else {
                     Logger.e { "getMegavaultOwnerShares error: $error" }
                 }
