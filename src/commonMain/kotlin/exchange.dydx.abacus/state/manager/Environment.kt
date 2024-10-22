@@ -408,7 +408,6 @@ open class Environment(
     val name: String?,
     val ethereumChainId: String,
     val dydxChainId: String?,
-    val squidIntegratorId: String?,
     val rewardsHistoryStartDateMs: String,
     val isMainNet: Boolean,
     val endpoints: EnvironmentEndpoints,
@@ -425,10 +424,10 @@ class V4Environment(
     name: String?,
     ethereumChainId: String,
     dydxChainId: String?,
-    squidIntegratorId: String?,
     val chainName: String?,
     val chainLogo: String?,
     rewardsHistoryStartDateMs: String,
+    val megavaultOperatorName: String,
     isMainNet: Boolean,
     endpoints: EnvironmentEndpoints,
     links: EnvironmentLinks?,
@@ -442,7 +441,6 @@ class V4Environment(
     name,
     ethereumChainId,
     dydxChainId,
-    squidIntegratorId,
     rewardsHistoryStartDateMs,
     isMainNet,
     endpoints,
@@ -467,10 +465,10 @@ class V4Environment(
             val name = parser.asString(data["name"])
             val ethereumChainId = parser.asString(data["ethereumChainId"]) ?: return null
             val dydxChainId = parser.asString(data["dydxChainId"])
-            val squidIntegratorId = parser.asString(data["squidIntegratorId"])
             val chainName = parser.asString(data["chainName"])
             val chainLogo = parser.asString(data["chainLogo"])
             val rewardsHistoryStartDateMs = parser.asString(data["rewardsHistoryStartDateMs"]) ?: ServerTime.now().minus(180.days).toEpochMilliseconds().toString()
+            val megavaultOperatorName = parser.asString(data["megavaultOperatorName"]) ?: return null
             val isMainNet = parser.asBool(data["isMainNet"]) ?: return null
             val endpoints =
                 EnvironmentEndpoints.parse(parser.asNativeMap(data["endpoints"]) ?: return null, parser)
@@ -499,10 +497,10 @@ class V4Environment(
                 name = name,
                 ethereumChainId = ethereumChainId,
                 dydxChainId = dydxChainId,
-                squidIntegratorId = squidIntegratorId,
                 chainName = chainName,
                 chainLogo = "$deploymentUri$chainLogo",
                 rewardsHistoryStartDateMs = rewardsHistoryStartDateMs,
+                megavaultOperatorName = megavaultOperatorName,
                 isMainNet = isMainNet,
                 endpoints = endpoints,
                 links = links,

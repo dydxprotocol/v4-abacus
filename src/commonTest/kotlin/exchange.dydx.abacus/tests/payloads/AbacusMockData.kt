@@ -57,7 +57,6 @@ class AbacusMockData {
         name = "test",
         ethereumChainId = "test",
         dydxChainId = "test",
-        squidIntegratorId = "dYdX-api",
         chainName = "dYdX Chain",
         chainLogo = "dYdX-logo.png",
         rewardsHistoryStartDateMs = "1704844800000",

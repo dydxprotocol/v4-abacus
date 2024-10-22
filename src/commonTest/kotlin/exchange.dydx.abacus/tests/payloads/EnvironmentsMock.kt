@@ -72,7 +72,6 @@ class EnvironmentsMock {
                  "name":"v4 Staging",
                  "ethereumChainId":"5",
                  "dydxChainId":"dydxprotocol-testnet",
-                 "squidIntegratorId": "dYdX-api",
                  "rewardsHistoryStartDateMs": "1704844800000",
                  "isMainNet":false,
                  "endpoints":{
@@ -103,7 +102,6 @@ class EnvironmentsMock {
                  "name":"v4 Public Testnet",
                  "ethereumChainId":"5",
                  "dydxChainId":"dydxprotocol-testnet",
-                 "squidIntegratorId": "dYdX-api",
                  "rewardsHistoryStartDateMs": "1704844800000",
                  "isMainNet":false,
                  "endpoints":{
