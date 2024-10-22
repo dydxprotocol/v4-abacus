@@ -2,8 +2,6 @@ package exchange.dydx.abacus.processor.router.skip
 
 import exchange.dydx.abacus.processor.base.BaseProcessor
 import exchange.dydx.abacus.protocols.ParserProtocol
-import exchange.dydx.abacus.utils.DEFAULT_GAS_LIMIT
-import exchange.dydx.abacus.utils.DEFAULT_GAS_PRICE
 import exchange.dydx.abacus.utils.JsonEncoder
 import exchange.dydx.abacus.utils.safeSet
 import exchange.dydx.abacus.utils.toCamelCaseKeys
@@ -89,10 +87,7 @@ internal class SkipRoutePayloadProcessor(parser: ParserProtocol) : BaseProcessor
     ): Map<String, Any> {
         val txType = getTxType(payload)
         val modified = transform(existing, payload, keyMap)
-        // squid used to provide these, but now we need to hardcode them
-        // for the API to work (even though they seem to have default values?): https://ethereum.org/en/developers/docs/apis/json-rpc/#eth_sendtransaction
-        modified.safeSet("gasPrice", DEFAULT_GAS_PRICE)
-        modified.safeSet("gasLimit", DEFAULT_GAS_LIMIT)
+
         val data = modified["data"]
         if (data != null && txType == TxType.EVM) {
             modified.safeSet("data", "0x$data")
@@ -110,10 +105,6 @@ internal class SkipRoutePayloadProcessor(parser: ParserProtocol) : BaseProcessor
             if (modified["solanaTransaction"] != null) {
                 modified.safeSet("data", modified["solanaTransaction"])
                 modified.remove("solanaTransaction")
-
-                // These are EVM specific fields and do not make sense for solana
-                modified.remove("gasPrice")
-                modified.remove("gasLimit")
             }
         }
         return modified
