@@ -27,27 +27,27 @@ class TransferStatus(
             val gasStatus = parser.asString(data?.get("gasStatus"))
             val axelarTransactionUrl = parser.asString(data?.get("axelarTransactionUrl"))
 
-            val routeStatusList = parser.asList(data?.get("routeStatus"))
-            val fromChain = parser.asMap(data?.get("fromChain"))
-            val toChain = parser.asMap(data?.get("toChain"))
+            val routeStatusList = parser.asList(data?.get("routeStatuses"))
+            val fromChain = parser.asMap(data?.get("fromChainStatus"))
+            val toChain = parser.asMap(data?.get("toChainStatus"))
 
             val fromChainStatus = TransferChainStatus.create(
-                existing?.fromChainStatus,
-                parser,
-                fromChain,
+                existing = existing?.fromChainStatus,
+                parser = parser,
+                chain = fromChain,
             )
             val toChainStatus = TransferChainStatus.create(
-                existing?.toChainStatus,
-                parser,
-                toChain,
+                existing = existing?.toChainStatus,
+                parser = parser,
+                chain = toChain,
             )
 
             val routeStatuses = routeStatusList?.map { routeStatus ->
                 val routeStatusMap = parser.asMap(routeStatus)
                 TransferRouteStatus.create(
-                    null,
-                    parser,
-                    routeStatusMap,
+                    existing = null,
+                    parser = parser,
+                    data = routeStatusMap,
                 )
             }
 
