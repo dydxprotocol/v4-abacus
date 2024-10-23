@@ -13,6 +13,10 @@ import exchange.dydx.abacus.utils.CoroutineTimer
 import exchange.dydx.abacus.utils.Logger
 import indexer.models.chain.OnChainAccountVaultResponse
 import indexer.models.chain.OnChainNumShares
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.async
+import kotlinx.coroutines.launch
 
 internal class VaultSupervisor(
     stateMachine: TradingStateMachine,
@@ -132,18 +136,25 @@ internal class VaultSupervisor(
     }
 
     private fun retrieveMegaVaultPnl() {
-        val url = helper.configs.publicApiUrl("vaultHistoricalPnl")
-        if (url != null) {
-            helper.get(
-                url = url,
-                params = mapOf("resolution" to "day"),
-                headers = null,
-            ) { _, response, httpCode, _ ->
-                if (helper.success(httpCode) && response != null) {
-                    stateMachine.onMegaVaultPnl(response)
-                } else {
+        val scope = CoroutineScope(Dispatchers.Unconfined)
+        scope.launch {
+            val url = helper.configs.publicApiUrl("vaultHistoricalPnl")
+            if (url != null) {
+                val deferredDaily = async { helper.getAsync(url, params = mapOf("resolution" to "day"), headers = null) }
+                val deferredHourly = async { helper.getAsync(url, params = mapOf("resolution" to "hour"), headers = null) }
+
+                val dailyResponse = deferredDaily.await()
+                val hourlyResponse = deferredHourly.await()
+
+                if (dailyResponse.response != null || hourlyResponse.response != null) {
+                    stateMachine.onMegaVaultPnl(listOfNotNull(dailyResponse.response, hourlyResponse.response))
+                } else if (dailyResponse.error != null) {
                     Logger.e {
-                        "Failed to retrieve mega vault pnl: $httpCode, $response"
+                        "Failed to retrieve day mega vault pnl: ${dailyResponse.error}"
+                    }
+                } else if (hourlyResponse.error != null) {
+                    Logger.e {
+                        "Failed to retrieve hourly mega vault pnl: ${hourlyResponse.error}"
                     }
                 }
             }

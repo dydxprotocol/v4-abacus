@@ -25,7 +25,7 @@ internal class VaultProcessor(
 
     fun processMegaVaultsHistoricalPnl(
         existing: InternalVaultState?,
-        payload: IndexerMegavaultHistoricalPnlResponse?,
+        payload: List<IndexerMegavaultHistoricalPnlResponse>?,
     ): InternalVaultState? {
         if (payload == null) {
             return existing
