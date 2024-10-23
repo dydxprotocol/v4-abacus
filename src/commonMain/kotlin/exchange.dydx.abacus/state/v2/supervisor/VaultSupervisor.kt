@@ -17,7 +17,6 @@ import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.async
 import kotlinx.coroutines.launch
-import kotlin.coroutines.CoroutineContext
 
 internal class VaultSupervisor(
     stateMachine: TradingStateMachine,
