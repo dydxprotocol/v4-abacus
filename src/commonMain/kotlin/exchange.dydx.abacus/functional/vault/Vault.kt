@@ -94,7 +94,7 @@ object VaultCalculator {
         return parser.asTypedObject<IndexerMegavaultPositionResponse>(apiResponse)
     }
 
-    fun calculateVaultSummary(historicals: IList<IndexerMegavaultHistoricalPnlResponse>?): VaultDetails? {
+    fun calculateVaultSummary(historicals: Array<IndexerMegavaultHistoricalPnlResponse>?): VaultDetails? {
         val combinedPnls = historicals?.flatMap { it.megavaultPnl?.toList() ?: emptyList() } // Convert Array to List
 
         if (combinedPnls.isNullOrEmpty()) {

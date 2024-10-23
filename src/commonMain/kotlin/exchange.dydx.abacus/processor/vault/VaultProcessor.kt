@@ -26,13 +26,13 @@ internal class VaultProcessor(
 
     fun processMegaVaultsHistoricalPnl(
         existing: InternalVaultState?,
-        payload: List<IndexerMegavaultHistoricalPnlResponse>?,
+        payloads: List<IndexerMegavaultHistoricalPnlResponse>?,
     ): InternalVaultState? {
-        if (payload == null) {
+        if (payloads == null) {
             return existing
         }
 
-        val newValue = VaultCalculator.calculateVaultSummary(payload.toIList())
+        val newValue = VaultCalculator.calculateVaultSummary(payloads.toTypedArray())
         return if (newValue != existing?.details) {
             existing?.copy(details = newValue) ?: InternalVaultState(details = newValue)
         } else {
