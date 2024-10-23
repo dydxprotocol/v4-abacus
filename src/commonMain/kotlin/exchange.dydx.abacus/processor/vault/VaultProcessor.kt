@@ -14,7 +14,6 @@ import indexer.codegen.IndexerMegavaultPositionResponse
 import indexer.codegen.IndexerTransferBetweenResponse
 import indexer.codegen.IndexerVaultsHistoricalPnlResponse
 import indexer.models.chain.OnChainAccountVaultResponse
-import kollections.toIList
 
 internal class VaultProcessor(
     parser: ParserProtocol,
