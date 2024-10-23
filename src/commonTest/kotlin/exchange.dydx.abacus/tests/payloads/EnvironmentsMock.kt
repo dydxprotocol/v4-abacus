@@ -73,6 +73,7 @@ class EnvironmentsMock {
                  "ethereumChainId":"5",
                  "dydxChainId":"dydxprotocol-testnet",
                  "rewardsHistoryStartDateMs": "1704844800000",
+                 "megavaultOperatorName": "test operator",
                  "isMainNet":false,
                  "endpoints":{
                     "indexers":[
@@ -103,6 +104,7 @@ class EnvironmentsMock {
                  "ethereumChainId":"5",
                  "dydxChainId":"dydxprotocol-testnet",
                  "rewardsHistoryStartDateMs": "1704844800000",
+                 "megavaultOperatorName": "test operator",
                  "isMainNet":false,
                  "endpoints":{
                     "indexers":[
