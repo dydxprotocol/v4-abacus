@@ -153,7 +153,7 @@ object VaultCalculator {
 
             // add a usdc row
             return positions + VaultPosition(
-                marketId = "USDC-USD",
+                marketId = "UNALLOCATEDUSDC-USD",
                 marginUsdc = usdcTotal,
                 equityUsdc = usdcTotal,
                 currentLeverageMultiple = 1.0,
