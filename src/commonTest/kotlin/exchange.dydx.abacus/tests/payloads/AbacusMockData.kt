@@ -60,6 +60,7 @@ class AbacusMockData {
         chainName = "dYdX Chain",
         chainLogo = "dYdX-logo.png",
         rewardsHistoryStartDateMs = "1704844800000",
+        megavaultOperatorName = "test",
         isMainNet = false,
         endpoints = EnvironmentEndpoints(
             indexers = null,
