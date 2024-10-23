@@ -14,6 +14,7 @@ import indexer.codegen.IndexerMegavaultPositionResponse
 import indexer.codegen.IndexerTransferBetweenResponse
 import indexer.codegen.IndexerVaultsHistoricalPnlResponse
 import indexer.models.chain.OnChainAccountVaultResponse
+import kollections.toIList
 
 internal class VaultProcessor(
     parser: ParserProtocol,
@@ -31,7 +32,7 @@ internal class VaultProcessor(
             return existing
         }
 
-        val newValue = VaultCalculator.calculateVaultSummary(payload)
+        val newValue = VaultCalculator.calculateVaultSummary(payload.toIList())
         return if (newValue != existing?.details) {
             existing?.copy(details = newValue) ?: InternalVaultState(details = newValue)
         } else {
