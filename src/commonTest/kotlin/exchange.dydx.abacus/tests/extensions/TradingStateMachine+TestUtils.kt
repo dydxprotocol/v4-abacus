@@ -597,7 +597,7 @@ fun TradingStateMachine.rest(
         }
 
         "/v4/vault/v1/megavault/historicalPnl" -> {
-            changes = onMegaVaultPnl(listOf(payload))
+            changes = onMegaVaultPnl(arrayOf(payload))
         }
 
         "/v4/vault/v1/megavault/positions" -> {
