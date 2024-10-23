@@ -13,10 +13,10 @@ import indexer.models.chain.OnChainAccountVaultResponse
 import kollections.iListOf
 
 internal fun TradingStateMachine.onMegaVaultPnl(
-    payload: String
+    payloads: List<String>
 ): StateChanges {
-    val pnlResponse = parser.asTypedObject<IndexerMegavaultHistoricalPnlResponse>(payload)
-    val newState = vaultProcessor.processMegaVaultsHistoricalPnl(internalState.vault, pnlResponse)
+    val responses = payloads.mapNotNull { parser.asTypedObject<IndexerMegavaultHistoricalPnlResponse>(it) }
+    val newState = vaultProcessor.processMegaVaultsHistoricalPnl(internalState.vault, responses)
     return updateVaultState(internalState, newState)
 }
 
