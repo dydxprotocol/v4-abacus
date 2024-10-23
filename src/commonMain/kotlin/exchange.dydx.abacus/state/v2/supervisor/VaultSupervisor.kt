@@ -146,8 +146,8 @@ internal class VaultSupervisor(
                 val dailyResponse = deferredDaily.await()
                 val hourlyResponse = deferredHourly.await()
 
-                if (dailyResponse.response != null && hourlyResponse.response != null) {
-                    stateMachine.onMegaVaultPnl(listOf(dailyResponse.response, hourlyResponse.response))
+                if (dailyResponse.response != null || hourlyResponse.response != null) {
+                    stateMachine.onMegaVaultPnl(listOfNotNull(dailyResponse.response, hourlyResponse.response))
                 } else if (dailyResponse.error != null) {
                     Logger.e {
                         "Failed to retrieve day mega vault pnl: ${dailyResponse.error}"
