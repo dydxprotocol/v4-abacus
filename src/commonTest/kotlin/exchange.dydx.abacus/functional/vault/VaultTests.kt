@@ -61,7 +61,7 @@ class VaultTests {
             ),
         )
 
-        val vaultDetails = calculateVaultSummary(iListOf(historicalPnl1, historicalPnl2))
+        val vaultDetails = calculateVaultSummary(arrayOf(historicalPnl1, historicalPnl2))
 
         val expectedVaultDetails = VaultDetails(
             totalValue = 10000.0,
@@ -98,8 +98,8 @@ class VaultTests {
         val nullHistoricalPnl = IndexerMegavaultHistoricalPnlResponse(megavaultPnl = null)
         val emptyHistoricalPnl = IndexerMegavaultHistoricalPnlResponse(megavaultPnl = arrayOf())
 
-        val nullVaultDetails = calculateVaultSummary(iListOf(nullHistoricalPnl))
-        val emptyVaultDetails = calculateVaultSummary(iListOf(emptyHistoricalPnl))
+        val nullVaultDetails = calculateVaultSummary(arrayOf(nullHistoricalPnl))
+        val emptyVaultDetails = calculateVaultSummary(arrayOf(emptyHistoricalPnl))
 
         assertEquals(null, nullVaultDetails)
         assertEquals(null, emptyVaultDetails)
@@ -147,7 +147,7 @@ class VaultTests {
             ),
         )
 
-        val vaultDetails = calculateVaultSummary(iListOf(historicalPnl))
+        val vaultDetails = calculateVaultSummary(arrayOf(historicalPnl))
 
         assertNotNull(vaultDetails)
         assertEquals(0.6403508771929824, vaultDetails.thirtyDayReturnPercent)
