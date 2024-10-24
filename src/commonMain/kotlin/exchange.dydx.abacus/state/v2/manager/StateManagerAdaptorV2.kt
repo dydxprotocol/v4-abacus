@@ -532,18 +532,22 @@ internal class StateManagerAdaptorV2(
     }
 
     internal fun trade(data: String?, type: TradeInputField?) {
+        val data = parser.asString(data) // Forcing input to be a string, since JS client doesn't type check at compile time
         accounts.trade(data, type)
     }
 
     internal fun closePosition(data: String?, type: ClosePositionInputField) {
+        val data = parser.asString(data) // Forcing input to be a string, since JS client doesn't type check at compile time
         accounts.closePosition(data, type)
     }
 
     internal fun triggerOrders(data: String?, type: TriggerOrdersInputField?) {
+        val data = parser.asString(data) // Forcing input to be a string, since JS client doesn't type check at compile time
         accounts.triggerOrders(data, type)
     }
 
     internal fun adjustIsolatedMargin(data: String?, type: AdjustIsolatedMarginInputField?) {
+        val data = parser.asString(data) // Forcing input to be a string, since JS client doesn't type check at compile time
         accounts.adjustIsolatedMargin(data, type)
     }
 
@@ -642,6 +646,7 @@ internal class StateManagerAdaptorV2(
     }
 
     internal fun transfer(data: String?, type: TransferInputField?) {
+        val data = parser.asString(data) // Forcing input to be a string, since JS client doesn't type check at compile time
         val address = accountAddress
         val source = sourceAddress
         if (address != null && source != null) {
