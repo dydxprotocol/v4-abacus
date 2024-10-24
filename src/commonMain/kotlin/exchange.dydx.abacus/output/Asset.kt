@@ -111,6 +111,10 @@ data class Asset(
             return null
         }
     }
+
+    val displayableAssetId: String get() {
+        return id.split(",").firstOrNull() ?: ""
+    }
 }
 
 @JsExport
