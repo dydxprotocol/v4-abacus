@@ -821,6 +821,7 @@ internal class OnboardingSupervisor(
         hash: String,
         fromChainId: String?,
     ) {
+        val hash = hash.lowercase()
         val oldState = stateMachine.state
 //        If transfer is not yet tracked, must track first before querying status
         val isTracked = oldState?.trackStatuses?.get(hash) == true
@@ -855,6 +856,10 @@ internal class OnboardingSupervisor(
         helper.post(url, null, body.toJsonPrettyPrint()) { _, response, httpCode, _ ->
             if (response != null) {
                 update(stateMachine.routerTrack(response), oldState)
+                val isTracked = oldState?.trackStatuses?.get(hash) == true
+                if (isTracked) {
+                    fetchTransferStatusSkip(hash, fromChainId)
+                }
             }
         }
     }
