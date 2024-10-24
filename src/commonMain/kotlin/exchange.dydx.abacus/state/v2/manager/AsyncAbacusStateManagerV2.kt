@@ -89,8 +89,8 @@ class AsyncAbacusStateManagerV2(
 
     private var environments: IList<V4Environment> = iListOf()
         set(value) {
-            field = value
-            ioImplementations.threading?.async(ThreadingType.abacus) {
+            if (field != value) {
+                field = value
                 _environment = findEnvironment(environmentId)
                 ioImplementations.threading?.async(ThreadingType.main) {
                     stateNotification?.environmentsChanged()
@@ -117,8 +117,11 @@ class AsyncAbacusStateManagerV2(
     private var _environment: V4Environment? = null
         set(value) {
             if (field !== value) {
+                val shouldReconnect = field?.id != value?.id
                 field = value
-                reconnect()
+                if (shouldReconnect) {
+                    reconnect()
+                }
             }
         }
 
