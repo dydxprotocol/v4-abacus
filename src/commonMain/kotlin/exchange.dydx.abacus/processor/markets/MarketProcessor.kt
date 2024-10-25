@@ -1,5 +1,6 @@
 package exchange.dydx.abacus.processor.markets
 
+import com.ionspin.kotlin.bignum.decimal.toBigDecimal
 import exchange.dydx.abacus.output.MarketConfigs
 import exchange.dydx.abacus.output.MarketConfigsV4
 import exchange.dydx.abacus.output.MarketPerpetual
@@ -26,6 +27,7 @@ import kollections.toIList
 import numberOfDecimals
 import kotlin.math.max
 import kotlin.math.min
+import kotlin.math.pow
 import kotlin.time.Duration.Companion.seconds
 
 internal interface MarketProcessorProtocol : BaseProcessorProtocol {
@@ -262,8 +264,28 @@ internal class MarketProcessor(
     private fun createConfigs(
         payload: IndexerCompositeMarketObject,
     ): MarketConfigs {
-        val stepSize = parser.asDouble(payload.stepSize)
-        val tickSize = parser.asDouble(payload.tickSize)
+        var stepSize = parser.asDouble(payload.stepSize)
+        var tickSize = parser.asDouble(payload.tickSize)
+
+        val atomicResolution = parser.asInt(payload.atomicResolution)
+        val stepBaseQuantums = parser.asInt(payload.stepBaseQuantums)
+        val quantumConversionExponent = parser.asInt(payload.quantumConversionExponent)
+        val subticksPerTick = parser.asInt(payload.subticksPerTick)
+        if (stepSize == null) {
+            if (atomicResolution != null && stepBaseQuantums != null) {
+                stepSize = getStepSize(stepBaseQuantums, atomicResolution)
+            } else {
+                stepSize = fallbackStepSize
+            }
+        }
+        if (tickSize == null) {
+            if (subticksPerTick != null && quantumConversionExponent != null && atomicResolution != null) {
+                tickSize = getTickSize(subticksPerTick, quantumConversionExponent, atomicResolution)
+            } else {
+                tickSize = fallbackTickSize
+            }
+        }
+
         return MarketConfigs(
             clobPairId = payload.clobPairId,
             largeSize = null,
@@ -493,7 +515,55 @@ internal class MarketProcessor(
                 parser.asDouble(payload["basePositionSize"]),
             ) // v4
         }
+
+        // calculate stepSize and tickSize if not provided
+        val stepSize = parser.asDouble(configs["stepSize"])
+        val tickSize = parser.asDouble(configs["tickSize"])
+        val atomicResolution = parser.asInt(parser.value(configsV4, "atomicResolution"))
+        val stepBaseQuantums = parser.asInt(parser.value(configsV4, "stepBaseQuantums"))
+        val quantumConversionExponent = parser.asInt(parser.value(configsV4, "quantumConversionExponent"))
+        if (stepSize == null) {
+            if (atomicResolution != null && stepBaseQuantums != null) {
+                val stepSize = getStepSize(stepBaseQuantums, atomicResolution)
+                configs.safeSet("stepSize", stepSize)
+            } else {
+                configs.safeSet("stepSize", fallbackStepSize)
+            }
+        }
+        if (tickSize == null) {
+            val subticksPerTick = parser.asInt(parser.value(configsV4, "subticksPerTick"))
+            if (subticksPerTick != null && quantumConversionExponent != null && atomicResolution != null) {
+                val tickSize = getTickSize(subticksPerTick, quantumConversionExponent, atomicResolution)
+                configs.safeSet("tickSize", tickSize)
+            } else {
+                configs.safeSet("tickSize", fallbackTickSize)
+            }
+        }
         return configs
+    }
+
+    private fun getStepSize(
+        stepBaseQuantums: Int,
+        atomicResolution: Int,
+    ): Double {
+        val stepSize = stepBaseQuantums.toBigDecimal().times(10.0.toBigDecimal().pow(atomicResolution))
+        return parser.asDouble(stepSize) ?: fallbackStepSize
+    }
+
+    private fun getTickSize(
+        subticksPerTick: Int,
+        quantumConversionExponent: Int,
+        atomicResolution: Int
+    ): Double {
+        val quoteCurrencyAtomicResolution = -6
+        val tickSize = subticksPerTick.toBigDecimal().times(
+            10.0.toBigDecimal().pow(quantumConversionExponent),
+        ).times(
+            10.0.toBigDecimal().pow(quoteCurrencyAtomicResolution),
+        ).divide(
+            10.0.toBigDecimal().pow(atomicResolution),
+        )
+        return parser.asDouble(tickSize) ?: fallbackTickSize
     }
 
     private fun perpetual(
@@ -502,6 +572,11 @@ internal class MarketProcessor(
         oraclePrice: Double?,
     ): Map<String, Any> {
         val perpetual = transform(existing, payload, perpetualKeyMap)
+        val openInterest = parser.asDouble(perpetual["openInterest"])
+        if (openInterest == null) {
+            perpetual.safeSet("openInterest", 0.0)
+            perpetual.safeSet("openInterestUSDC", 0.0)
+        }
         oraclePrice?.let {
             parser.asDouble(perpetual["openInterest"])?.let {
                 perpetual["openInterestUSDC"] = it * oraclePrice
