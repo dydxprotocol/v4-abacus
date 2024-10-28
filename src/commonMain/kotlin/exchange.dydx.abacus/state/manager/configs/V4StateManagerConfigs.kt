@@ -178,4 +178,9 @@ class V4StateManagerConfigs(
         val path = launchIncentivePath(type) ?: return null
         return "$api$path"
     }
+
+    fun metadataServiceInfo(): String? {
+        val metadataServiceUrl = environment.endpoints.metadataService ?: return null
+        return "$metadataServiceUrl/info"
+    }
 }

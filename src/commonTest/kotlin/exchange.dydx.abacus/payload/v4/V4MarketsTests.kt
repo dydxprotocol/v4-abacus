@@ -421,6 +421,12 @@ class V4MarketsTests : V4BaseTests() {
             assertEquals(ethMarket?.perpetualMarket?.perpetual?.volume24H, 626131271.611287094)
             assertEquals(ethMarket?.perpetualMarket?.perpetual?.trades24H, 1214631.0)
             assertEquals(ethMarket?.perpetualMarket?.perpetual?.nextFundingRate, 0.0)
+
+            val mlnMarket = markets["MLN-USD"]
+            assertEquals(mlnMarket?.perpetualMarket?.oraclePrice, null)
+            assertEquals(mlnMarket?.perpetualMarket?.perpetual?.openInterest, null)
+            assertEquals(mlnMarket?.perpetualMarket?.configs?.stepSize, 0.1)
+            assertEquals(mlnMarket?.perpetualMarket?.configs?.tickSize, 0.01)
         } else {
             test(
                 {
@@ -475,7 +481,26 @@ class V4MarketsTests : V4BaseTests() {
                            "nextFundingRate":0.0,
                            "trades24H":1214631
                         }
+                     },
+                     "MLN-USD":{
+                        "market":"MLN-USD",
+                        "status":{
+                           "canTrade":true,
+                           "canReduce":true
+                        },
+                        "configs":{
+                           "stepSize":0.1,
+                           "tickSize":0.01,
+                           "initialMarginFraction":0.05,
+                           "clobPairId":111
+                        },
+                         "perpetual":{
+                           "openInterest":0.0,
+                           "openInterestLowerCap": 500000.0,
+                            "openInterestUpperCap": 1000000.0
+                        }
                      }
+                
                   }
                }
             }

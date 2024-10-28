@@ -156,8 +156,11 @@ class FillsNotificationProvider(
         val asset = stateMachine.state?.assetOfMarket(marketId) ?: return null
         val assetText = asset.name
         val marketImageUrl = asset.resources?.imageUrl
-        val side = fill.side.rawValue
+
+        // opposite because these notifications are all about positions, not the fill that triggered the notif.
+        val side = fill.side.opposite().rawValue
         val sideText = uiImplementations.localizer?.localize("APP.GENERAL.$side")
+
         val amountText = parser.asString(fill.size)
         val priceText = parser.asString(fill.price)
         val fillType = fill.type.rawValue

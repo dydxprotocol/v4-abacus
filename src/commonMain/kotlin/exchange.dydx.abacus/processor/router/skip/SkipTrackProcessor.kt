@@ -12,8 +12,11 @@ internal class SkipTrackProcessor(
         payload: Map<String, Any>
     ): Map<String, Any>? {
         val modified = existing?.mutable() ?: mutableMapOf()
-        val txHash = parser.asString(payload.get("tx_hash")) ?: return modified
-        modified[txHash] = true
+        var txHash = parser.asString(payload.get("tx_hash")) ?: return modified
+        if (!txHash.startsWith("0x")) {
+            txHash = "0x$txHash"
+        }
+        modified[txHash.lowercase()] = true
         return modified
     }
 }

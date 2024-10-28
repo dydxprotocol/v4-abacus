@@ -34,6 +34,7 @@ data class EnvironmentEndpoints(
     val faucet: String?,
     val squid: String?,
     val skip: String?,
+    val metadataService: String?,
     val nobleValidator: String?,
     val geo: String?,
 ) {
@@ -51,6 +52,7 @@ data class EnvironmentEndpoints(
             val faucet = parser.asString(data["faucet"])
             val squid = parser.asString(data["0xsquid"])
             val skip = parser.asString(data["skip"])
+            val metadataService = parser.asString(data["metadataService"])
             val nobleValidator = parser.asString(data["nobleValidator"])
             val geo = parser.asString(data["geo"])
             return EnvironmentEndpoints(
@@ -59,6 +61,7 @@ data class EnvironmentEndpoints(
                 faucet = faucet,
                 squid = squid,
                 skip = skip,
+                metadataService = metadataService,
                 nobleValidator = nobleValidator,
                 geo = geo,
             )
@@ -78,6 +81,7 @@ data class EnvironmentLinks(
     val blogs: String?,
     val help: String?,
     val vaultLearnMore: String?,
+    val vaultTos: String?,
     val launchIncentive: String?,
     val statusPage: String?,
     val withdrawalGateLearnMore: String?,
@@ -102,6 +106,7 @@ data class EnvironmentLinks(
             val statusPage = parser.asString(data["statusPage"])
             val withdrawalGateLearnMore = parser.asString(data["withdrawalGateLearnMore"])
             val equityTiersLearnMore = parser.asString(data["equityTiersLearnMore"])
+            val vaultTos = parser.asString(data["vaultTos"])
             return EnvironmentLinks(
                 tos,
                 privacy,
@@ -113,6 +118,7 @@ data class EnvironmentLinks(
                 blogs,
                 help,
                 vaultLearnMore,
+                vaultTos,
                 launchIncentive,
                 statusPage,
                 withdrawalGateLearnMore,
@@ -402,7 +408,6 @@ open class Environment(
     val name: String?,
     val ethereumChainId: String,
     val dydxChainId: String?,
-    val squidIntegratorId: String?,
     val rewardsHistoryStartDateMs: String,
     val isMainNet: Boolean,
     val endpoints: EnvironmentEndpoints,
@@ -419,10 +424,10 @@ class V4Environment(
     name: String?,
     ethereumChainId: String,
     dydxChainId: String?,
-    squidIntegratorId: String?,
     val chainName: String?,
     val chainLogo: String?,
     rewardsHistoryStartDateMs: String,
+    val megavaultOperatorName: String,
     isMainNet: Boolean,
     endpoints: EnvironmentEndpoints,
     links: EnvironmentLinks?,
@@ -436,7 +441,6 @@ class V4Environment(
     name,
     ethereumChainId,
     dydxChainId,
-    squidIntegratorId,
     rewardsHistoryStartDateMs,
     isMainNet,
     endpoints,
@@ -461,10 +465,10 @@ class V4Environment(
             val name = parser.asString(data["name"])
             val ethereumChainId = parser.asString(data["ethereumChainId"]) ?: return null
             val dydxChainId = parser.asString(data["dydxChainId"])
-            val squidIntegratorId = parser.asString(data["squidIntegratorId"])
             val chainName = parser.asString(data["chainName"])
             val chainLogo = parser.asString(data["chainLogo"])
             val rewardsHistoryStartDateMs = parser.asString(data["rewardsHistoryStartDateMs"]) ?: ServerTime.now().minus(180.days).toEpochMilliseconds().toString()
+            val megavaultOperatorName = parser.asString(data["megavaultOperatorName"]) ?: return null
             val isMainNet = parser.asBool(data["isMainNet"]) ?: return null
             val endpoints =
                 EnvironmentEndpoints.parse(parser.asNativeMap(data["endpoints"]) ?: return null, parser)
@@ -493,10 +497,10 @@ class V4Environment(
                 name = name,
                 ethereumChainId = ethereumChainId,
                 dydxChainId = dydxChainId,
-                squidIntegratorId = squidIntegratorId,
                 chainName = chainName,
                 chainLogo = "$deploymentUri$chainLogo",
                 rewardsHistoryStartDateMs = rewardsHistoryStartDateMs,
+                megavaultOperatorName = megavaultOperatorName,
                 isMainNet = isMainNet,
                 endpoints = endpoints,
                 links = links,
@@ -549,6 +553,13 @@ class V4Environment(
 data object StatsigConfig {
     var dc_max_safe_bridge_fees: Float = Float.POSITIVE_INFINITY
     var ff_enable_limit_close: Boolean = false
+    var ff_enable_timestamp_nonce: Boolean = false
+}
+
+@JsExport
+@Suppress("PropertyName")
+data object AutoSweepConfig {
+    var disable_autosweep: Boolean = false
 }
 
 @JsExport

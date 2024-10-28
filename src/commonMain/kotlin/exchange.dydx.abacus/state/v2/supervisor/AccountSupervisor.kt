@@ -19,6 +19,7 @@ import exchange.dydx.abacus.state.app.adaptors.V4TransactionErrors
 import exchange.dydx.abacus.state.changes.Changes
 import exchange.dydx.abacus.state.changes.StateChanges
 import exchange.dydx.abacus.state.manager.ApiData
+import exchange.dydx.abacus.state.manager.AutoSweepConfig
 import exchange.dydx.abacus.state.manager.BlockAndTime
 import exchange.dydx.abacus.state.manager.HistoricalTradingRewardsPeriod
 import exchange.dydx.abacus.state.manager.HumanReadableCancelAllOrdersPayload
@@ -466,6 +467,9 @@ internal open class AccountSupervisor(
     private fun retrieveNobleBalance() {
         if (walletConnectionType == WalletConnectionType.Cosmos) {
             nobleBalancesTimer = null
+            return
+        }
+        if (AutoSweepConfig.disable_autosweep) {
             return
         }
         val timer = helper.ioImplementations.timer ?: CoroutineTimer.instance

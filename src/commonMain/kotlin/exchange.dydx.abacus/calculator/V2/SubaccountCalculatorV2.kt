@@ -80,13 +80,21 @@ internal class SubaccountCalculatorV2(
             val calculated = subaccount.calculated[period] ?: InternalSubaccountCalculated()
             subaccount.calculated[period] = calculated
 
+            var hasPositionCalculated = false
+            for (position in positions?.values ?: emptyList()) {
+                if (position.calculated[period] != null) {
+                    hasPositionCalculated = true
+                }
+            }
+            val positionsReady = positions.isNullOrEmpty() || hasPositionCalculated
+
             val quoteBalance = calculated.quoteBalance
-            if (quoteBalance != null) {
+            if (quoteBalance != null && positionsReady) {
                 var notionalTotal = Numeric.double.ZERO
                 var valueTotal = Numeric.double.ZERO
                 var initialRiskTotal = Numeric.double.ZERO
 
-                for ((key, position) in positions ?: emptyMap()) {
+                for (position in positions?.values ?: emptyList()) {
                     val positionCalculated = position.calculated[period]
                     notionalTotal += positionCalculated?.notionalTotal ?: Numeric.double.ZERO
                     valueTotal += positionCalculated?.valueTotal ?: Numeric.double.ZERO
@@ -169,9 +177,9 @@ internal class SubaccountCalculatorV2(
         for (period in periods) {
             val calculated = subaccount?.calculated?.get(period)
             val quoteBalance = calculated?.quoteBalance
-            if (quoteBalance != null) {
-                val equity = calculated.equity ?: Numeric.double.ZERO
-                val initialRiskTotal = calculated.initialRiskTotal ?: Numeric.double.ZERO
+            val equity = calculated?.equity
+            val initialRiskTotal = calculated?.initialRiskTotal
+            if (quoteBalance != null && equity != null && initialRiskTotal != null) {
                 val imf = configs?.initialMarginFraction ?: 0.05
 
                 calculated.buyingPower = calculateBuyingPower(

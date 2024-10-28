@@ -52,7 +52,7 @@ allprojects {
 }
 
 group = "exchange.dydx.abacus"
-version = "1.12.21"
+version = "1.13.14"
 
 repositories {
     google()
@@ -63,8 +63,10 @@ kotlin {
     jvm {
         compilations.all {
             kotlinOptions.jvmTarget = "1.8"
+            kotlinOptions.freeCompilerArgs += "-Xjdk-release=1.8"
             kotlinOptions.moduleName = "abacus"
         }
+
         withJava()
         testRuns["test"].executionTask.configure {
             useJUnitPlatform()
