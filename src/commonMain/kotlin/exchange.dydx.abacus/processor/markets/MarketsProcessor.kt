@@ -189,11 +189,20 @@ internal class MarketsProcessor(
         for ((market, data) in narrowedPayload) {
             val marketPayload = parser.asNativeMap(data)
             if (marketPayload != null) {
-                val receivedMarket = marketProcessorDeprecated!!.receivedDeltaDeprecated(
-                    parser.asNativeMap(existing?.get(market)),
-                    marketPayload,
-                )
-                markets[market] = receivedMarket
+                if (marketPayload["clobPairId"] != null) {
+                    // new permissionless market
+                    val receivedMarket = marketProcessorDeprecated!!.received(
+                        parser.asNativeMap(existing?.get(market)),
+                        marketPayload,
+                    )
+                    markets[market] = receivedMarket
+                } else {
+                    val receivedMarket = marketProcessorDeprecated!!.receivedDeltaDeprecated(
+                        parser.asNativeMap(existing?.get(market)),
+                        marketPayload,
+                    )
+                    markets[market] = receivedMarket
+                }
             }
         }
         return markets

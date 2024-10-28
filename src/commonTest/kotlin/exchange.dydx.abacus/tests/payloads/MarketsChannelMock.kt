@@ -2791,7 +2791,22 @@ internal class MarketsChannelMock {
                         "volume24H":"626131271.611287094",
                         "trades24H":1214631,
                         "openInterest":"67603.376057"
-                     }
+                     },
+                     "MLN-USD": {
+                        "id": "111",
+                        "clobPairId": "111",
+                        "ticker": "MLN-USD",
+                        "marketId": 111,
+                        "status": "ACTIVE",
+                        "quantumConversionExponent": -9,
+                        "atomicResolution": -7,
+                        "subticksPerTick": 1000000,
+                        "stepBaseQuantums": 1000000,
+                        "initialMarginFraction": "0.05",
+                        "maintenanceMarginFraction": "0.03",
+                        "openInterestLowerCap": "500000",
+                        "openInterestUpperCap": "1000000"
+                    }
                  }
               }
            ]
