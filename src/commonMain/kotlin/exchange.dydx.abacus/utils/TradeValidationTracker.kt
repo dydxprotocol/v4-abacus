@@ -13,19 +13,19 @@ class TradeValidationTracker(
     private var lastSeen: TradeValidationPayload? = null
 
     fun logValidationResult(payload: TradeValidationPayload) {
-        if (payload == lastSeen) return
+        // if (payload == lastSeen) return
 
-		try {
-			val serializedPayload = TrackingJson.encodeToString(TradeValidationPayload.serializer(), payload)
-			trackingProtocol?.log(AnalyticsEvent.TradeValidation.name, serializedPayload)
-			lastSeen = payload
-		} catch (e: SerializationException) {
-			// Handle serialization-specific errors
-			Logger.e { "Serialization error: ${e.message}" }
-		} catch (e: Exception) {
-			// Handle any other exceptions that may occur
-            Logger.e  { "An error occurred while logging TradeValidation: ${e.message}" }
-		}
+		// try {
+		// 	val serializedPayload = TrackingJson.encodeToString(TradeValidationPayload.serializer(), payload)
+		// 	trackingProtocol?.log(AnalyticsEvent.TradeValidation.name, serializedPayload)
+		// 	lastSeen = payload
+		// } catch (e: SerializationException) {
+		// 	// Handle serialization-specific errors
+		// 	Logger.e { "Serialization error: ${e.message}" }
+		// } catch (e: Exception) {
+		// 	// Handle any other exceptions that may occur
+        //     Logger.e  { "An error occurred while logging TradeValidation: ${e.message}" }
+		// }
     }
 }
 
