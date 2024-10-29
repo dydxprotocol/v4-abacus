@@ -3,6 +3,7 @@ package exchange.dydx.abacus.utils
 import exchange.dydx.abacus.protocols.AnalyticsEvent
 import exchange.dydx.abacus.protocols.TrackingProtocol
 import kotlinx.serialization.Serializable
+import kotlinx.serialization.encodeToString
 import kotlinx.serialization.json.Json
 
 class TradeValidationTracker(
@@ -14,7 +15,8 @@ class TradeValidationTracker(
     fun logValidationResult(payload: TradeValidationPayload) {
         if (payload == lastSeen) return
 
-        trackingProtocol?.log(AnalyticsEvent.TradeValidation.name, TrackingJson.encodeToString(TradeValidationPayload.serializer(), payload))
+        val stringPaylaod = TrackingJson.encodeToString(payload)
+        trackingProtocol?.log(AnalyticsEvent.TradeValidation.name, stringPaylaod)
         lastSeen = payload
     }
 }
