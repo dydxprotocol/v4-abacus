@@ -38,7 +38,7 @@ internal class TransferInputProcessor(
         inputState: InternalInputState,
         walletState: InternalWalletState,
         data: String?,
-        inputField: TransferInputField,
+        inputField: TransferInputField?,
         subaccountNumber: Int = 0
     ): InputProcessorResult {
         val error: ParsingError? = null
@@ -181,6 +181,10 @@ internal class TransferInputProcessor(
                     transfer.memo = data
                     updated = true
                 }
+            }
+
+            else -> {
+                updated = true
             }
         }
 

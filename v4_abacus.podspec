@@ -1,6 +1,6 @@
 Pod::Spec.new do |spec|
     spec.name                     = 'v4_abacus'
-    spec.version                  = '1.13.14'
+    spec.version                  = '1.13.15'
     spec.homepage                 = 'https://github.com/dydxprotocol/v4-abacus'
     spec.source                   = { :http=> ''}
     spec.authors                  = ''
