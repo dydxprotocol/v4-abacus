@@ -44,11 +44,6 @@ fun TradingStateMachine.transfer(
     environment: V4Environment,
 ): StateResponse {
     if (staticTyping) {
-        if (type == null) {
-            val error = ParsingError.cannotModify("type")
-            return StateResponse(state, null, iListOf(error))
-        }
-
         val processor = TransferInputProcessor(
             parser = parser,
             routerProcessor = routerProcessor,

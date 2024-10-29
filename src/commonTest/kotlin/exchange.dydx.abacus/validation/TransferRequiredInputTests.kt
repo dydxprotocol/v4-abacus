@@ -1,6 +1,7 @@
 package exchange.dydx.abacus.validation
 
 import exchange.dydx.abacus.output.input.ErrorType
+import exchange.dydx.abacus.output.input.InputType
 import exchange.dydx.abacus.output.input.TransferType
 import exchange.dydx.abacus.payload.v4.V4BaseTests
 import exchange.dydx.abacus.state.model.TransferInputField
@@ -38,9 +39,19 @@ class TransferRequiredInputTests : V4BaseTests() {
 
     override fun reset() {
         super.reset()
-        test({
+
+        if (perp.staticTyping) {
             perp.transfer(null, null, environment = mock.v4Environment)
-        }, null)
+
+            assertEquals(InputType.TRANSFER, perp.internalState.input.currentType)
+
+            val transfer = perp.internalState.input.transfer
+            assertEquals(TransferType.deposit, transfer.type)
+        } else {
+            test({
+                perp.transfer(null, null, environment = mock.v4Environment)
+            }, null)
+        }
     }
 
     private fun testTransferInputDeposit() {
