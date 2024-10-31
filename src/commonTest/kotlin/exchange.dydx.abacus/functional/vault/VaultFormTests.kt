@@ -331,7 +331,7 @@ class VaultFormTests {
         val result = VaultDepositWithdrawFormValidator.validateVaultForm(
             formData = VaultFormData(
                 action = VaultFormAction.DEPOSIT,
-                amount = 10.0,
+                amount = 4.0,
                 acknowledgedSlippage = false,
                 acknowledgedTerms = false,
                 inConfirmationStep = false,
@@ -358,10 +358,10 @@ class VaultFormTests {
                 summaryData = VaultFormSummaryData(
                     needSlippageAck = false,
                     needTermsAck = false,
-                    marginUsage = 0.5025125628140703,
-                    freeCollateral = 990.0,
-                    vaultBalance = 1010.0,
-                    withdrawableVaultBalance = 510.0,
+                    marginUsage = 0.5010020040080161,
+                    freeCollateral = 996.0,
+                    vaultBalance = 1004.0,
+                    withdrawableVaultBalance = 504.0,
                     estimatedSlippage = 0.0,
                     estimatedAmountReceived = null,
                 ),
@@ -420,7 +420,7 @@ class VaultFormTests {
         val result = VaultDepositWithdrawFormValidator.validateVaultForm(
             formData = VaultFormData(
                 action = VaultFormAction.WITHDRAW,
-                amount = 10.0,
+                amount = 4.0,
                 acknowledgedSlippage = false,
                 acknowledgedTerms = false,
                 inConfirmationStep = false,
@@ -436,8 +436,8 @@ class VaultFormTests {
                 balanceShares = 500.0,
             ),
             slippageResponse = OnChainVaultDepositWithdrawSlippageResponse(
-                sharesToWithdraw = OnChainNumShares(numShares = 5.0),
-                expectedQuoteQuantums = 10.0 * 1_000_000,
+                sharesToWithdraw = OnChainNumShares(numShares = 2.0),
+                expectedQuoteQuantums = 4.0 * 1_000_000,
             ),
         )
 
@@ -450,12 +450,12 @@ class VaultFormTests {
                 summaryData = VaultFormSummaryData(
                     needSlippageAck = false,
                     needTermsAck = false,
-                    marginUsage = 0.49751243781094523,
-                    freeCollateral = 1010.0,
-                    vaultBalance = 990.0,
-                    withdrawableVaultBalance = 490.0,
+                    marginUsage = 0.499001996007984,
+                    freeCollateral = 1004.0,
+                    vaultBalance = 996.0,
+                    withdrawableVaultBalance = 496.0,
                     estimatedSlippage = 0.0,
-                    estimatedAmountReceived = 10.0,
+                    estimatedAmountReceived = 4.0,
                 ),
             ),
             result,
@@ -519,7 +519,7 @@ class VaultFormTests {
         val result = VaultDepositWithdrawFormValidator.validateVaultForm(
             formData = VaultFormData(
                 action = VaultFormAction.WITHDRAW,
-                amount = 6.0,
+                amount = 4.0,
                 acknowledgedSlippage = false,
                 acknowledgedTerms = false,
                 inConfirmationStep = false,
@@ -535,8 +535,8 @@ class VaultFormTests {
                 balanceShares = 500.0,
             ),
             slippageResponse = OnChainVaultDepositWithdrawSlippageResponse(
-                sharesToWithdraw = OnChainNumShares(numShares = 3.0),
-                expectedQuoteQuantums = 6.0 * 1_000_000,
+                sharesToWithdraw = OnChainNumShares(numShares = 2.0),
+                expectedQuoteQuantums = 4.0 * 1_000_000,
             ),
         )
 
@@ -549,12 +549,12 @@ class VaultFormTests {
                 summaryData = VaultFormSummaryData(
                     needSlippageAck = false,
                     needTermsAck = false,
-                    marginUsage = 0.4985044865403788,
-                    freeCollateral = 1006.0,
-                    vaultBalance = 994.0,
-                    withdrawableVaultBalance = 4.0,
+                    marginUsage = 0.499001996007984,
+                    freeCollateral = 1004.0,
+                    vaultBalance = 996.0,
+                    withdrawableVaultBalance = 6.0,
                     estimatedSlippage = 0.0,
-                    estimatedAmountReceived = 6.0,
+                    estimatedAmountReceived = 4.0,
                 ),
             ),
             result,
