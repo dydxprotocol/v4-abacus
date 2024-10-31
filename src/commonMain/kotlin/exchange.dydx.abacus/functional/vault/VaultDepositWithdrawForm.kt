@@ -240,7 +240,7 @@ object VaultDepositWithdrawFormValidator {
     private const val SLIPPAGE_TOLERANCE = 0.01
     private const val EPSILON_FOR_ERRORS = 0.0001
 
-    private const val MIN_DEPOSIT_FE_THRESHOLD = 20.0
+    private const val MIN_DEPOSIT_FE_THRESHOLD = 5.0
 
     fun getVaultDepositWithdrawSlippageResponse(apiResponse: String): OnChainVaultDepositWithdrawSlippageResponse? {
         return parser.asTypedObject<OnChainVaultDepositWithdrawSlippageResponse>(apiResponse)
