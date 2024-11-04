@@ -68,7 +68,7 @@ internal class ReceiptCalculator {
                             listOf(
                                 ReceiptLine.Equity,
                                 ReceiptLine.MarginUsage,
-                                ReceiptLine.Fee,
+                                ReceiptLine.TransferFee,
                             )
                         }
 
