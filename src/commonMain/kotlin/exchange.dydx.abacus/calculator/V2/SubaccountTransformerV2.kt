@@ -194,7 +194,6 @@ internal class SubaccountTransformerV2(
     ) {
         val deltaMarketId = delta?.marketId
         val positions = subaccount.openPositions ?: mapOf()
-        subaccount.openPositions = positions
 
         val marketPosition = positions[deltaMarketId]
         val modifiedDelta = if (delta != null) {
