@@ -3,7 +3,6 @@ package exchange.dydx.abacus.processor.markets
 import exchange.dydx.abacus.processor.base.BaseProcessor
 import exchange.dydx.abacus.protocols.LocalizerProtocol
 import exchange.dydx.abacus.protocols.ParserProtocol
-import exchange.dydx.abacus.state.internalstate.InternalConfigsState
 import exchange.dydx.abacus.state.internalstate.InternalMarketState
 import exchange.dydx.abacus.state.internalstate.InternalMarketSummaryState
 import exchange.dydx.abacus.utils.mutable
@@ -18,7 +17,6 @@ import indexer.codegen.IndexerTradeResponse
 import indexer.models.IndexerCompositeMarketObject
 import indexer.models.IndexerWsMarketUpdateResponse
 import indexer.models.IndexerWsOrderbookUpdateResponse
-import indexer.models.chain.OnChainFeeTiersResponse
 
 internal class MarketsSummaryProcessor(
     parser: ParserProtocol,
@@ -189,8 +187,8 @@ internal class MarketsSummaryProcessor(
     }
 
     fun processHistoricalFundings(
-         existing: InternalMarketSummaryState,
-         payload: IndexerHistoricalFundingResponse?,
+        existing: InternalMarketSummaryState,
+        payload: IndexerHistoricalFundingResponse?,
     ): InternalMarketSummaryState {
         val marketPaylaods = mutableMapOf<String, List<IndexerHistoricalFundingResponseObject>>()
         for (funding in payload?.historicalFunding?.toList() ?: emptyList()) {

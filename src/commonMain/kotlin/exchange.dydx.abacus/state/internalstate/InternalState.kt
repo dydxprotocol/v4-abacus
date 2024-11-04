@@ -46,7 +46,6 @@ import exchange.dydx.abacus.output.input.ValidationError
 import exchange.dydx.abacus.state.manager.HistoricalTradingRewardsPeriod
 import exchange.dydx.abacus.utils.NUM_PARENT_SUBACCOUNTS
 import indexer.codegen.IndexerHistoricalBlockTradingReward
-import indexer.codegen.IndexerHistoricalFundingResponse
 import indexer.codegen.IndexerHistoricalTradingRewardAggregation
 import indexer.codegen.IndexerPerpetualPositionStatus
 import indexer.codegen.IndexerPositionSide
