@@ -107,7 +107,7 @@ internal class TradeInputCalculatorV2(
             subaccountNumber = subaccountNumber,
             trade = trade,
             market = markets[trade.marketId],
-            CalculationPeriod.post,
+            period = CalculationPeriod.post,
         )
 
         return trade

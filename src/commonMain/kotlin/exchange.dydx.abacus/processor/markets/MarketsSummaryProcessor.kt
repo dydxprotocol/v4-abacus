@@ -3,18 +3,22 @@ package exchange.dydx.abacus.processor.markets
 import exchange.dydx.abacus.processor.base.BaseProcessor
 import exchange.dydx.abacus.protocols.LocalizerProtocol
 import exchange.dydx.abacus.protocols.ParserProtocol
+import exchange.dydx.abacus.state.internalstate.InternalConfigsState
 import exchange.dydx.abacus.state.internalstate.InternalMarketState
 import exchange.dydx.abacus.state.internalstate.InternalMarketSummaryState
 import exchange.dydx.abacus.utils.mutable
 import exchange.dydx.abacus.utils.safeSet
 import indexer.codegen.IndexerCandleResponse
 import indexer.codegen.IndexerCandleResponseObject
+import indexer.codegen.IndexerHistoricalFundingResponse
+import indexer.codegen.IndexerHistoricalFundingResponseObject
 import indexer.codegen.IndexerOrderbookResponseObject
 import indexer.codegen.IndexerSparklineTimePeriod
 import indexer.codegen.IndexerTradeResponse
 import indexer.models.IndexerCompositeMarketObject
 import indexer.models.IndexerWsMarketUpdateResponse
 import indexer.models.IndexerWsOrderbookUpdateResponse
+import indexer.models.chain.OnChainFeeTiersResponse
 
 internal class MarketsSummaryProcessor(
     parser: ParserProtocol,
@@ -26,6 +30,7 @@ internal class MarketsSummaryProcessor(
     private val orderbookProcessor = OrderbookProcessor(parser)
     private val candlesProcessor = CandlesProcessor(parser)
     private val tradesProcessor = TradesProcessorV2(TradeProcessorV2(parser, localizer))
+    private val historicalFundingsProcessor = HistoricalFundingsProcessor(parser)
 
     internal var groupingMultiplier: Int
         get() = if (staticTyping) orderbookProcessor.groupingMultiplier else marketsProcessor.groupingMultiplier
@@ -180,6 +185,29 @@ internal class MarketsSummaryProcessor(
             existing = marketState,
             payload = content,
         )
+        return existing
+    }
+
+    fun processHistoricalFundings(
+         existing: InternalMarketSummaryState,
+         payload: IndexerHistoricalFundingResponse?,
+    ): InternalMarketSummaryState {
+        val marketPaylaods = mutableMapOf<String, List<IndexerHistoricalFundingResponseObject>>()
+        for (funding in payload?.historicalFunding?.toList() ?: emptyList()) {
+            val marketId = funding.ticker
+            if (marketId != null) {
+                val list = marketPaylaods[marketId] ?: emptyList()
+                marketPaylaods[marketId] = list + listOf(funding)
+            }
+        }
+
+        for ((marketId, funding) in marketPaylaods) {
+            val marketState = existing.markets[marketId] ?: InternalMarketState()
+            historicalFundingsProcessor.process(
+                existing = marketState,
+                payload = funding,
+            )
+        }
         return existing
     }
 
@@ -347,7 +375,7 @@ internal class MarketsSummaryProcessor(
         return modify(existing, markets)
     }
 
-    internal fun receivedHistoricalFundings(
+    internal fun receivedHistoricalFundingsDeprecated(
         existing: Map<String, Any>?,
         payload: Map<String, Any>
     ): Map<String, Any>? {

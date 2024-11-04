@@ -758,12 +758,12 @@ internal object MarginCalculator {
         val positionSizeDifference = getPositionSizeDifference(subaccount, trade) ?: return null
 
         return calculateIsolatedMarginTransferAmountFromValues(
-            targetLeverage,
-            side,
-            oraclePrice,
-            price,
-            maxMarketLeverage,
-            positionSizeDifference,
+            targetLeverage = targetLeverage,
+            side = side,
+            oraclePrice = oraclePrice,
+            price = price,
+            maxMarketLeverage = maxMarketLeverage,
+            positionSizeDifference = positionSizeDifference,
         )
     }
 

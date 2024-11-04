@@ -193,11 +193,13 @@ internal class SubaccountTransformerV2(
         hasTransfer: Boolean = false,
     ) {
         val deltaMarketId = delta?.marketId
-        val positions = subaccount.openPositions
+        val positions = subaccount.openPositions ?: mapOf()
+        subaccount.openPositions = positions
 
-        val marketPosition = positions?.get(deltaMarketId)
+        val marketPosition = positions[deltaMarketId]
         val modifiedDelta = if (delta != null) {
-            val positionSize = marketPosition?.calculated?.get(CalculationPeriod.current)?.size ?: Numeric.double.ZERO
+            val positionSize = marketPosition?.calculated?.get(CalculationPeriod.current)?.size
+                ?: Numeric.double.ZERO
             transformDelta(
                 delta = delta,
                 positionSize = positionSize,
@@ -207,19 +209,18 @@ internal class SubaccountTransformerV2(
             null
         }
 
-        if (positions != null) {
-            subaccount.openPositions = applyDeltaToPositions(
-                positions = positions,
-                delta = modifiedDelta,
-                period = period,
-            )
-        }
+        subaccount.openPositions = applyDeltaToPositions(
+            positions = positions,
+            delta = modifiedDelta,
+            period = period,
+        )
 
         val calculatedAtPeriod = subaccount.calculated[period] ?: InternalSubaccountCalculated()
         val usdcSize = modifiedDelta?.usdcSize ?: Numeric.double.ZERO
         if (delta != null && usdcSize != Numeric.double.ZERO) {
             val fee = modifiedDelta?.fee ?: Numeric.double.ZERO
-            val quoteBalance = subaccount.calculated[CalculationPeriod.current]?.quoteBalance ?: Numeric.double.ZERO
+            val quoteBalance = subaccount.calculated[CalculationPeriod.current]?.quoteBalance
+                ?: Numeric.double.ZERO
             calculatedAtPeriod.quoteBalance = quoteBalance + usdcSize + fee
         } else {
             calculatedAtPeriod.quoteBalance = null

@@ -1045,15 +1045,21 @@ open class TradingStateMachine(
             if (markets != null) {
                 val modified = historicalFundings?.toIMutableMap() ?: mutableMapOf()
                 for (marketId in markets) {
-                    val data = parser.asList(
-                        parser.value(
-                            data,
-                            "markets.markets.$marketId.historicalFunding",
-                        ),
-                    ) as? IList<Map<String, Any>>
-                    val existing = historicalFundings?.get(marketId)
-                    val historicalFunding = MarketHistoricalFunding.create(existing, parser, data)
-                    modified.typedSafeSet(marketId, historicalFunding)
+                    if (staticTyping) {
+                        val historicalFundings = internalState.marketsSummary.markets[marketId]?.historicalFundings
+                        modified.typedSafeSet(marketId, historicalFundings?.toIList())
+                    } else {
+                        val data = parser.asList(
+                            parser.value(
+                                data,
+                                "markets.markets.$marketId.historicalFunding",
+                            ),
+                        ) as? IList<Map<String, Any>>
+                        val existing = historicalFundings?.get(marketId)
+                        val historicalFunding =
+                            MarketHistoricalFunding.create(existing, parser, data)
+                        modified.typedSafeSet(marketId, historicalFunding)
+                    }
                 }
                 historicalFundings = modified
             } else {
