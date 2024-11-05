@@ -865,13 +865,22 @@ internal class OnboardingSupervisor(
     }
 
     private fun receiveTransferGas(gas: BigDecimal?) {
-        val input = stateMachine.input
-        val oldFee = helper.parser.asDecimal(helper.parser.value(input, "transfer.fee"))
-        if (oldFee != gas) {
-            val oldState = stateMachine.state
-            val modified = input?.mutable() ?: iMapOf<String, Any>().mutable()
-            modified.safeSet("transfer.fee", gas)
-            update(StateChanges(iListOf(Changes.input)), oldState)
+        if (stateMachine.staticTyping) {
+            val gas = helper.parser.asDouble(gas)
+            val oldFee = stateMachine.internalState.input.transfer.fee
+            if (oldFee != gas) {
+                stateMachine.internalState.input.transfer.fee = gas
+                update(StateChanges(iListOf(Changes.input)), stateMachine.state)
+            }
+        } else {
+            val input = stateMachine.input
+            val oldFee = helper.parser.asDecimal(helper.parser.value(input, "transfer.fee"))
+            if (oldFee != gas) {
+                val oldState = stateMachine.state
+                val modified = input?.mutable() ?: iMapOf<String, Any>().mutable()
+                modified.safeSet("transfer.fee", gas)
+                update(StateChanges(iListOf(Changes.input)), oldState)
+            }
         }
     }
 

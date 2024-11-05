@@ -46,6 +46,7 @@ internal class RewardsParamsProcessor(
                 denom = payload.params?.denom,
                 denomExponent = payload.params?.denomExponent,
                 marketId = payload.params?.marketId,
+                feeMultiplierPpm = payload.params?.feeMultiplierPpm,
             )
         } else {
             null

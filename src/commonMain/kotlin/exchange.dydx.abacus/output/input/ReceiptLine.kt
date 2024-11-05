@@ -27,7 +27,8 @@ enum class ReceiptLine(val rawValue: String) {
     CrossMarginUsage("CROSS_MARGIN_USAGE"),
     PositionMargin("POSITION_MARGIN"),
     PositionLeverage("POSITION_LEVERAGE"),
-    LiquidationPrice("LIQUIDATION_PRICE");
+    LiquidationPrice("LIQUIDATION_PRICE"),
+    TransferFee("TRANSFER_FEE");
 
     companion object {
         operator fun invoke(rawValue: String) =

@@ -10,6 +10,7 @@ import exchange.dydx.abacus.output.FeeTier
 import exchange.dydx.abacus.output.LaunchIncentivePoint
 import exchange.dydx.abacus.output.LaunchIncentiveSeason
 import exchange.dydx.abacus.output.MarketCandle
+import exchange.dydx.abacus.output.MarketHistoricalFunding
 import exchange.dydx.abacus.output.MarketOrderbook
 import exchange.dydx.abacus.output.MarketTrade
 import exchange.dydx.abacus.output.PerpetualMarket
@@ -201,7 +202,10 @@ internal data class InternalMarketState(
     var groupedOrderbook: MarketOrderbook? = null,
 
     // candles: resolution -> candles
-    var candles: MutableMap<String, List<MarketCandle>>? = null
+    var candles: MutableMap<String, List<MarketCandle>>? = null,
+
+    // historical fundings
+    var historicalFundings: List<MarketHistoricalFunding>? = null,
 )
 
 internal data class InternalOrderbook(

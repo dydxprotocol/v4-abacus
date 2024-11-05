@@ -50,7 +50,10 @@ internal class AccountTransformerV2(
                 period = period,
             )
         } else if (childSubaccountNumber != null) {
-            val childSubaccount = account.subaccounts[childSubaccountNumber]
+            val childSubaccount = account.subaccounts[childSubaccountNumber] ?: InternalSubaccountState(
+                subaccountNumber = childSubaccountNumber,
+            )
+            account.subaccounts[childSubaccountNumber] = childSubaccount
 
             var transferAmountAppliedToParent = 0.0
             var transferAmountAppliedToChild = 0.0
