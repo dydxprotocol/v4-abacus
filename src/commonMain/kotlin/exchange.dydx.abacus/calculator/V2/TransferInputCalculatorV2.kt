@@ -126,9 +126,9 @@ internal class TransferInputCalculatorV2(
 
                 return TransferInputSummary(
                     filled = true,
-                    gasFee = null,
+                    gasFee = transfer.fee,
                     usdcSize = usdcSize,
-                    fee = transfer.fee,
+                    fee = null,
                     slippage = null,
                     exchangeRate = null,
                     estimatedRouteDurationSeconds = null,
