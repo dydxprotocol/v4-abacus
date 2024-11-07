@@ -106,7 +106,7 @@ internal class SubaccountCalculatorV2(
                 calculated.initialRiskTotal = initialRiskTotal
 
                 val equity = valueTotal + quoteBalance
-                val freeCollateral = equity - initialRiskTotal
+                val freeCollateral = max(equity - initialRiskTotal, 0.0)
 
                 calculated.equity = equity
                 calculated.freeCollateral = freeCollateral
