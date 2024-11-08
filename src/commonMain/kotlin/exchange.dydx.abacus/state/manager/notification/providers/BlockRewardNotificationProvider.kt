@@ -1,5 +1,6 @@
 package exchange.dydx.abacus.state.manager.notification.providers
 
+import com.ionspin.kotlin.bignum.decimal.toBigDecimal
 import exchange.dydx.abacus.output.Notification
 import exchange.dydx.abacus.output.NotificationPriority
 import exchange.dydx.abacus.output.NotificationType
@@ -52,7 +53,7 @@ class BlockRewardNotificationProvider(
         token: String,
     ): Notification? {
         val blockHeight = blockReward.createdAtHeight
-        val blockRewardAmount = blockReward.tradingReward
+        val blockRewardAmount = blockReward.tradingReward.toBigDecimal().toPlainString()
         val params = iMapOf(
             "BLOCK_REWARD_HEIGHT" to blockHeight,
             "TOKEN_NAME" to token,

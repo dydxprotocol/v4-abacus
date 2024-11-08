@@ -317,7 +317,7 @@ internal class TradeInputProcessor(
 
         if (existingPosition != null) {
             trade.marginMode =
-                if (subaccount?.equity != null) MarginMode.Isolated else MarginMode.Cross
+                if (subaccount?.calculated?.get(CalculationPeriod.current)?.equity != null) MarginMode.Isolated else MarginMode.Cross
             val currentPositionLeverage =
                 existingPosition.calculated[CalculationPeriod.current]?.leverage?.abs()
             val positionLeverage =
