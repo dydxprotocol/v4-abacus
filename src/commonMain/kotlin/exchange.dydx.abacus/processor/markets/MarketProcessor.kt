@@ -184,9 +184,9 @@ internal class MarketProcessor(
         payload: List<String>,
         period: IndexerSparklineTimePeriod,
     ): PerpetualMarket? {
+        cachedIndexerSparklines[marketId] = payload.mapNotNull { parser.asDouble(it) }.reversed()
         when (period) {
             IndexerSparklineTimePeriod.ONEDAY -> {
-                cachedIndexerSparklines[marketId] = payload.mapNotNull { parser.asDouble(it) }.reversed()
                 return createPerpetualMarket(marketId)
             }
             IndexerSparklineTimePeriod.SEVENDAYS -> {

@@ -419,7 +419,7 @@ internal class SubaccountCalculatorV2(
                             val marginMode = position.marginMode
                             when (marginMode) {
                                 MarginMode.Isolated -> {
-                                    val equity = subaccount.equity
+                                    val equity = subaccount.calculated[period]?.equity
                                     calculated.marginValue = equity
                                 }
 

@@ -259,13 +259,13 @@ object VaultCalculator {
         val assetPositionsMap = assetPosition?.let { mapOf((it.symbol ?: "") to it) }
         val subaccount = subaccountCalculator.calculate(
             subaccount = InternalSubaccountState(
-                equity = equity ?: 0.0,
                 assetPositions = assetPositionsMap,
                 openPositions = perpetualPosition?.let { mapOf((it.market ?: "") to it) },
                 subaccountNumber = 0,
                 calculated = mutableMapOf(
                     CalculationPeriod.current to
                         InternalSubaccountCalculated(
+                            equity = equity ?: 0.0,
                             quoteBalance = subaccountCalculator.calculateQuoteBalance(
                                 assetPositionsMap,
                             ),

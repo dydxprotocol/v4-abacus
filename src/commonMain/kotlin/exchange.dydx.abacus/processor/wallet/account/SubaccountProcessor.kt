@@ -120,8 +120,8 @@ internal open class SubaccountProcessor(
         )
 
         val subaccountCalculated = state.calculated[CalculationPeriod.current] ?: InternalSubaccountCalculated()
-        state.calculated[CalculationPeriod.current] = subaccountCalculated
         subaccountCalculated.quoteBalance = subaccountCalculator.calculateQuoteBalance(state.assetPositions)
+        state.calculated[CalculationPeriod.current] = subaccountCalculated
 
         val fills = parser.asTypedList<IndexerFillResponseObject>(content["fills"])
         state = processFills(
@@ -231,8 +231,11 @@ internal open class SubaccountProcessor(
         existing.subaccountNumber = subaccountNumber
         existing.address = payload.address
 
-        existing.equity = parser.asDouble(payload.equity)
-        existing.freeCollateral = parser.asDouble(payload.freeCollateral)
+        val calculated = existing.calculated[CalculationPeriod.current] ?: InternalSubaccountCalculated()
+        calculated.equity = parser.asDouble(payload.equity)
+        calculated.freeCollateral = parser.asDouble(payload.freeCollateral)
+        existing.calculated[CalculationPeriod.current] = calculated
+
         existing.marginEnabled = payload.marginEnabled
         existing.updatedAtHeight = payload.updatedAtHeight
         existing.latestProcessedBlockHeight = payload.latestProcessedBlockHeight
@@ -251,8 +254,8 @@ internal open class SubaccountProcessor(
         }
 
         val subaccountCalculated = existing.calculated[CalculationPeriod.current] ?: InternalSubaccountCalculated()
-        existing.calculated[CalculationPeriod.current] = subaccountCalculated
         subaccountCalculated.quoteBalance = subaccountCalculator.calculateQuoteBalance(existing.assetPositions)
+        existing.calculated[CalculationPeriod.current] = subaccountCalculated
 
         return existing
     }

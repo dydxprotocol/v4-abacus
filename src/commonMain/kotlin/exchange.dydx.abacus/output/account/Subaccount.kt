@@ -5,6 +5,7 @@ import exchange.dydx.abacus.output.TradeStatesWithDoubleValues
 import exchange.dydx.abacus.processor.base.ComparisonOrder
 import exchange.dydx.abacus.protocols.LocalizerProtocol
 import exchange.dydx.abacus.protocols.ParserProtocol
+import exchange.dydx.abacus.state.internalstate.InternalPerpetualPendingPosition
 import exchange.dydx.abacus.state.internalstate.InternalPerpetualPosition
 import exchange.dydx.abacus.state.internalstate.InternalSubaccountState
 import exchange.dydx.abacus.utils.IList
@@ -242,11 +243,19 @@ data class Subaccount(
                     )
                 }
 
-                val pendingPositions = pendingPositions(
-                    existing?.pendingPositions,
-                    parser,
-                    parser.asList(data?.get("pendingPositions")),
-                )
+                val pendingPositions = if (staticTyping) {
+                    createPendingPositions(
+                        existing = existing?.pendingPositions,
+                        parser = parser,
+                        pendingPositions = internalState?.pendingPositions,
+                    )
+                } else {
+                    pendingPositionsDeprecated(
+                        existing?.pendingPositions,
+                        parser,
+                        parser.asList(data?.get("pendingPositions")),
+                    )
+                }
                 val orders =
                     if (staticTyping) {
                         internalState?.orders?.toIList()
@@ -387,7 +396,32 @@ data class Subaccount(
             )?.toIList()
         }
 
-        private fun pendingPositions(
+        private fun createPendingPositions(
+            existing: IList<SubaccountPendingPosition>?,
+            parser: ParserProtocol,
+            pendingPositions: List<InternalPerpetualPendingPosition>?,
+        ): IList<SubaccountPendingPosition>? {
+            val newEntries: MutableList<SubaccountPendingPosition> = mutableListOf()
+            for (position in pendingPositions ?: emptyList()) {
+                val pendingPosition = SubaccountPendingPosition.create(
+                    existing = null,
+                    parser = parser,
+                    data = emptyMap(),
+                    internalState = position,
+                )
+                if (pendingPosition != null) {
+                    newEntries.add(pendingPosition)
+                }
+            }
+
+            return if (newEntries != existing) {
+                newEntries.toIList()
+            } else {
+                existing
+            }
+        }
+
+        private fun pendingPositionsDeprecated(
             existing: IList<SubaccountPendingPosition>?,
             parser: ParserProtocol,
             data: List<*>?,
@@ -402,6 +436,7 @@ data class Subaccount(
                     obj as? SubaccountPendingPosition,
                     parser,
                     parser.asMap(itemData),
+                    internalState = null,
                 )
             }, true)?.toIList()
         }
