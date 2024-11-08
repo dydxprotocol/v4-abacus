@@ -265,7 +265,7 @@ object VaultCalculator {
                 calculated = mutableMapOf(
                     CalculationPeriod.current to
                         InternalSubaccountCalculated(
-                            equity = equity,
+                            equity = equity ?: 0.0,
                             quoteBalance = subaccountCalculator.calculateQuoteBalance(
                                 assetPositionsMap,
                             ),
