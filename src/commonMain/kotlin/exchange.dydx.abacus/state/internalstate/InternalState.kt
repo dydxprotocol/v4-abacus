@@ -429,6 +429,12 @@ internal data class InternalPositionCalculated(
     var size: Double? = null,
     var liquidationPrice: Double? = null,
     var buyingPower: Double? = null,
+    // the following four fields are copied from the subaccount calculated.. this is needed
+    // when grouping subaccounts for isolated margin
+    var equity: Double? = null,
+    var freeCollateral: Double? = null,
+    var marginUsage: Double? = null,
+    var quoteBalance: Double? = null,
 )
 
 internal data class InternalAccountBalanceState(

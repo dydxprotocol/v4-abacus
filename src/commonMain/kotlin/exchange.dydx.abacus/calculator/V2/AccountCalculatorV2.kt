@@ -115,6 +115,14 @@ internal class AccountCalculatorV2(
         for ((market, childOpenPosition) in childOpenPositions ?: emptyMap()) {
             childOpenPosition.childSubaccountNumber = childSubaccountNumber
 
+            // copying from subaccount to position
+            for (period in CalculationPeriod.entries) {
+                childOpenPosition.calculated[period]?.equity = childSubaccount.calculated[period]?.equity
+                childOpenPosition.calculated[period]?.freeCollateral = childSubaccount.calculated[period]?.freeCollateral
+                childOpenPosition.calculated[period]?.quoteBalance = childSubaccount.calculated[period]?.quoteBalance
+                childOpenPosition.calculated[period]?.marginUsage = childSubaccount.calculated[period]?.marginUsage
+            }
+
             modifiedOpenPositions[market] = childOpenPosition
         }
         parentSubaccount.openPositions = modifiedOpenPositions
