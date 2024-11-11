@@ -295,11 +295,11 @@ data class SubaccountPosition(
                         )
                     }
 
-                    val freeCollateral = if (subaccount != null) {
+                    val freeCollateral = if (position != null) {
                         TradeStatesWithDoubleValues(
-                            current = subaccount.calculated[CalculationPeriod.current]?.freeCollateral,
-                            postOrder = subaccount.calculated[CalculationPeriod.post]?.freeCollateral,
-                            postAllOrders = subaccount.calculated[CalculationPeriod.settled]?.freeCollateral,
+                            current = position.calculated[CalculationPeriod.current]?.freeCollateral,
+                            postOrder = position.calculated[CalculationPeriod.post]?.freeCollateral,
+                            postAllOrders = position.calculated[CalculationPeriod.settled]?.freeCollateral,
                         )
                     } else {
                         TradeStatesWithDoubleValues.create(
@@ -309,11 +309,11 @@ data class SubaccountPosition(
                         )
                     }
 
-                    val marginUsage = if (subaccount != null) {
+                    val marginUsage = if (position != null) {
                         TradeStatesWithDoubleValues(
-                            current = subaccount.calculated[CalculationPeriod.current]?.marginUsage,
-                            postOrder = subaccount.calculated[CalculationPeriod.post]?.marginUsage,
-                            postAllOrders = subaccount.calculated[CalculationPeriod.settled]?.marginUsage,
+                            current = position.calculated[CalculationPeriod.current]?.marginUsage,
+                            postOrder = position.calculated[CalculationPeriod.post]?.marginUsage,
+                            postAllOrders = position.calculated[CalculationPeriod.settled]?.marginUsage,
                         )
                     } else {
                         TradeStatesWithDoubleValues.create(
@@ -323,11 +323,11 @@ data class SubaccountPosition(
                         )
                     }
 
-                    val quoteBalance = if (subaccount != null) {
+                    val quoteBalance = if (position != null) {
                         TradeStatesWithDoubleValues(
-                            current = subaccount.calculated[CalculationPeriod.current]?.quoteBalance,
-                            postOrder = subaccount.calculated[CalculationPeriod.post]?.quoteBalance,
-                            postAllOrders = subaccount.calculated[CalculationPeriod.settled]?.quoteBalance,
+                            current = position.calculated[CalculationPeriod.current]?.quoteBalance,
+                            postOrder = position.calculated[CalculationPeriod.post]?.quoteBalance,
+                            postAllOrders = position.calculated[CalculationPeriod.settled]?.quoteBalance,
                         )
                     } else {
                         TradeStatesWithDoubleValues.create(
@@ -337,11 +337,11 @@ data class SubaccountPosition(
                         )
                     }
 
-                    val equity = if (subaccount != null) {
+                    val equity = if (position != null) {
                         TradeStatesWithDoubleValues(
-                            current = subaccount.calculated[CalculationPeriod.current]?.equity,
-                            postOrder = subaccount.calculated[CalculationPeriod.post]?.equity,
-                            postAllOrders = subaccount.calculated[CalculationPeriod.settled]?.equity,
+                            current = position.calculated[CalculationPeriod.current]?.equity,
+                            postOrder = position.calculated[CalculationPeriod.post]?.equity,
+                            postAllOrders = position.calculated[CalculationPeriod.settled]?.equity,
                         )
                     } else {
                         TradeStatesWithDoubleValues.create(
