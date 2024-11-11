@@ -579,7 +579,7 @@ fun TradingStateMachine.rest(
         }
 
         "/v4/sparklines" -> {
-            changes = sparklines(payload, IndexerSparklineTimePeriod.ONEDAY)
+            changes = sparklines(payload, IndexerSparklineTimePeriod.ONE_DAY)
         }
 
         "/v4/fills" -> {

@@ -153,21 +153,21 @@ class MarketProcessorTests {
         val output = processor.processSparklines(
             marketId = "BTC-USD",
             payload = listOf("1", "2", "3"),
-            period = IndexerSparklineTimePeriod.ONEDAY,
+            period = IndexerSparklineTimePeriod.ONE_DAY,
         )
         assertEquals(output?.perpetual?.line, listOf(3.0, 2.0, 1.0).toIList())
 
         val output2 = processor.processSparklines(
             marketId = "BTC-USD",
             payload = listOf("1", "2", "3"),
-            period = IndexerSparklineTimePeriod.SEVENDAYS,
+            period = IndexerSparklineTimePeriod.SEVEN_DAYS,
         )
         assertEquals(output2?.perpetual?.isNew, true)
 
         val output3 = processor.processSparklines(
             marketId = "BTC-USD",
             payload = MutableList(42) { "1" }, // 42 elements
-            period = IndexerSparklineTimePeriod.SEVENDAYS,
+            period = IndexerSparklineTimePeriod.SEVEN_DAYS,
         )
         assertEquals(output3?.perpetual?.isNew, false)
     }

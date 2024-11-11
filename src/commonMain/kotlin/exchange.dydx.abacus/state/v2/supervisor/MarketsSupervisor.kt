@@ -150,7 +150,7 @@ internal class MarketsSupervisor(
         val url = helper.configs.publicApiUrl("sparklines")
         if (url != null) {
             // Get 1 day sparkline for market display
-            val period = IndexerSparklineTimePeriod.ONEDAY
+            val period = IndexerSparklineTimePeriod.ONE_DAY
             helper.get(url, iMapOf("timePeriod" to period.value), null) { _, response, httpCode, _ ->
                 if (helper.success(httpCode) && response != null) {
                     parseSparklinesResponse(response, period)
@@ -159,7 +159,7 @@ internal class MarketsSupervisor(
 
             if (configs.retrieveSevenDaySparkline) {
                 // Get 7 day sparkline to determine if market is new
-                val period = IndexerSparklineTimePeriod.SEVENDAYS
+                val period = IndexerSparklineTimePeriod.SEVEN_DAYS
                 helper.get(url, iMapOf("timePeriod" to period.value), null) { _, response, httpCode, _ ->
                     if (helper.success(httpCode) && response != null) {
                         parseSparklinesResponse(response, period)

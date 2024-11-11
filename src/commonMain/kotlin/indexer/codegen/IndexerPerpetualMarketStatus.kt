@@ -16,15 +16,15 @@ import kotlin.js.JsExport
 
 /**
  *
- * Values: ACTIVE,PAUSED,CANCELONLY,POSTONLY,INITIALIZING,FINALSETTLEMENT
+ * Values: ACTIVE,PAUSED,CANCEL_ONLY,POST_ONLY,INITIALIZING,FINAL_SETTLEMENT
  */
 @JsExport
 @Serializable
 enum class IndexerPerpetualMarketStatus(val value: kotlin.String) {
     ACTIVE("ACTIVE"), // :/
     PAUSED("PAUSED"), // :/
-    CANCELONLY("CANCEL_ONLY"), // :/
-    POSTONLY("POST_ONLY"), // :/
+    CANCEL_ONLY("CANCEL_ONLY"), // :/
+    POST_ONLY("POST_ONLY"), // :/
     INITIALIZING("INITIALIZING"), // :/
-    FINALSETTLEMENT("FINAL_SETTLEMENT"); // :/
+    FINAL_SETTLEMENT("FINAL_SETTLEMENT"); // :/
 }

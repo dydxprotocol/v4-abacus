@@ -16,11 +16,11 @@ import kotlin.js.JsExport
 
 /**
  *
- * Values: ONEDAY,SEVENDAYS
+ * Values: ONE_DAY,SEVEN_DAYS
  */
 @JsExport
 @Serializable
 enum class IndexerSparklineTimePeriod(val value: kotlin.String) {
-    ONEDAY("ONE_DAY"), // :/
-    SEVENDAYS("SEVEN_DAYS"); // :/
+    ONE_DAY("ONE_DAY"), // :/
+    SEVEN_DAYS("SEVEN_DAYS"); // :/
 }
