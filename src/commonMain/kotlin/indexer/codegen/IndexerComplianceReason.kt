@@ -16,15 +16,15 @@ import kotlin.js.JsExport
 
 /**
  *
- * Values: MANUAL,USGEO,CAGEO,GBGEO,SANCTIONEDGEO,COMPLIANCEPROVIDER
+ * Values: MANUAL,US_GEO,CA_GEO,GB_GEO,SANCTIONED_GEO,COMPLIANCE_PROVIDER
  */
 @JsExport
 @Serializable
 enum class IndexerComplianceReason(val value: kotlin.String) {
     MANUAL("MANUAL"), // :/
-    USGEO("US_GEO"), // :/
-    CAGEO("CA_GEO"), // :/
-    GBGEO("GB_GEO"), // :/
-    SANCTIONEDGEO("SANCTIONED_GEO"), // :/
-    COMPLIANCEPROVIDER("COMPLIANCE_PROVIDER"); // :/
+    US_GEO("US_GEO"), // :/
+    CA_GEO("CA_GEO"), // :/
+    GB_GEO("GB_GEO"), // :/
+    SANCTIONED_GEO("SANCTIONED_GEO"), // :/
+    COMPLIANCE_PROVIDER("COMPLIANCE_PROVIDER"); // :/
 }

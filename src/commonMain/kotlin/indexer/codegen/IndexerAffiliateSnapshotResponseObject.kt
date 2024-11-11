@@ -24,6 +24,9 @@ import kotlin.js.JsExport
  * @param affiliateReferredUsers
  * @param affiliateReferredNetProtocolEarnings
  * @param affiliateReferredTotalVolume
+ * @param affiliateReferredMakerFees
+ * @param affiliateReferredTakerFees
+ * @param affiliateReferredMakerRebates
  */
 @JsExport
 @Serializable
@@ -36,5 +39,8 @@ data class IndexerAffiliateSnapshotResponseObject(
     val affiliateTotalReferredFees: kotlin.Double? = null,
     val affiliateReferredUsers: kotlin.Double? = null,
     val affiliateReferredNetProtocolEarnings: kotlin.Double? = null,
-    val affiliateReferredTotalVolume: kotlin.Double? = null
+    val affiliateReferredTotalVolume: kotlin.Double? = null,
+    val affiliateReferredMakerFees: kotlin.Double? = null,
+    val affiliateReferredTakerFees: kotlin.Double? = null,
+    val affiliateReferredMakerRebates: kotlin.Double? = null
 )

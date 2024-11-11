@@ -16,10 +16,10 @@ internal fun TradingStateMachine.sparklines(
         return if (sparklines != null) {
             marketsProcessor.processSparklines(internalState.marketsSummary, sparklines, period)
             when (period) {
-                IndexerSparklineTimePeriod.ONEDAY -> {
+                IndexerSparklineTimePeriod.ONE_DAY -> {
                     StateChanges(iListOf(Changes.sparklines, Changes.markets), null)
                 }
-                IndexerSparklineTimePeriod.SEVENDAYS -> {
+                IndexerSparklineTimePeriod.SEVEN_DAYS -> {
                     StateChanges(iListOf(Changes.markets), null)
                 }
             }

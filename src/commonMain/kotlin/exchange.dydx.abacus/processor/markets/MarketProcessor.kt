@@ -186,10 +186,10 @@ internal class MarketProcessor(
     ): PerpetualMarket? {
         cachedIndexerSparklines[marketId] = payload.mapNotNull { parser.asDouble(it) }.reversed()
         when (period) {
-            IndexerSparklineTimePeriod.ONEDAY -> {
+            IndexerSparklineTimePeriod.ONE_DAY -> {
                 return createPerpetualMarket(marketId)
             }
-            IndexerSparklineTimePeriod.SEVENDAYS -> {
+            IndexerSparklineTimePeriod.SEVEN_DAYS -> {
                 val sevenDaySparklineEntries = 42
                 cachedIsNew[marketId] = payload.size < sevenDaySparklineEntries
                 return createPerpetualMarket(marketId)
@@ -249,7 +249,7 @@ internal class MarketProcessor(
                 canTrade = true,
                 canReduce = true,
             )
-            IndexerPerpetualMarketStatus.CANCELONLY -> MarketStatus(
+            IndexerPerpetualMarketStatus.CANCEL_ONLY -> MarketStatus(
                 canTrade = false,
                 canReduce = true,
             )

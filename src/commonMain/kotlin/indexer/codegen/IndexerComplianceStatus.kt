@@ -16,14 +16,14 @@ import kotlin.js.JsExport
 
 /**
  *
- * Values: COMPLIANT,FIRSTSTRIKECLOSEONLY,FIRSTSTRIKE,CLOSEONLY,BLOCKED
+ * Values: COMPLIANT,FIRST_STRIKE_CLOSE_ONLY,FIRST_STRIKE,CLOSE_ONLY,BLOCKED
  */
 @JsExport
 @Serializable
 enum class IndexerComplianceStatus(val value: kotlin.String) {
     COMPLIANT("COMPLIANT"), // :/
-    FIRSTSTRIKECLOSEONLY("FIRST_STRIKE_CLOSE_ONLY"), // :/
-    FIRSTSTRIKE("FIRST_STRIKE"), // :/
-    CLOSEONLY("CLOSE_ONLY"), // :/
+    FIRST_STRIKE_CLOSE_ONLY("FIRST_STRIKE_CLOSE_ONLY"), // :/
+    FIRST_STRIKE("FIRST_STRIKE"), // :/
+    CLOSE_ONLY("CLOSE_ONLY"), // :/
     BLOCKED("BLOCKED"); // :/
 }

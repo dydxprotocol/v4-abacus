@@ -106,6 +106,44 @@ sed -i '' 's/_4HOURS("4HOURS")/@SerialName("4HOURS")\n    _4HOURS("4HOURS")/' ge
 # add @SerialName("1DAY") to _1DAY("1DAY") in CandleResolution.kt
 sed -i '' 's/_1DAY("1DAY")/@SerialName("1DAY")\n    _1DAY("1DAY")/' generated/src/main/kotlin/indexer/codegen/CandleResolution.kt
 
+# replace CANCELONLY with CANCEL_ONLY in PerpetualMarketStatus.kt
+sed -i '' 's/CANCELONLY/CANCEL_ONLY/' generated/src/main/kotlin/indexer/codegen/PerpetualMarketStatus.kt
+
+# replace POSTONLY with POST_ONLY in PerpetualMarketStatus.kt
+sed -i '' 's/POSTONLY/POST_ONLY/' generated/src/main/kotlin/indexer/codegen/PerpetualMarketStatus.kt
+
+# replace FINALSETTLEMENT with FINAL_SETTLEMENT in PerpetualMarketStatus.kt
+sed -i '' 's/FINALSETTLEMENT/FINAL_SETTLEMENT/' generated/src/main/kotlin/indexer/codegen/PerpetualMarketStatus.kt
+
+# replace SANCTIONEDGEO with SANCTIONED_GEO in ComplianceReason.kt
+sed -i '' 's/SANCTIONEDGEO/SANCTIONED_GEO/' generated/src/main/kotlin/indexer/codegen/ComplianceReason.kt
+
+# replace COMPLIANCEPROVIDER with COMPLIANCE_PROVIDER in ComplianceReason.kt
+sed -i '' 's/COMPLIANCEPROVIDER/COMPLIANCE_PROVIDER/' generated/src/main/kotlin/indexer/codegen/ComplianceReason.kt
+
+# replace USGEO with US_GEO in ComplianceReason.kt
+sed -i '' 's/USGEO/US_GEO/' generated/src/main/kotlin/indexer/codegen/ComplianceReason.kt
+
+# replace CAGEO with CA_GEO in ComplianceReason.kt
+sed -i '' 's/CAGEO/CA_GEO/' generated/src/main/kotlin/indexer/codegen/ComplianceReason.kt
+
+# replace GBGEO with GB_GEO in ComplianceReason.kt
+sed -i '' 's/GBGEO/GB_GEO/' generated/src/main/kotlin/indexer/codegen/ComplianceReason.kt
+
+# replace FIRSTSTRIKECLOSEONLY with FIRST_STRIKE_CLOSE_ONLY in ComplianceStatus.kt
+sed -i '' 's/FIRSTSTRIKECLOSEONLY/FIRST_STRIKE_CLOSE_ONLY/' generated/src/main/kotlin/indexer/codegen/ComplianceStatus.kt
+
+# replace FIRSTSTRIKE with FIRST_STRIKE in ComplianceStatus.kt
+sed -i '' 's/FIRSTSTRIKE/FIRST_STRIKE/' generated/src/main/kotlin/indexer/codegen/ComplianceStatus.kt
+
+# replace CLOSEONLY with CLOSE_ONLY in ComplianceStatus.kt
+sed -i '' 's/CLOSEONLY/CLOSE_ONLY/' generated/src/main/kotlin/indexer/codegen/ComplianceStatus.kt
+
+# replace ONEDAY with ONE_DAY in SparklineTimePeriod.kt
+sed -i '' 's/ONEDAY/ONE_DAY/' generated/src/main/kotlin/indexer/codegen/SparklineTimePeriod.kt
+
+# replace SEVENDAYS with SEVEN_DAYS in SparklineTimePeriod.kt
+sed -i '' 's/SEVENDAYS/SEVEN_DAYS/' generated/src/main/kotlin/indexer/codegen/SparklineTimePeriod.kt
 
 # for each of the time in the generated code, run "swagger_update_file.sh <file>"
 find generated/src/main/kotlin/indexer -type f \

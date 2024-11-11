@@ -100,7 +100,7 @@ class MarketsProcessorTests {
             "BTC-USD" to listOf("1", "2", "3"),
             "ETH-USD" to listOf("1", "2", "3"),
         )
-        val result = processor.processSparklines(state, sparklines, IndexerSparklineTimePeriod.ONEDAY)
+        val result = processor.processSparklines(state, sparklines, IndexerSparklineTimePeriod.ONE_DAY)
         assertEquals(2, marketProcessor.processSparklinesCallCount)
         assertEquals(2, result.markets.size)
     }
