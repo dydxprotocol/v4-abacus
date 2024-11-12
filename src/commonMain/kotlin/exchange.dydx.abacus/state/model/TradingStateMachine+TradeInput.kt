@@ -11,6 +11,7 @@ import exchange.dydx.abacus.responses.StateResponse
 import exchange.dydx.abacus.responses.cannotModify
 import exchange.dydx.abacus.state.changes.Changes
 import exchange.dydx.abacus.state.changes.StateChanges
+import exchange.dydx.abacus.utils.DEFAULT_TARGET_LEVERAGE
 import exchange.dydx.abacus.utils.Numeric
 import exchange.dydx.abacus.utils.mutable
 import exchange.dydx.abacus.utils.mutableMapOf
@@ -170,11 +171,11 @@ internal fun TradingStateMachine.tradeInMarket(
             } else if (existingOrder != null) {
                 val orderMarginMode = if ((parser.asInt(parser.value(existingOrder, "subaccountNumber")) ?: subaccountNumber) == subaccountNumber) MarginMode.Cross.rawValue else MarginMode.Isolated.rawValue
                 it.safeSet("marginMode", orderMarginMode)
-                it.safeSet("targetLeverage", maxMarketLeverage)
+                it.safeSet("targetLeverage", DEFAULT_TARGET_LEVERAGE)
             } else {
                 val marketType = parser.asString(parser.value(marketsSummary, "markets.$marketId.configs.perpetualMarketType"))
                 it.safeSet("marginMode", MarginMode.invoke(marketType)?.rawValue)
-                it.safeSet("targetLeverage", maxMarketLeverage)
+                it.safeSet("targetLeverage", DEFAULT_TARGET_LEVERAGE)
             }
         }
 

@@ -13,6 +13,7 @@ import exchange.dydx.abacus.calculator.SlippageConstants.TAKE_PROFIT_MARKET_ORDE
 import exchange.dydx.abacus.output.input.MarginMode
 import exchange.dydx.abacus.output.input.OrderSide
 import exchange.dydx.abacus.protocols.ParserProtocol
+import exchange.dydx.abacus.utils.DEFAULT_TARGET_LEVERAGE
 import exchange.dydx.abacus.utils.MAX_FREE_COLLATERAL_BUFFER_PERCENT
 import exchange.dydx.abacus.utils.NUM_PARENT_SUBACCOUNTS
 import exchange.dydx.abacus.utils.Numeric
@@ -481,13 +482,12 @@ internal class TradeInputCalculator(
         val tradeSide = OrderSide.invoke(parser.asString(trade["side"]))
 
         if (tradeSize != null && marketId != null && tradeSide != null) {
-            val maxMarketLeverage = maxMarketLeverage(market)
             val targetLeverage = parser.asDouble(trade["targetLeverage"])
             val marginMode = MarginMode.invoke(parser.asString(trade["marginMode"])) ?: MarginMode.Cross
             val tradeLeverage = if (marginMode == MarginMode.Isolated && targetLeverage != null && targetLeverage > Numeric.double.ZERO) {
                 targetLeverage
             } else {
-                maxMarketLeverage
+                DEFAULT_TARGET_LEVERAGE
             }
             val freeCollateral = parser.asDouble(parser.value(subaccount, "freeCollateral.current")) ?: Numeric.double.ZERO
 

@@ -6,6 +6,7 @@ import exchange.dydx.abacus.output.input.MarginMode
 import exchange.dydx.abacus.state.internalstate.InternalAccountState
 import exchange.dydx.abacus.state.internalstate.InternalMarketState
 import exchange.dydx.abacus.state.internalstate.InternalTradeInputState
+import exchange.dydx.abacus.utils.DEFAULT_TARGET_LEVERAGE
 import exchange.dydx.abacus.utils.Numeric
 
 internal class TradeInputMarginModeCalculator {
@@ -33,7 +34,7 @@ internal class TradeInputMarginModeCalculator {
                     subaccountNumber = subaccountNumber,
                 )
                 val existingPositionLeverage = existingPosition?.calculated?.get(CalculationPeriod.current)?.leverage
-                tradeInput.targetLeverage = if (existingPositionLeverage != null && existingPositionLeverage > Numeric.double.ZERO) existingPositionLeverage else maxMarketLeverage
+                tradeInput.targetLeverage = if (existingPositionLeverage != null && existingPositionLeverage > Numeric.double.ZERO) existingPositionLeverage else DEFAULT_TARGET_LEVERAGE
             }
         } else {
             val marketMarginMode = MarginCalculator.findMarketMarginMode(
@@ -42,7 +43,7 @@ internal class TradeInputMarginModeCalculator {
             when (marketMarginMode) {
                 MarginMode.Isolated -> {
                     tradeInput.marginMode = marketMarginMode
-                    tradeInput.targetLeverage = tradeInput.targetLeverage ?: maxMarketLeverage
+                    tradeInput.targetLeverage = tradeInput.targetLeverage ?: DEFAULT_TARGET_LEVERAGE
                 }
 
                 MarginMode.Cross -> {

@@ -28,6 +28,7 @@ import exchange.dydx.abacus.state.internalstate.InternalTradeInputState
 import exchange.dydx.abacus.state.internalstate.InternalWalletState
 import exchange.dydx.abacus.state.internalstate.safeCreate
 import exchange.dydx.abacus.state.model.TradeInputField
+import exchange.dydx.abacus.utils.DEFAULT_TARGET_LEVERAGE
 import exchange.dydx.abacus.utils.Numeric
 import kollections.iListOf
 
@@ -326,7 +327,7 @@ internal class TradeInputProcessor(
         } else if (existingOrder != null) {
             trade.marginMode =
                 if (existingOrder.subaccountNumber == subaccountNumber) MarginMode.Cross else MarginMode.Isolated
-            trade.targetLeverage = maxMarketLeverage
+            trade.targetLeverage = DEFAULT_TARGET_LEVERAGE
         } else {
             val marketType = marketState?.perpetualMarket?.configs?.perpetualMarketType
             trade.marginMode = when (marketType) {
@@ -334,7 +335,7 @@ internal class TradeInputProcessor(
                 PerpetualMarketType.ISOLATED -> MarginMode.Isolated
                 else -> null
             }
-            trade.targetLeverage = maxMarketLeverage
+            trade.targetLeverage = DEFAULT_TARGET_LEVERAGE
         }
     }
 

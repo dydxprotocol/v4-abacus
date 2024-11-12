@@ -14,6 +14,7 @@ import exchange.dydx.abacus.state.internalstate.InternalMarketState
 import exchange.dydx.abacus.state.internalstate.InternalPerpetualPosition
 import exchange.dydx.abacus.state.internalstate.InternalSubaccountState
 import exchange.dydx.abacus.state.internalstate.InternalTradeInputState
+import exchange.dydx.abacus.utils.DEFAULT_TARGET_LEVERAGE
 import exchange.dydx.abacus.utils.IList
 import exchange.dydx.abacus.utils.Logger
 import exchange.dydx.abacus.utils.MAX_LEVERAGE_BUFFER_PERCENT
@@ -475,7 +476,7 @@ internal object MarginCalculator {
     internal fun getShouldTransferInCollateralDeprecated(
         parser: ParserProtocol,
         subaccount: Map<String, Any>?,
-        tradeInput: Map<String, Any>?,
+        tradeInput: Map<String, Any>?,xL
     ): Boolean {
         val isIncreasingPositionSize = getIsIncreasingPositionSizeDeprecated(parser, subaccount, tradeInput)
         val isIsolatedMarginOrder = parser.asString(tradeInput?.get("marginMode")) == "ISOLATED"
@@ -702,7 +703,7 @@ internal object MarginCalculator {
         val oraclePrice = market?.perpetualMarket?.oraclePrice ?: return null
         val price = trade.summary?.price ?: return null
         val maxMarketLeverage = market.perpetualMarket?.configs?.maxMarketLeverage ?: return null
-        val targetLeverage = trade.targetLeverage ?: maxMarketLeverage
+        val targetLeverage = trade.targetLeverage ?: DEFAULT_TARGET_LEVERAGE
         val positionSizeDifference = getPositionSizeDifference(subaccount, trade) ?: return null
 
         return calculateIsolatedMarginTransferAmountFromValues(
