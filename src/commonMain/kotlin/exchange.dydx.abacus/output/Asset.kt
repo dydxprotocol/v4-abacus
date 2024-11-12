@@ -73,7 +73,6 @@ the object may contain empty fields until both payloads are received and process
 @Serializable
 data class Asset(
     val id: String,
-    val assetDisplayId: String?,
     val name: String?,
     val tags: IList<String>?,
     val resources: AssetResources?
@@ -87,7 +86,6 @@ data class Asset(
         ): Asset? {
             data?.let {
                 val id = parser.asString(data["id"])
-                val assetDisplayId = MarketId.
                 val resourcesData = parser.asMap(data["resources"])
                 if (id != null) {
                     val resources = AssetResources.create(
@@ -104,7 +102,7 @@ data class Asset(
                         existing.tags != tags ||
                         existing.resources !== resources
                     ) {
-                        Asset(id, assetDisplayId, name, tags, resources)
+                        Asset(id, name, tags, resources)
                     } else {
                         existing
                     }

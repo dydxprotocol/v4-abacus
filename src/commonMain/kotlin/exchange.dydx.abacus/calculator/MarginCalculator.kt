@@ -476,7 +476,7 @@ internal object MarginCalculator {
     internal fun getShouldTransferInCollateralDeprecated(
         parser: ParserProtocol,
         subaccount: Map<String, Any>?,
-        tradeInput: Map<String, Any>?,xL
+        tradeInput: Map<String, Any>?,
     ): Boolean {
         val isIncreasingPositionSize = getIsIncreasingPositionSizeDeprecated(parser, subaccount, tradeInput)
         val isIsolatedMarginOrder = parser.asString(tradeInput?.get("marginMode")) == "ISOLATED"
