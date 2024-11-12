@@ -291,7 +291,7 @@ internal class SubaccountTransactionSupervisor(
 
     internal fun cancelTriggerOrdersWithClosedOrFlippedPositions() {
         val subaccount = stateMachine.state?.subaccount(subaccountNumber) ?: return
-        if (stateMachine.state?.marketsSummary?.marketIds()?.isEmpty() != false) return
+        if (stateMachine.state?.marketsSummary?.marketIds().isNullOrEmpty()) return
 
         val cancelableTriggerOrders = subaccount.orders?.filter { order ->
             val isConditionalOrder = order.orderFlags == CONDITIONAL_ORDER_FLAGS
