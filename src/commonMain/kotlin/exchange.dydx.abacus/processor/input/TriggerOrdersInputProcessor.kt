@@ -1,6 +1,5 @@
 package exchange.dydx.abacus.processor.input
 
-import exchange.dydx.abacus.calculator.v2.TriggerOrdersInputCalculatorV2
 import exchange.dydx.abacus.output.input.InputType
 import exchange.dydx.abacus.output.input.OrderType
 import exchange.dydx.abacus.output.input.TriggerPrice
@@ -26,7 +25,6 @@ internal interface TriggerOrdersInputProcessorProtocol {
 
 internal class TriggerOrdersInputProcessor(
     private val parser: ParserProtocol,
-    private val calculator: TriggerOrdersInputCalculatorV2 = TriggerOrdersInputCalculatorV2()
 ) : TriggerOrdersInputProcessorProtocol {
 
     override fun triggerOrderInput(
