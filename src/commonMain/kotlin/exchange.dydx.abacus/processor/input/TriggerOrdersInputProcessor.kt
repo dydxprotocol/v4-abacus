@@ -10,7 +10,6 @@ import exchange.dydx.abacus.state.changes.StateChanges
 import exchange.dydx.abacus.state.internalstate.InternalAccountState
 import exchange.dydx.abacus.state.internalstate.InternalInputState
 import exchange.dydx.abacus.state.internalstate.InternalTriggerOrderState
-import exchange.dydx.abacus.state.internalstate.InternalTriggerOrdersInputState
 import exchange.dydx.abacus.state.internalstate.safeCreate
 import exchange.dydx.abacus.state.model.TriggerOrdersInputField
 import kollections.iListOf
