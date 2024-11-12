@@ -39,8 +39,6 @@ internal class TriggerOrdersInputProcessor(
     ): StateChanges {
         if (inputState.currentType != InputType.TRIGGER_ORDERS) {
             inputState.currentType = InputType.TRIGGER_ORDERS
-            inputState.triggerOrders = InternalTriggerOrdersInputState()
-            calculator.calculate(inputState.triggerOrders, account, subaccountNumber)
         }
 
         if (type != null) {
