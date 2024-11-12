@@ -235,7 +235,7 @@ data class VaultFormValidationResult(
 object VaultDepositWithdrawFormValidator {
     private val parser = Parser()
 
-    private const val SLIPPAGE_PERCENT_WARN = 0.01
+    private const val SLIPPAGE_PERCENT_WARN = 0.02
     private const val SLIPPAGE_PERCENT_ACK = 0.04
     private const val SLIPPAGE_TOLERANCE = 0.01
     private const val EPSILON_FOR_ERRORS = 0.0001
