@@ -1,6 +1,5 @@
 package exchange.dydx.abacus.processor.input
 
-import exchange.dydx.abacus.calculator.v2.TriggerOrdersInputCalculatorV2
 import exchange.dydx.abacus.output.input.InputType
 import exchange.dydx.abacus.output.input.OrderType
 import exchange.dydx.abacus.output.input.TriggerPrice
@@ -10,7 +9,6 @@ import exchange.dydx.abacus.state.changes.StateChanges
 import exchange.dydx.abacus.state.internalstate.InternalAccountState
 import exchange.dydx.abacus.state.internalstate.InternalInputState
 import exchange.dydx.abacus.state.internalstate.InternalTriggerOrderState
-import exchange.dydx.abacus.state.internalstate.InternalTriggerOrdersInputState
 import exchange.dydx.abacus.state.internalstate.safeCreate
 import exchange.dydx.abacus.state.model.TriggerOrdersInputField
 import kollections.iListOf
@@ -27,7 +25,6 @@ internal interface TriggerOrdersInputProcessorProtocol {
 
 internal class TriggerOrdersInputProcessor(
     private val parser: ParserProtocol,
-    private val calculator: TriggerOrdersInputCalculatorV2 = TriggerOrdersInputCalculatorV2()
 ) : TriggerOrdersInputProcessorProtocol {
 
     override fun triggerOrderInput(
@@ -39,8 +36,6 @@ internal class TriggerOrdersInputProcessor(
     ): StateChanges {
         if (inputState.currentType != InputType.TRIGGER_ORDERS) {
             inputState.currentType = InputType.TRIGGER_ORDERS
-            inputState.triggerOrders = InternalTriggerOrdersInputState()
-            calculator.calculate(inputState.triggerOrders, account, subaccountNumber)
         }
 
         if (type != null) {
