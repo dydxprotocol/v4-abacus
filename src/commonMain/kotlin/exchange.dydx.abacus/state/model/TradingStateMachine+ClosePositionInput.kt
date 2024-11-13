@@ -10,6 +10,7 @@ import exchange.dydx.abacus.responses.cannotModify
 import exchange.dydx.abacus.state.changes.Changes
 import exchange.dydx.abacus.state.changes.StateChanges
 import exchange.dydx.abacus.state.manager.StatsigConfig
+import exchange.dydx.abacus.utils.DEFAULT_TARGET_LEVERAGE
 import exchange.dydx.abacus.utils.Numeric
 import exchange.dydx.abacus.utils.mutable
 import exchange.dydx.abacus.utils.mutableMapOf
@@ -104,18 +105,8 @@ fun TradingStateMachine.closePosition(
                     trade["timeInForce"] = "IOC"
                     trade["reduceOnly"] = true
 
-                    val market = parser.asNativeMap(parser.value(marketsSummary, "markets.${trade["marketId"]}"))
-                    val imf = parser.asDouble(parser.value(market, "configs.initialMarginFraction")) ?: Numeric.double.ZERO
-                    val effectiveImf = parser.asDouble(parser.value(market, "configs.effectiveInitialMarginFraction")) ?: Numeric.double.ZERO
-                    val maxMarketLeverage = if (effectiveImf > Numeric.double.ZERO) {
-                        Numeric.double.ONE / effectiveImf
-                    } else if (imf > Numeric.double.ZERO) {
-                        Numeric.double.ONE / imf
-                    } else {
-                        Numeric.double.ONE
-                    }
                     val currentPositionLeverage = parser.asDouble(parser.value(position, "leverage.current"))?.abs()
-                    trade["targetLeverage"] = if (currentPositionLeverage != null && currentPositionLeverage > 0) currentPositionLeverage else maxMarketLeverage
+                    trade["targetLeverage"] = if (currentPositionLeverage != null && currentPositionLeverage > 0) currentPositionLeverage else DEFAULT_TARGET_LEVERAGE
 
                     // default full close
                     trade.safeSet("size.percent", 1.0)

@@ -733,7 +733,7 @@ internal object MarginCalculator {
         val effectiveImf = parser.asDouble(parser.value(market, "configs.effectiveInitialMarginFraction")) ?: Numeric.double.ZERO
         val maxMarketLeverage = getMaxMarketLeverageDeprecated(effectiveImf = effectiveImf, imf = initialMarginFraction)
 
-        val targetLeverage = parser.asDouble(trade["targetLeverage"]) ?: maxMarketLeverage
+        val targetLeverage = parser.asDouble(trade["targetLeverage"]) ?: DEFAULT_TARGET_LEVERAGE
         val positionSizeDifference = getPositionSizeDifferenceDeprecated(parser, subaccount, trade) ?: return null
 
         return calculateIsolatedMarginTransferAmountFromValues(

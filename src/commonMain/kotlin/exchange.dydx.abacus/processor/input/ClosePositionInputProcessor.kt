@@ -103,10 +103,6 @@ internal class ClosePositionInputProcessor(
 
                     trade.timeInForce = "IOC"
                     trade.reduceOnly = true
-
-                    val market = marketSummaryState.markets.get(trade.marketId)
-                    val maxMarketLeverage = market?.perpetualMarket?.configs?.maxMarketLeverage ?: Numeric.double.ONE
-
                     val currentPositionLeverage = position.calculated[CalculationPeriod.current]?.leverage?.abs()
                     trade.targetLeverage = if (currentPositionLeverage != null && currentPositionLeverage > Numeric.double.ZERO) currentPositionLeverage else DEFAULT_TARGET_LEVERAGE
 
