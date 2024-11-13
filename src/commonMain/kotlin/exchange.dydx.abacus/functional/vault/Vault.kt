@@ -95,7 +95,7 @@ object VaultCalculator {
     }
 
     fun calculateVaultSummary(historicals: Array<IndexerMegavaultHistoricalPnlResponse>?, dataCutoffMs: Double = 0.0): VaultDetails? {
-        val combinedPnls = historicals?.flatMap { it.megavaultPnl?.toList() ?: emptyList() }
+        val combinedPnls = historicals?.flatMap { it.megavaultPnl?.toList() ?: emptyList() } // Convert Array to List
 
         if (combinedPnls.isNullOrEmpty()) {
             return null
