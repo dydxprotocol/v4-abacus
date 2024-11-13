@@ -58,9 +58,9 @@ internal class AccountDelegationsProcessor(
         return if (payload != null) {
             val modified = mutableListOf<InternalStakingDelegationState>()
             for (item in payload.delegationResponses ?: emptyList()) {
-                val validator = parser.asString(item.validatorAddress)
-                val delegator = parser.asString(item.delegatorAddress)
-                val shares = parser.asDecimal(item.shares)
+                val validator = parser.asString(item.delegation?.validatorAddress)
+                val delegator = parser.asString(item.delegation?.delegatorAddress)
+                val shares = parser.asDecimal(item.delegation?.shares)
                 val amount = parser.asDecimal(item.balance?.amount)
                 val denom = parser.asString(item.balance?.denom)
                 if (amount != null && denom != null) {
