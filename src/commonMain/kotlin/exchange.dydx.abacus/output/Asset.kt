@@ -1,6 +1,5 @@
 package exchange.dydx.abacus.output
 
-import exchange.dydx.abacus.processor.utils.MarketId
 import exchange.dydx.abacus.protocols.LocalizerProtocol
 import exchange.dydx.abacus.protocols.ParserProtocol
 import exchange.dydx.abacus.utils.IList
