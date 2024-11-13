@@ -11,10 +11,10 @@ import exchange.dydx.abacus.state.manager.BlockAndTime
 import exchange.dydx.abacus.state.manager.HistoricalTradingRewardsPeriod
 import exchange.dydx.abacus.utils.mutable
 import exchange.dydx.abacus.utils.safeSet
-import indexer.codegen.IndexerFillResponseObject
 import indexer.codegen.IndexerHistoricalTradingRewardAggregation
 import indexer.codegen.IndexerPnlTicksResponseObject
 import indexer.codegen.IndexerTransferResponseObject
+import indexer.models.IndexerCompositeFillObject
 import indexer.models.chain.OnChainAccountBalanceObject
 import indexer.models.chain.OnChainDelegationResponse
 import indexer.models.chain.OnChainStakingRewardsResponse
@@ -356,7 +356,7 @@ internal class WalletProcessor(
 
     internal fun processFills(
         existing: InternalWalletState,
-        payload: List<IndexerFillResponseObject>?,
+        payload: List<IndexerCompositeFillObject>?,
         subaccountNumber: Int,
     ): InternalWalletState {
         existing.account = v4accountProcessor.processFills(

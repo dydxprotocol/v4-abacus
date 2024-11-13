@@ -13,12 +13,12 @@ import exchange.dydx.abacus.state.manager.BlockAndTime
 import exchange.dydx.abacus.utils.mutable
 import exchange.dydx.abacus.utils.safeSet
 import indexer.codegen.IndexerAssetPositionResponseObject
-import indexer.codegen.IndexerFillResponseObject
 import indexer.codegen.IndexerPerpetualPositionResponseObject
 import indexer.codegen.IndexerPerpetualPositionStatus
 import indexer.codegen.IndexerPnlTicksResponseObject
 import indexer.codegen.IndexerSubaccountResponseObject
 import indexer.codegen.IndexerTransferResponseObject
+import indexer.models.IndexerCompositeFillObject
 import indexer.models.IndexerCompositeOrderObject
 
 @Suppress("UNCHECKED_CAST")
@@ -123,7 +123,7 @@ internal open class SubaccountProcessor(
         subaccountCalculated.quoteBalance = subaccountCalculator.calculateQuoteBalance(state.assetPositions)
         state.calculated[CalculationPeriod.current] = subaccountCalculated
 
-        val fills = parser.asTypedList<IndexerFillResponseObject>(content["fills"])
+        val fills = parser.asTypedList<IndexerCompositeFillObject>(content["fills"])
         state = processFills(
             subaccount = state,
             payload = fills,
@@ -413,7 +413,7 @@ internal open class SubaccountProcessor(
 
     private fun processFills(
         subaccount: InternalSubaccountState,
-        payload: List<IndexerFillResponseObject>?,
+        payload: List<IndexerCompositeFillObject>?,
         reset: Boolean,
     ): InternalSubaccountState {
         subaccount.fills = fillsProcessor.process(
@@ -574,7 +574,7 @@ internal open class SubaccountProcessor(
 
     internal fun processFills(
         existing: InternalSubaccountState,
-        payload: List<IndexerFillResponseObject>?,
+        payload: List<IndexerCompositeFillObject>?,
     ): InternalSubaccountState {
         return processFills(existing, payload, true)
     }

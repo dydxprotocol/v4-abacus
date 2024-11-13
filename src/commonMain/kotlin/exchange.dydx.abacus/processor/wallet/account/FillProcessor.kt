@@ -14,11 +14,11 @@ import exchange.dydx.abacus.protocols.ParserProtocol
 import exchange.dydx.abacus.utils.Logger
 import exchange.dydx.abacus.utils.NUM_PARENT_SUBACCOUNTS
 import exchange.dydx.abacus.utils.safeSet
-import indexer.codegen.IndexerFillResponseObject
+import indexer.models.IndexerCompositeFillObject
 
 internal interface FillProcessorProtocol {
     fun process(
-        payload: IndexerFillResponseObject,
+        payload: IndexerCompositeFillObject,
         subaccountNumber: Int,
     ): SubaccountFill?
 }
@@ -82,14 +82,14 @@ internal class FillProcessor(
     )
 
     override fun process(
-        payload: IndexerFillResponseObject,
+        payload: IndexerCompositeFillObject,
         subaccountNumber: Int,
     ): SubaccountFill? {
         fun doProcess(): SubaccountFill? {
             val fillSubaccountNumber = parser.asInt(payload.subaccountNumber) ?: subaccountNumber
 
             val id = payload.id ?: return null
-            val marketId = payload.market ?: return null
+            val marketId = payload.market ?: payload.ticker ?: return null
             val displayId = MarketId.getDisplayId(marketId)
             val side = payload.side?.name?.let { OrderSide.invoke(rawValue = it) } ?: return null
             val liquidity =

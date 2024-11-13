@@ -5,7 +5,7 @@ import exchange.dydx.abacus.processor.base.BaseProcessor
 import exchange.dydx.abacus.processor.base.mergeWithIds
 import exchange.dydx.abacus.protocols.LocalizerProtocol
 import exchange.dydx.abacus.protocols.ParserProtocol
-import indexer.codegen.IndexerFillResponseObject
+import indexer.models.IndexerCompositeFillObject
 
 internal class FillsProcessor(
     parser: ParserProtocol,
@@ -15,7 +15,7 @@ internal class FillsProcessor(
 
     fun process(
         existing: List<SubaccountFill>?,
-        payload: List<IndexerFillResponseObject>,
+        payload: List<IndexerCompositeFillObject>,
         subaccountNumber: Int
     ): List<SubaccountFill> {
         val new = payload.mapNotNull { eachPayload ->

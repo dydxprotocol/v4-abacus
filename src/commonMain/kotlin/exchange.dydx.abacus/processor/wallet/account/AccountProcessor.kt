@@ -20,11 +20,11 @@ import exchange.dydx.abacus.state.manager.HistoricalTradingRewardsPeriod
 import exchange.dydx.abacus.utils.IMutableList
 import exchange.dydx.abacus.utils.mutable
 import exchange.dydx.abacus.utils.safeSet
-import indexer.codegen.IndexerFillResponseObject
 import indexer.codegen.IndexerHistoricalBlockTradingReward
 import indexer.codegen.IndexerHistoricalTradingRewardAggregation
 import indexer.codegen.IndexerPnlTicksResponseObject
 import indexer.codegen.IndexerTransferResponseObject
+import indexer.models.IndexerCompositeFillObject
 import indexer.models.chain.OnChainAccountBalanceObject
 import indexer.models.chain.OnChainDelegationResponse
 import indexer.models.chain.OnChainStakingRewardsResponse
@@ -313,7 +313,7 @@ internal class V4AccountProcessor(
 
     internal fun processFills(
         existing: InternalAccountState,
-        payload: List<IndexerFillResponseObject>?,
+        payload: List<IndexerCompositeFillObject>?,
         subaccountNumber: Int,
     ): InternalAccountState {
         val subaccount = existing.subaccounts[subaccountNumber] ?: InternalSubaccountState(subaccountNumber = subaccountNumber)
