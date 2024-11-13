@@ -94,7 +94,7 @@ object VaultCalculator {
         return parser.asTypedObject<IndexerMegavaultPositionResponse>(apiResponse)
     }
 
-    fun calculateVaultSummary(historicals: Array<IndexerMegavaultHistoricalPnlResponse>?): VaultDetails? {
+    fun calculateVaultSummary(historicals: Array<IndexerMegavaultHistoricalPnlResponse>?, dataCutoffMs: Double = 0.0): VaultDetails? {
         val combinedPnls = historicals?.flatMap { it.megavaultPnl?.toList() ?: emptyList() } // Convert Array to List
 
         if (combinedPnls.isNullOrEmpty()) {
@@ -112,7 +112,7 @@ object VaultCalculator {
                     totalPnl = parser.asDouble(entry.totalPnl) ?: 0.0,
                 )
             }
-        }
+        }.filter { entry -> entry.date != null && entry.date >= dataCutoffMs }
 
         val latestEntry = history.first()
         val latestTime = latestEntry.date ?: Clock.System.now().toEpochMilliseconds().toDouble()
