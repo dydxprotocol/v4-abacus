@@ -580,12 +580,12 @@ open class V4TradeInputTests : V4BaseTests() {
             perp.trade("10", TradeInputField.usdcSize, 0)
             val size = perp.internalState.input.trade.size
             assertNotNull(size)
-            assertEquals(size.usdcSize, 10.0)
-            assertEquals(size.size, 0.006)
-            assertEquals(size.balancePercent, 0.0000049629) // freeCollateral: 100000, 20x leverage
-            assertEquals(size.input, "size.usdcSize")
+            assertEquals(10.0 ,size.usdcSize)
+            assertEquals(0.006, size.size)
+            assertEquals(0.0000049629, size.balancePercent) // freeCollateral: 100000, 20x leverage
+            assertEquals("size.usdcSize", size.input)
             val errors = perp.internalState.input.errors
-            assertEquals(errors?.size, 0)
+            assertEquals(0, errors?.size)
         } else {
             test(
                 {
@@ -613,12 +613,12 @@ open class V4TradeInputTests : V4BaseTests() {
             perp.trade("10", TradeInputField.size, 0)
             val size = perp.internalState.input.trade.size
             assertNotNull(size)
-            assertEquals(size.usdcSize, 16543.0)
-            assertEquals(size.size, 10.0)
-            assertEquals(size.balancePercent, 0.0082715) // freeCollateral: 100000, 20x leverage
-            assertEquals(size.input, "size.size")
+            assertEquals(16543.0, size.usdcSize)
+            assertEquals(10.0, size.size)
+            assertEquals(0.0082715, size.balancePercent) // freeCollateral: 100000, 20x leverage
+            assertEquals("size.size", size.input)
             val errors = perp.internalState.input.errors
-            assertEquals(errors?.size, 0)
+            assertEquals(0, errors?.size)
         } else {
             test(
                 {
@@ -646,12 +646,12 @@ open class V4TradeInputTests : V4BaseTests() {
             perp.trade("0.5", TradeInputField.balancePercent, 0)
             val size = perp.internalState.input.trade.size
             assertNotNull(size)
-            assertEquals(size.usdcSize, 1000000.1169)
-            assertEquals(size.size, 605.7059999999999)
-            assertEquals(size.balancePercent, 0.5) // freeCollateral: 100000, 20x leverage
-            assertEquals(size.input, "size.balancePercent")
+            assertEquals(1000000.1169, size.usdcSize)
+            assertEquals(605.7059999999999, size.size)
+            assertEquals(0.5, size.balancePercent) // freeCollateral: 100000, 20x leverage
+            assertEquals("size.balancePercent", size.input)
             val errors = perp.internalState.input.errors
-            assertEquals(errors?.size, 0)
+            assertEquals(0, errors?.size)
         } else {
             test(
                 {
@@ -885,10 +885,10 @@ open class V4TradeInputTests : V4BaseTests() {
             val account = perp.internalState.wallet.account
             val subaccount = account.subaccounts[0]
             val calculated = subaccount?.calculated
-            assertEquals(calculated?.get(CalculationPeriod.current)?.equity, 4185.625704)
-            assertEquals(calculated?.get(CalculationPeriod.current)?.quoteBalance, 7250.506704)
+            assertEquals(4185.625704, calculated?.get(CalculationPeriod.current)?.equity)
+            assertEquals(7250.506704, calculated?.get(CalculationPeriod.current)?.quoteBalance)
             val position = subaccount?.openPositions?.get("ETH-USD")
-            assertEquals(position?.calculated?.get(CalculationPeriod.current)?.size, -2.043254)
+            assertEquals(-2.043254, position?.calculated?.get(CalculationPeriod.current)?.size)
         } else {
             test(
                 {
@@ -930,10 +930,10 @@ open class V4TradeInputTests : V4BaseTests() {
             val account = perp.internalState.wallet.account
             val subaccount = account.subaccounts[0]
             val calculated = subaccount?.calculated?.get(CalculationPeriod.current)
-            assertEquals(calculated?.equity, 4272.436277000001)
-            assertEquals(calculated?.quoteBalance, 8772.436277)
+            assertEquals(4272.436277000001, calculated?.equity)
+            assertEquals(8772.436277, calculated?.quoteBalance)
             val position = subaccount?.openPositions?.get("ETH-USD")
-            assertEquals(position?.calculated?.get(CalculationPeriod.current)?.size, -3.0)
+            assertEquals(-3.0, position?.calculated?.get(CalculationPeriod.current)?.size)
         } else {
             test(
                 {
@@ -1149,7 +1149,7 @@ open class V4TradeInputTests : V4BaseTests() {
             val account = perp.internalState.wallet.account
             val subaccount = account.subaccounts[0]
             val order = subaccount?.orders?.firstOrNull()
-            assertEquals(order?.status, OrderStatus.Filled)
+            assertEquals(OrderStatus.Filled, order?.status)
         } else {
             test(
                 {
@@ -1214,14 +1214,14 @@ open class V4TradeInputTests : V4BaseTests() {
             val account = perp.internalState.wallet.account
             val subaccount = account.subaccounts[0]
             val ethPosition = subaccount?.openPositions?.get("ETH-USD")
-            assertEquals(ethPosition?.calculated?.get(CalculationPeriod.current)?.adjustedImf, 0.05)
-            assertEquals(ethPosition?.calculated?.get(CalculationPeriod.post)?.adjustedImf, 0.05)
-            assertEquals(ethPosition?.calculated?.get(CalculationPeriod.current)?.adjustedMmf, 0.03)
-            assertEquals(ethPosition?.calculated?.get(CalculationPeriod.post)?.adjustedMmf, 0.03)
-            assertEquals(ethPosition?.calculated?.get(CalculationPeriod.current)?.liquidationPrice, 2838.976141423949)
-            assertEquals(ethPosition?.calculated?.get(CalculationPeriod.post)?.liquidationPrice, 2829.267403559871)
+            assertEquals(0.05, ethPosition?.calculated?.get(CalculationPeriod.current)?.adjustedImf)
+            assertEquals(0.05, ethPosition?.calculated?.get(CalculationPeriod.post)?.adjustedImf)
+            assertEquals(0.03, ethPosition?.calculated?.get(CalculationPeriod.current)?.adjustedMmf)
+            assertEquals(0.03, ethPosition?.calculated?.get(CalculationPeriod.post)?.adjustedMmf)
+            assertEquals(2838.976141423949, ethPosition?.calculated?.get(CalculationPeriod.current)?.liquidationPrice)
+            assertEquals(2829.267403559871, ethPosition?.calculated?.get(CalculationPeriod.post)?.liquidationPrice)
             val btcPosition = subaccount?.openPositions?.get("BTC-USD")
-            assertEquals(btcPosition?.calculated?.get(CalculationPeriod.post)?.liquidationPrice, 64878.02210679612)
+            assertEquals(64878.02210679612, btcPosition?.calculated?.get(CalculationPeriod.post)?.liquidationPrice)
         } else {
             test(
                 {
@@ -1302,8 +1302,8 @@ open class V4TradeInputTests : V4BaseTests() {
             perp.trade("1000.0", TradeInputField.triggerPrice, 0)
 
             val trade = perp.internalState.input.trade
-            assertEquals(trade.price?.triggerPrice, 1000.0)
-            assertEquals(trade.price?.limitPrice, 900.0)
+            assertEquals(1000.0, trade.price?.triggerPrice)
+            assertEquals(900.0, trade.price?.limitPrice)
         } else {
             test(
                 {
@@ -1364,7 +1364,7 @@ open class V4TradeInputTests : V4BaseTests() {
             perp.trade("STOP_MARKET", TradeInputField.type, 0)
 
             val trade = perp.internalState.input.trade
-            assertEquals(trade.summary?.payloadPrice, 949.5770392749245)
+            assertEquals(949.5770392749245, trade.summary?.payloadPrice)
         } else {
             test(
                 {
@@ -1388,7 +1388,7 @@ open class V4TradeInputTests : V4BaseTests() {
             perp.trade("2000.0", TradeInputField.triggerPrice, 0)
 
             val trade = perp.internalState.input.trade
-            assertEquals(trade.price?.triggerPrice, 2000.0)
+            assertEquals(2000.0, trade.price?.triggerPrice)
         } else {
             test(
                 {
@@ -1412,7 +1412,7 @@ open class V4TradeInputTests : V4BaseTests() {
             perp.trade("TAKE_PROFIT_MARKET", TradeInputField.type, 0)
 
             val trade = perp.internalState.input.trade
-            assertEquals(trade.summary?.payloadPrice, 1899.154078549849)
+            assertEquals(1899.154078549849, trade.summary?.payloadPrice)
         } else {
             test(
                 {
@@ -1473,10 +1473,10 @@ open class V4TradeInputTests : V4BaseTests() {
             perp.trade("GTT", TradeInputField.timeInForceType, 0)
 
             val trade = perp.internalState.input.trade
-            assertEquals(trade.type, OrderType.Limit)
-            assertEquals(trade.options.needsReduceOnly, false)
-            assertEquals(trade.options.needsPostOnly, true)
-            assertEquals(trade.options.postOnlyTooltip, null)
+            assertEquals(OrderType.Limit, trade.type)
+            assertEquals(false, trade.options.needsReduceOnly)
+            assertEquals(true, trade.options.needsPostOnly)
+            assertEquals(null, trade.options.postOnlyTooltip)
         } else {
             test(
                 {
@@ -1504,11 +1504,11 @@ open class V4TradeInputTests : V4BaseTests() {
             perp.trade("IOC", TradeInputField.timeInForceType, 0)
 
             val trade = perp.internalState.input.trade
-            assertEquals(trade.type, OrderType.Limit)
-            assertEquals(trade.options.needsReduceOnly, true)
-            assertEquals(trade.options.needsPostOnly, false)
-            assertEquals(trade.options.reduceOnlyTooltip, null)
-            assertEquals(trade.options.postOnlyTooltip?.bodyStringKey, "GENERAL.TRADE.POST_ONLY_TIMEINFORCE_GTT.BODY")
+            assertEquals(OrderType.Limit, trade.type)
+            assertEquals(true, trade.options.needsReduceOnly)
+            assertEquals(false, trade.options.needsPostOnly)
+            assertEquals(null, trade.options.reduceOnlyTooltip)
+            assertEquals("GENERAL.TRADE.POST_ONLY_TIMEINFORCE_GTT.BODY", trade.options.postOnlyTooltip?.bodyStringKey)
         } else {
             test(
                 {
@@ -1539,10 +1539,10 @@ open class V4TradeInputTests : V4BaseTests() {
             perp.trade("DEFAULT", TradeInputField.execution, 0)
 
             val trade = perp.internalState.input.trade
-            assertEquals(trade.type, OrderType.StopLimit)
-            assertEquals(trade.options.needsReduceOnly, false)
-            assertEquals(trade.options.needsPostOnly, false)
-            assertEquals(trade.options.postOnlyTooltip, null)
+            assertEquals(OrderType.StopLimit, trade.type)
+            assertEquals(false, trade.options.needsReduceOnly)
+            assertEquals(false, trade.options.needsPostOnly)
+            assertEquals(null, trade.options.postOnlyTooltip)
         } else {
             test(
                 {
@@ -1570,11 +1570,11 @@ open class V4TradeInputTests : V4BaseTests() {
             perp.trade("IOC", TradeInputField.execution, 0)
 
             val trade = perp.internalState.input.trade
-            assertEquals(trade.type, OrderType.StopLimit)
-            assertEquals(trade.options.needsReduceOnly, true)
-            assertEquals(trade.options.needsPostOnly, false)
-            assertEquals(trade.options.reduceOnlyTooltip, null)
-            assertEquals(trade.options.postOnlyTooltip, null)
+            assertEquals(OrderType.StopLimit, trade.type)
+            assertEquals(true, trade.options.needsReduceOnly)
+            assertEquals(false, trade.options.needsPostOnly)
+            assertEquals(null, trade.options.reduceOnlyTooltip)
+            assertEquals(null, trade.options.postOnlyTooltip)
         } else {
             test(
                 {
@@ -1636,10 +1636,10 @@ open class V4TradeInputTests : V4BaseTests() {
             perp.trade("DEFAULT", TradeInputField.execution, 0)
 
             val trade = perp.internalState.input.trade
-            assertEquals(trade.type, OrderType.TakeProfitLimit)
-            assertEquals(trade.options.needsReduceOnly, false)
-            assertEquals(trade.options.needsPostOnly, false)
-            assertEquals(trade.options.postOnlyTooltip, null)
+            assertEquals(OrderType.TakeProfitLimit, trade.type)
+            assertEquals(false, trade.options.needsReduceOnly)
+            assertEquals(false, trade.options.needsPostOnly)
+            assertEquals(null, trade.options.postOnlyTooltip)
         } else {
             test(
                 {
@@ -1667,11 +1667,11 @@ open class V4TradeInputTests : V4BaseTests() {
             perp.trade("IOC", TradeInputField.execution, 0)
 
             val trade = perp.internalState.input.trade
-            assertEquals(trade.type, OrderType.TakeProfitLimit)
-            assertEquals(trade.options.needsReduceOnly, true)
-            assertEquals(trade.options.needsPostOnly, false)
-            assertEquals(trade.options.reduceOnlyTooltip, null)
-            assertEquals(trade.options.postOnlyTooltip, null)
+            assertEquals(OrderType.TakeProfitLimit, trade.type)
+            assertEquals(true, trade.options.needsReduceOnly)
+            assertEquals(false, trade.options.needsPostOnly)
+            assertEquals(null, trade.options.reduceOnlyTooltip)
+            assertEquals(null, trade.options.postOnlyTooltip)
         } else {
             test(
                 {
@@ -1700,10 +1700,10 @@ open class V4TradeInputTests : V4BaseTests() {
             perp.trade("POST_ONLY", TradeInputField.execution, 0)
 
             val trade = perp.internalState.input.trade
-            assertEquals(trade.type, OrderType.TakeProfitLimit)
-            assertEquals(trade.options.needsReduceOnly, false)
-            assertEquals(trade.options.needsPostOnly, false)
-            assertEquals(trade.options.postOnlyTooltip, null)
+            assertEquals(OrderType.TakeProfitLimit, trade.type)
+            assertEquals(false, trade.options.needsReduceOnly)
+            assertEquals(false, trade.options.needsPostOnly)
+            assertEquals(null, trade.options.postOnlyTooltip)
         } else {
             test(
                 {
@@ -1733,11 +1733,11 @@ open class V4TradeInputTests : V4BaseTests() {
             perp.trade("IOC", TradeInputField.execution, 0)
 
             val trade = perp.internalState.input.trade
-            assertEquals(trade.type, OrderType.StopMarket)
-            assertEquals(trade.options.needsReduceOnly, true)
-            assertEquals(trade.options.needsPostOnly, false)
-            assertEquals(trade.options.reduceOnlyTooltip, null)
-            assertEquals(trade.options.postOnlyTooltip, null)
+            assertEquals(OrderType.StopMarket, trade.type)
+            assertEquals(true, trade.options.needsReduceOnly)
+            assertEquals(false, trade.options.needsPostOnly)
+            assertEquals(null, trade.options.reduceOnlyTooltip)
+            assertEquals(null, trade.options.postOnlyTooltip)
         } else {
             test(
                 {
@@ -1819,8 +1819,8 @@ open class V4TradeInputTests : V4BaseTests() {
             perp.trade("STOP_MARKET", TradeInputField.type, 0)
 
             val trade = perp.internalState.input.trade
-            assertEquals(trade.type, OrderType.StopMarket)
-            assertEquals(trade.execution, "IOC")
+            assertEquals(OrderType.StopMarket, trade.type)
+            assertEquals("IOC", trade.execution)
         } else {
             test(
                 {
@@ -1847,8 +1847,8 @@ open class V4TradeInputTests : V4BaseTests() {
             perp.trade("STOP_MARKET", TradeInputField.type, 0)
 
             val trade = perp.internalState.input.trade
-            assertEquals(trade.type, OrderType.StopMarket)
-            assertEquals(trade.execution, "IOC")
+            assertEquals(OrderType.StopMarket, trade.type)
+            assertEquals("IOC", trade.execution)
         } else {
             test(
                 {
@@ -1875,8 +1875,8 @@ open class V4TradeInputTests : V4BaseTests() {
             perp.trade("STOP_MARKET", TradeInputField.type, 0)
 
             val trade = perp.internalState.input.trade
-            assertEquals(trade.type, OrderType.StopMarket)
-            assertEquals(trade.execution, "IOC")
+            assertEquals(OrderType.StopMarket, trade.type)
+            assertEquals("IOC", trade.execution)
         } else {
             test(
                 {
@@ -1905,8 +1905,8 @@ open class V4TradeInputTests : V4BaseTests() {
             perp.trade("TAKE_PROFIT", TradeInputField.type, 0)
 
             val trade = perp.internalState.input.trade
-            assertEquals(trade.type, OrderType.TakeProfitLimit)
-            assertEquals(trade.execution, "DEFAULT")
+            assertEquals(OrderType.TakeProfitLimit, trade.type)
+            assertEquals("DEFAULT", trade.execution)
         } else {
             test(
                 {
@@ -1933,8 +1933,8 @@ open class V4TradeInputTests : V4BaseTests() {
             perp.trade("TAKE_PROFIT", TradeInputField.type, 0)
 
             val trade = perp.internalState.input.trade
-            assertEquals(trade.type, OrderType.TakeProfitLimit)
-            assertEquals(trade.execution, "IOC")
+            assertEquals(OrderType.TakeProfitLimit, trade.type)
+            assertEquals("IOC", trade.execution)
         } else {
             test(
                 {
@@ -1961,8 +1961,8 @@ open class V4TradeInputTests : V4BaseTests() {
             perp.trade("TAKE_PROFIT", TradeInputField.type, 0)
 
             val trade = perp.internalState.input.trade
-            assertEquals(trade.type, OrderType.TakeProfitLimit)
-            assertEquals(trade.execution, "POST_ONLY")
+            assertEquals(OrderType.TakeProfitLimit, trade.type)
+            assertEquals("POST_ONLY", trade.execution)
         } else {
             test(
                 {
@@ -1991,8 +1991,8 @@ open class V4TradeInputTests : V4BaseTests() {
             perp.trade("TAKE_PROFIT_MARKET", TradeInputField.type, 0)
 
             val trade = perp.internalState.input.trade
-            assertEquals(trade.type, OrderType.TakeProfitMarket)
-            assertEquals(trade.execution, "IOC")
+            assertEquals(OrderType.TakeProfitMarket, trade.type)
+            assertEquals("IOC", trade.execution)
         } else {
             test(
                 {
@@ -2019,8 +2019,8 @@ open class V4TradeInputTests : V4BaseTests() {
             perp.trade("TAKE_PROFIT_MARKET", TradeInputField.type, 0)
 
             val trade = perp.internalState.input.trade
-            assertEquals(trade.type, OrderType.TakeProfitMarket)
-            assertEquals(trade.execution, "IOC")
+            assertEquals(OrderType.TakeProfitMarket, trade.type)
+            assertEquals("IOC", trade.execution)
         } else {
             test(
                 {
@@ -2048,8 +2048,8 @@ open class V4TradeInputTests : V4BaseTests() {
             perp.trade("TAKE_PROFIT_MARKET", TradeInputField.type, 0)
 
             val trade = perp.internalState.input.trade
-            assertEquals(trade.type, OrderType.TakeProfitMarket)
-            assertEquals(trade.execution, "IOC")
+            assertEquals(OrderType.TakeProfitMarket, trade.type)
+            assertEquals("IOC", trade.execution)
         } else {
             test(
                 {
@@ -2084,8 +2084,8 @@ open class V4TradeInputTests : V4BaseTests() {
             perp.trade("STOP_LIMIT", TradeInputField.type, 0)
 
             val trade = perp.internalState.input.trade
-            assertEquals(trade.type, OrderType.StopLimit)
-            assertEquals(trade.execution, "IOC")
+            assertEquals(OrderType.StopLimit, trade.type)
+            assertEquals("IOC", trade.execution)
         } else {
             test(
                 {
@@ -2114,8 +2114,8 @@ open class V4TradeInputTests : V4BaseTests() {
             perp.trade("TAKE_PROFIT", TradeInputField.type, 0)
 
             val trade = perp.internalState.input.trade
-            assertEquals(trade.type, OrderType.TakeProfitLimit)
-            assertEquals(trade.execution, "IOC")
+            assertEquals(OrderType.TakeProfitLimit, trade.type)
+            assertEquals("IOC", trade.execution)
         } else {
             test(
                 {
@@ -2144,8 +2144,8 @@ open class V4TradeInputTests : V4BaseTests() {
             perp.trade("TAKE_PROFIT_MARKET", TradeInputField.type, 0)
 
             val trade = perp.internalState.input.trade
-            assertEquals(trade.type, OrderType.TakeProfitMarket)
-            assertEquals(trade.execution, "IOC")
+            assertEquals(OrderType.TakeProfitMarket, trade.type)
+            assertEquals("IOC", trade.execution)
         } else {
             test(
                 {
@@ -2180,8 +2180,8 @@ open class V4TradeInputTests : V4BaseTests() {
             perp.trade("STOP_MARKET", TradeInputField.type, 0)
 
             val trade = perp.internalState.input.trade
-            assertEquals(trade.type, OrderType.StopMarket)
-            assertEquals(trade.execution, "IOC")
+            assertEquals(OrderType.StopMarket, trade.type)
+            assertEquals("IOC", trade.execution)
         } else {
             test(
                 {
@@ -2208,8 +2208,8 @@ open class V4TradeInputTests : V4BaseTests() {
             perp.trade("STOP_MARKET", TradeInputField.type, 0)
 
             val trade = perp.internalState.input.trade
-            assertEquals(trade.type, OrderType.StopMarket)
-            assertEquals(trade.execution, "IOC")
+            assertEquals(OrderType.StopMarket, trade.type)
+            assertEquals("IOC", trade.execution)
         } else {
             test(
                 {
@@ -2237,8 +2237,8 @@ open class V4TradeInputTests : V4BaseTests() {
             perp.trade("STOP_MARKET", TradeInputField.type, 0)
 
             val trade = perp.internalState.input.trade
-            assertEquals(trade.type, OrderType.StopMarket)
-            assertEquals(trade.execution, "IOC")
+            assertEquals(OrderType.StopMarket, trade.type)
+            assertEquals("IOC", trade.execution)
         } else {
             test(
                 {
@@ -2267,8 +2267,8 @@ open class V4TradeInputTests : V4BaseTests() {
             perp.trade("STOP_LIMIT", TradeInputField.type, 0)
 
             val trade = perp.internalState.input.trade
-            assertEquals(trade.type, OrderType.StopLimit)
-            assertEquals(trade.execution, "DEFAULT")
+            assertEquals(OrderType.StopLimit, trade.type)
+            assertEquals("DEFAULT", trade.execution)
         } else {
             test(
                 {
@@ -2295,8 +2295,8 @@ open class V4TradeInputTests : V4BaseTests() {
             perp.trade("STOP_LIMIT", TradeInputField.type, 0)
 
             val trade = perp.internalState.input.trade
-            assertEquals(trade.type, OrderType.StopLimit)
-            assertEquals(trade.execution, "IOC")
+            assertEquals(OrderType.StopLimit, trade.type)
+            assertEquals("IOC", trade.execution)
         } else {
             test(
                 {
@@ -2323,8 +2323,8 @@ open class V4TradeInputTests : V4BaseTests() {
             perp.trade("STOP_LIMIT", TradeInputField.type, 0)
 
             val trade = perp.internalState.input.trade
-            assertEquals(trade.type, OrderType.StopLimit)
-            assertEquals(trade.execution, "POST_ONLY")
+            assertEquals(OrderType.StopLimit, trade.type)
+            assertEquals("POST_ONLY", trade.execution)
         } else {
             test(
                 {
@@ -2353,8 +2353,8 @@ open class V4TradeInputTests : V4BaseTests() {
             perp.trade("TAKE_PROFIT_MARKET", TradeInputField.type, 0)
 
             val trade = perp.internalState.input.trade
-            assertEquals(trade.type, OrderType.TakeProfitMarket)
-            assertEquals(trade.execution, "IOC")
+            assertEquals(OrderType.TakeProfitMarket, trade.type)
+            assertEquals("IOC", trade.execution)
         } else {
             test(
                 {
@@ -2381,8 +2381,8 @@ open class V4TradeInputTests : V4BaseTests() {
             perp.trade("TAKE_PROFIT_MARKET", TradeInputField.type, 0)
 
             val trade = perp.internalState.input.trade
-            assertEquals(trade.type, OrderType.TakeProfitMarket)
-            assertEquals(trade.execution, "IOC")
+            assertEquals(OrderType.TakeProfitMarket, trade.type)
+            assertEquals("IOC", trade.execution)
         } else {
             test(
                 {
@@ -2409,8 +2409,8 @@ open class V4TradeInputTests : V4BaseTests() {
             perp.trade("TAKE_PROFIT_MARKET", TradeInputField.type, 0)
 
             val trade = perp.internalState.input.trade
-            assertEquals(trade.type, OrderType.TakeProfitMarket)
-            assertEquals(trade.execution, "IOC")
+            assertEquals(OrderType.TakeProfitMarket, trade.type)
+            assertEquals("IOC", trade.execution)
         } else {
             test(
                 {
@@ -2445,8 +2445,8 @@ open class V4TradeInputTests : V4BaseTests() {
             perp.trade("STOP_LIMIT", TradeInputField.type, 0)
 
             val trade = perp.internalState.input.trade
-            assertEquals(trade.type, OrderType.StopLimit)
-            assertEquals(trade.execution, "IOC")
+            assertEquals(OrderType.StopLimit, trade.type)
+            assertEquals("IOC", trade.execution)
         } else {
             test(
                 {
@@ -2475,8 +2475,8 @@ open class V4TradeInputTests : V4BaseTests() {
             perp.trade("TAKE_PROFIT", TradeInputField.type, 0)
 
             val trade = perp.internalState.input.trade
-            assertEquals(trade.type, OrderType.TakeProfitLimit)
-            assertEquals(trade.execution, "IOC")
+            assertEquals(OrderType.TakeProfitLimit, trade.type)
+            assertEquals("IOC", trade.execution)
         } else {
             test(
                 {
@@ -2505,8 +2505,8 @@ open class V4TradeInputTests : V4BaseTests() {
             perp.trade("STOP_MARKET", TradeInputField.type, 0)
 
             val trade = perp.internalState.input.trade
-            assertEquals(trade.type, OrderType.StopMarket)
-            assertEquals(trade.execution, "IOC")
+            assertEquals(OrderType.StopMarket, trade.type)
+            assertEquals("IOC", trade.execution)
         } else {
             test(
                 {
