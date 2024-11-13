@@ -4,7 +4,7 @@ import exchange.dydx.abacus.output.account.SubaccountFill
 import exchange.dydx.abacus.tests.mock.LocalizerProtocolMock
 import exchange.dydx.abacus.tests.mock.processor.wallet.account.FillProcessorMock
 import exchange.dydx.abacus.utils.Parser
-import indexer.codegen.IndexerFillResponseObject
+import indexer.models.IndexerCompositeFillObject
 import kotlin.test.Test
 import kotlin.test.assertEquals
 
@@ -35,7 +35,7 @@ class FillsProcessorTests {
         val output = fillsProcessor.process(
             existing = null,
             payload = listOf(
-                IndexerFillResponseObject(
+                IndexerCompositeFillObject(
                     id = "1",
                 ),
             ),
@@ -56,10 +56,10 @@ class FillsProcessorTests {
                 createSubaccountFill("1"),
             ),
             payload = listOf(
-                IndexerFillResponseObject(
+                IndexerCompositeFillObject(
                     id = "1",
                 ),
-                IndexerFillResponseObject(
+                IndexerCompositeFillObject(
                     id = "2",
                 ),
             ),

@@ -8,8 +8,8 @@ import exchange.dydx.abacus.state.changes.Changes
 import exchange.dydx.abacus.state.changes.StateChanges
 import exchange.dydx.abacus.state.manager.BlockAndTime
 import exchange.dydx.abacus.utils.Logger
-import indexer.codegen.IndexerFillResponse
 import indexer.codegen.IndexerTransferResponse
+import indexer.models.IndexerCompositeFillResponse
 import indexer.models.chain.OnChainAccountBalanceObject
 import indexer.models.chain.OnChainDelegationResponse
 import indexer.models.chain.OnChainStakingRewardsResponse
@@ -202,7 +202,7 @@ internal fun TradingStateMachine.receivedFills(
     val size = fills?.size ?: 0
     return if (size > 0) {
         if (staticTyping) {
-            val payload = parser.asTypedObject<IndexerFillResponse>(payload)
+            val payload = parser.asTypedObject<IndexerCompositeFillResponse>(payload)
             walletProcessor.processFills(internalState.wallet, payload?.fills?.toList(), subaccountNumber)
         } else {
             wallet = walletProcessor.receivedFillsDeprecated(wallet, payload, subaccountNumber)

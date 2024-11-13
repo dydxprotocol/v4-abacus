@@ -8,11 +8,11 @@ import exchange.dydx.abacus.output.input.OrderSide
 import exchange.dydx.abacus.output.input.OrderType
 import exchange.dydx.abacus.tests.mock.LocalizerProtocolMock
 import exchange.dydx.abacus.utils.Parser
-import indexer.codegen.IndexerFillResponseObject
 import indexer.codegen.IndexerFillType
 import indexer.codegen.IndexerLiquidity
 import indexer.codegen.IndexerMarketType
 import indexer.codegen.IndexerOrderSide
+import indexer.models.IndexerCompositeFillObject
 import kotlinx.datetime.Instant
 import kotlin.test.Test
 import kotlin.test.assertEquals
@@ -22,7 +22,7 @@ class FillProcessorTests {
     companion object {
         private val createdAt = Instant.parse("2021-01-01T00:00:00Z")
 
-        val payloadMock = IndexerFillResponseObject(
+        val payloadMock = IndexerCompositeFillObject(
             id = "1",
             side = IndexerOrderSide.BUY,
             liquidity = IndexerLiquidity.MAKER,
