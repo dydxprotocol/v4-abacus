@@ -482,12 +482,13 @@ internal class TradeInputCalculator(
         val tradeSide = OrderSide.invoke(parser.asString(trade["side"]))
 
         if (tradeSize != null && marketId != null && tradeSide != null) {
+            val maxMarketLeverage = maxMarketLeverage(market)
             val targetLeverage = parser.asDouble(trade["targetLeverage"])
             val marginMode = MarginMode.invoke(parser.asString(trade["marginMode"])) ?: MarginMode.Cross
             val tradeLeverage = if (marginMode == MarginMode.Isolated && targetLeverage != null && targetLeverage > Numeric.double.ZERO) {
                 targetLeverage
             } else {
-                DEFAULT_TARGET_LEVERAGE
+                min(DEFAULT_TARGET_LEVERAGE, maxMarketLeverage)
             }
             val freeCollateral = parser.asDouble(parser.value(subaccount, "freeCollateral.current")) ?: Numeric.double.ZERO
 

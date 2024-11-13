@@ -109,6 +109,7 @@ internal class TradeInputMarketOrderCalculator() {
         val tradeSide = trade.side
         val tradeSize = trade.size
         val freeCollateral = subaccount?.calculated?.get(CalculationPeriod.current)?.freeCollateral
+        val maxMarketLeverage = market?.perpetualMarket?.configs?.maxMarketLeverage ?: Numeric.double.ONE
 
         if (tradeSize != null && tradeSide != null && freeCollateral != null && freeCollateral > Numeric.double.ZERO) {
             val targetLeverage = trade.targetLeverage
@@ -116,7 +117,7 @@ internal class TradeInputMarketOrderCalculator() {
             val tradeLeverage = if (marginMode == MarginMode.Isolated && targetLeverage != null && targetLeverage > Numeric.double.ZERO) {
                 targetLeverage
             } else {
-                DEFAULT_TARGET_LEVERAGE
+                min(DEFAULT_TARGET_LEVERAGE, maxMarketLeverage)
             }
 
             val positions = subaccount.openPositions

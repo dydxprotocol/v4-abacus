@@ -8,6 +8,7 @@ import exchange.dydx.abacus.state.internalstate.InternalMarketState
 import exchange.dydx.abacus.state.internalstate.InternalTradeInputState
 import exchange.dydx.abacus.utils.DEFAULT_TARGET_LEVERAGE
 import exchange.dydx.abacus.utils.Numeric
+import kotlin.math.min
 
 internal class TradeInputMarginModeCalculator {
     fun updateTradeInputMarginMode(
@@ -34,7 +35,7 @@ internal class TradeInputMarginModeCalculator {
                     subaccountNumber = subaccountNumber,
                 )
                 val existingPositionLeverage = existingPosition?.calculated?.get(CalculationPeriod.current)?.leverage
-                tradeInput.targetLeverage = if (existingPositionLeverage != null && existingPositionLeverage > Numeric.double.ZERO) existingPositionLeverage else DEFAULT_TARGET_LEVERAGE
+                tradeInput.targetLeverage = if (existingPositionLeverage != null && existingPositionLeverage > Numeric.double.ZERO) existingPositionLeverage else min(DEFAULT_TARGET_LEVERAGE, maxMarketLeverage)
             }
         } else {
             val marketMarginMode = MarginCalculator.findMarketMarginMode(
@@ -43,7 +44,7 @@ internal class TradeInputMarginModeCalculator {
             when (marketMarginMode) {
                 MarginMode.Isolated -> {
                     tradeInput.marginMode = marketMarginMode
-                    tradeInput.targetLeverage = tradeInput.targetLeverage ?: DEFAULT_TARGET_LEVERAGE
+                    tradeInput.targetLeverage = tradeInput.targetLeverage ?: min(DEFAULT_TARGET_LEVERAGE, maxMarketLeverage)
                 }
 
                 MarginMode.Cross -> {

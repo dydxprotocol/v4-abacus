@@ -19,6 +19,7 @@ import exchange.dydx.abacus.utils.safeSet
 import kollections.JsExport
 import kollections.iListOf
 import kotlinx.serialization.Serializable
+import kotlin.math.min
 
 @JsExport
 @Serializable
@@ -171,11 +172,11 @@ internal fun TradingStateMachine.tradeInMarket(
             } else if (existingOrder != null) {
                 val orderMarginMode = if ((parser.asInt(parser.value(existingOrder, "subaccountNumber")) ?: subaccountNumber) == subaccountNumber) MarginMode.Cross.rawValue else MarginMode.Isolated.rawValue
                 it.safeSet("marginMode", orderMarginMode)
-                it.safeSet("targetLeverage", DEFAULT_TARGET_LEVERAGE)
+                it.safeSet("targetLeverage", min(DEFAULT_TARGET_LEVERAGE, maxMarketLeverage))
             } else {
                 val marketType = parser.asString(parser.value(marketsSummary, "markets.$marketId.configs.perpetualMarketType"))
                 it.safeSet("marginMode", MarginMode.invoke(marketType)?.rawValue)
-                it.safeSet("targetLeverage", DEFAULT_TARGET_LEVERAGE)
+                it.safeSet("targetLeverage", min(DEFAULT_TARGET_LEVERAGE, maxMarketLeverage))
             }
         }
 
