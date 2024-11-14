@@ -17,7 +17,7 @@ internal const val MAX_FREE_COLLATERAL_BUFFER_PERCENT = 0.95
 // Isolated Margin Constants
 internal const val MAX_LEVERAGE_BUFFER_PERCENT = 0.98
 internal const val MARGIN_COLLATERALIZATION_CHECK_BUFFER = 0.01;
-internal const val DEFAULT_TARGET_LEVERAGE = 5.0;
+internal const val DEFAULT_TARGET_LEVERAGE = 2.0;
 
 // Order flags
 internal const val SHORT_TERM_ORDER_FLAGS = 0
