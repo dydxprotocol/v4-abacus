@@ -11,25 +11,28 @@ import indexer.codegen.IndexerPositionSide
 import indexer.codegen.IndexerVaultHistoricalPnl
 import indexer.codegen.IndexerVaultPosition
 import indexer.codegen.IndexerVaultsHistoricalPnlResponse
-import kotlinx.datetime.Instant
+import kotlinx.datetime.Clock
 import kotlinx.serialization.encodeToString
 import kotlinx.serialization.json.Json
+import kotlin.time.Duration.Companion.days
+import kotlin.time.Duration.Companion.hours
 
 internal class VaultMocks {
 
+    val now = Clock.System.now()
     private val megaVaultPnl = IndexerMegavaultHistoricalPnlResponse(
         megavaultPnl = arrayOf(
             IndexerPnlTicksResponseObject(
                 equity = "10000.0",
                 totalPnl = "1000.0",
                 netTransfers = "0.0",
-                createdAt = Instant.fromEpochMilliseconds(1659465600000).toString(),
+                createdAt = now.minus(1.hours).toString(),
             ),
             IndexerPnlTicksResponseObject(
                 equity = "5000.0",
                 totalPnl = "500",
                 netTransfers = "0.0",
-                createdAt = Instant.fromEpochMilliseconds(1659379200000).toString(),
+                createdAt = now.minus(1.hours).minus(1.days).toString(),
             ),
         ),
     )
@@ -43,14 +46,14 @@ internal class VaultMocks {
                 equity = "10500.0",
                 totalPnl = "500.0",
                 netTransfers = "0.0",
-                createdAt = Instant.fromEpochMilliseconds(1659465600000).toString(),
+                createdAt = now.minus(1.hours).toString(),
             ),
             IndexerPnlTicksResponseObject(
                 id = "2",
                 equity = "10000.0",
                 totalPnl = "0.0",
                 netTransfers = "0.0",
-                createdAt = Instant.fromEpochMilliseconds(1659379200000).toString(),
+                createdAt = now.minus(1.hours).minus(1.days).toString(),
             ),
         ),
     )

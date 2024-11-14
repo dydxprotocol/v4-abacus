@@ -114,7 +114,7 @@ object VaultCalculator {
             }
         }.filter { entry -> entry.date != null && entry.date >= dataCutoffMs }
 
-        val latestEntry = history.first()
+        val latestEntry = history.firstOrNull() ?: return null
         val latestTime = latestEntry.date ?: Clock.System.now().toEpochMilliseconds().toDouble()
         val thirtyDaysAgoTime = latestTime - 30.days.inWholeMilliseconds
 
