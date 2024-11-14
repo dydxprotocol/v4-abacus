@@ -121,7 +121,7 @@ open class TradingStateMachine(
         processor
     }
     internal val walletProcessor = WalletProcessor(parser, localizer)
-    internal val vaultProcessor = VaultProcessor(parser, localizer)
+    internal val vaultProcessor = VaultProcessor(parser, environment, localizer)
     internal val configsProcessor = ConfigsProcessor(parser, localizer)
     internal val routerProcessor = SkipProcessor(
         parser = parser,
