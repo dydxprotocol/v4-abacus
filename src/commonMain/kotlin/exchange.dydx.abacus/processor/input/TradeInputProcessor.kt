@@ -256,6 +256,15 @@ internal class TradeInputProcessor(
                 TradeInputField.marginMode
                 -> {
                     inputType.updateValueAction?.invoke(trade, inputData, parser)
+
+                    // when moving from cross to isolated, update targetLeverage so it isn't sitting at null
+                    if (trade.marginMode === MarginMode.Isolated) {
+                        val market = marketSummaryState.markets[trade.marketId]
+                        val maxMarketLeverage = market?.perpetualMarket?.configs?.maxMarketLeverage
+                            ?: Numeric.double.ONE
+                        trade.targetLeverage = maxMarketLeverage
+                    }
+
                     val changedSubaccountNumbers =
                         MarginCalculator.getChangedSubaccountNumbers(
                             parser = parser,
