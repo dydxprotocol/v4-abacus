@@ -46,7 +46,7 @@ internal class V4SubaccountsProcessor(
         payload: List<Any>?,
     ): MutableMap<Int, InternalSubaccountState> {
         return if (payload != null) {
-            internalState.clear()
+            val modifiedSubaccountNumbers = mutableListOf<Int>()
             for (item in payload) {
                 val data = parser.asNativeMap(item)
                 if (data != null) {
@@ -62,7 +62,14 @@ internal class V4SubaccountsProcessor(
                             firstTime = true,
                         )
                         internalState[subaccountNumber] = subaccount
+                        modifiedSubaccountNumbers.add(subaccountNumber)
                     }
+                }
+            }
+            val keys = internalState.keys.toSet()
+            for (key in keys) {
+                if (!modifiedSubaccountNumbers.contains(key)) {
+                    internalState.remove(key)
                 }
             }
             internalState
