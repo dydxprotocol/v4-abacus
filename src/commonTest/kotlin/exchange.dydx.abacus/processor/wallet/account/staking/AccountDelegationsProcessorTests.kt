@@ -4,6 +4,7 @@ import com.ionspin.kotlin.bignum.decimal.toBigDecimal
 import exchange.dydx.abacus.state.internalstate.InternalAccountBalanceState
 import exchange.dydx.abacus.utils.Parser
 import indexer.models.chain.OnChainAccountBalanceObject
+import indexer.models.chain.OnChainDelegationInfo
 import indexer.models.chain.OnChainDelegationObject
 import indexer.models.chain.OnChainDelegationResponse
 import kotlin.test.Test
@@ -14,27 +15,33 @@ class AccountDelegationsProcessorTests {
         internal val payloadMock: OnChainDelegationResponse = OnChainDelegationResponse(
             delegationResponses = listOf(
                 OnChainDelegationObject(
-                    delegatorAddress = "delegatorAddress",
-                    validatorAddress = "validatorAddress",
-                    shares = null,
+                    delegation = OnChainDelegationInfo(
+                        delegatorAddress = "delegatorAddress",
+                        validatorAddress = "validatorAddress",
+                        shares = null,
+                    ),
                     balance = OnChainAccountBalanceObject(
                         denom = "denom",
                         amount = "100.0",
                     ),
                 ),
                 OnChainDelegationObject(
-                    delegatorAddress = "delegatorAddress",
-                    validatorAddress = "validatorAddress",
-                    shares = null,
+                    delegation = OnChainDelegationInfo(
+                        delegatorAddress = "delegatorAddress",
+                        validatorAddress = "validatorAddress",
+                        shares = null,
+                    ),
                     balance = OnChainAccountBalanceObject(
                         denom = "denom",
                         amount = "300.0",
                     ),
                 ),
                 OnChainDelegationObject(
-                    delegatorAddress = "delegatorAddress",
-                    validatorAddress = "validatorAddress",
-                    shares = null,
+                    delegation = OnChainDelegationInfo(
+                        delegatorAddress = "delegatorAddress",
+                        validatorAddress = "validatorAddress",
+                        shares = null,
+                    ),
                     balance = OnChainAccountBalanceObject(
                         denom = "denom1",
                         amount = "200.0",
