@@ -2,13 +2,13 @@ package exchange.dydx.abacus.processor.vault
 
 import exchange.dydx.abacus.functional.vault.ThirtyDayPnl
 import exchange.dydx.abacus.functional.vault.VaultCalculator
-import exchange.dydx.abacus.processor.base.BaseProcessor
 import exchange.dydx.abacus.processor.wallet.account.AssetPositionProcessor
 import exchange.dydx.abacus.processor.wallet.account.PerpetualPositionProcessor
 import exchange.dydx.abacus.protocols.LocalizerProtocol
 import exchange.dydx.abacus.protocols.ParserProtocol
 import exchange.dydx.abacus.state.internalstate.InternalVaultPositionState
 import exchange.dydx.abacus.state.internalstate.InternalVaultState
+import exchange.dydx.abacus.state.manager.V4Environment
 import indexer.codegen.IndexerMegavaultHistoricalPnlResponse
 import indexer.codegen.IndexerMegavaultPositionResponse
 import indexer.codegen.IndexerTransferBetweenResponse
@@ -16,9 +16,10 @@ import indexer.codegen.IndexerVaultsHistoricalPnlResponse
 import indexer.models.chain.OnChainAccountVaultResponse
 
 internal class VaultProcessor(
-    parser: ParserProtocol,
+    private val parser: ParserProtocol,
+    private val environment: V4Environment?,
     localizer: LocalizerProtocol?,
-) : BaseProcessor(parser) {
+) {
 
     private val perpetualPositionProcessor = PerpetualPositionProcessor(parser, localizer)
     private val assetPositionProcessor = AssetPositionProcessor(parser)
@@ -31,7 +32,10 @@ internal class VaultProcessor(
             return existing
         }
 
-        val newValue = VaultCalculator.calculateVaultSummary(payloads.toTypedArray())
+        val newValue = VaultCalculator.calculateVaultSummary(
+            historicals = payloads.toTypedArray(),
+            dataCutoffMs = environment?.megavaultHistoryStartDateMs ?: 0.0,
+        )
         return if (newValue != existing?.details) {
             existing?.copy(details = newValue) ?: InternalVaultState(details = newValue)
         } else {

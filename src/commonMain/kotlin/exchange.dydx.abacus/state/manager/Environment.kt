@@ -430,7 +430,7 @@ class V4Environment(
     val chainName: String?,
     val chainLogo: String?,
     rewardsHistoryStartDateMs: String,
-    val megavaultHistoryStartDateMs: String?,
+    val megavaultHistoryStartDateMs: Double?,
     val megavaultOperatorName: String,
     isMainNet: Boolean,
     endpoints: EnvironmentEndpoints,
@@ -472,7 +472,7 @@ class V4Environment(
             val chainName = parser.asString(data["chainName"])
             val chainLogo = parser.asString(data["chainLogo"])
             val rewardsHistoryStartDateMs = parser.asString(data["rewardsHistoryStartDateMs"]) ?: ServerTime.now().minus(180.days).toEpochMilliseconds().toString()
-            val megavaultHistoryStartDateMs = parser.asString(data["megavaultHistoryStartDateMs"])
+            val megavaultHistoryStartDateMs = parser.asDouble(data["megavaultHistoryStartDateMs"])
             val megavaultOperatorName = parser.asString(data["megavaultOperatorName"]) ?: return null
             val isMainNet = parser.asBool(data["isMainNet"]) ?: return null
             val endpoints =
