@@ -109,15 +109,15 @@ internal class TradeInputMarketOrderCalculator() {
         val tradeSide = trade.side
         val tradeSize = trade.size
         val freeCollateral = subaccount?.calculated?.get(CalculationPeriod.current)?.freeCollateral
-        val maxMarketLeverage = market?.perpetualMarket?.configs?.maxMarketLeverage ?: Numeric.double.ONE
 
         if (tradeSize != null && tradeSide != null && freeCollateral != null && freeCollateral > Numeric.double.ZERO) {
+            val maxMarketLeverage = market?.perpetualMarket?.configs?.maxMarketLeverage ?: Numeric.double.ONE
             val targetLeverage = trade.targetLeverage
             val marginMode = trade.marginMode ?: MarginMode.Cross
             val tradeLeverage = if (marginMode == MarginMode.Isolated && targetLeverage != null && targetLeverage > Numeric.double.ZERO) {
                 targetLeverage
             } else {
-                min(DEFAULT_TARGET_LEVERAGE, maxMarketLeverage)
+                maxMarketLeverage
             }
 
             val positions = subaccount.openPositions
@@ -676,14 +676,15 @@ internal class TradeInputMarketOrderCalculator() {
         tradeLeverage: Double,
         isTradeSameSide: Boolean,
     ): Double {
-        if (freeCollateral <= Numeric.double.ZERO || tradeLeverage <= Numeric.double.ZERO) {
+        val tradeLeverageAbs = tradeLeverage.abs()
+        if (freeCollateral <= Numeric.double.ZERO || tradeLeverageAbs == Numeric.double.ZERO) {
             return Numeric.double.ZERO
         }
         return if (isTradeSameSide) {
-            (usdcSize / tradeLeverage) / freeCollateral
+            (usdcSize / tradeLeverageAbs) / freeCollateral
         } else {
-            val existingBalance = positionSize.abs() / tradeLeverage
-            (usdcSize / tradeLeverage - existingBalance) / (freeCollateral + existingBalance)
+            val existingBalance = positionSize.abs() / tradeLeverageAbs
+            (usdcSize / tradeLeverageAbs - existingBalance) / (freeCollateral + existingBalance)
         }
     }
 

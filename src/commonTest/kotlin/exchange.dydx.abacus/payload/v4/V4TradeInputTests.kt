@@ -718,6 +718,10 @@ open class V4TradeInputTests : V4BaseTests() {
             perp.trade("380", TradeInputField.usdcSize, 0)
         }, null)
 
+        test({
+            perp.trade("20", TradeInputField.targetLeverage, 0)
+        }, null)
+
         if (perp.staticTyping) {
             perp.trade("1500", TradeInputField.limitPrice, 0)
 

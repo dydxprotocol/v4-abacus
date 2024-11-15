@@ -488,7 +488,7 @@ internal class TradeInputCalculator(
             val tradeLeverage = if (marginMode == MarginMode.Isolated && targetLeverage != null && targetLeverage > Numeric.double.ZERO) {
                 targetLeverage
             } else {
-                min(DEFAULT_TARGET_LEVERAGE, maxMarketLeverage)
+                maxMarketLeverage
             }
             val freeCollateral = parser.asDouble(parser.value(subaccount, "freeCollateral.current")) ?: Numeric.double.ZERO
 
