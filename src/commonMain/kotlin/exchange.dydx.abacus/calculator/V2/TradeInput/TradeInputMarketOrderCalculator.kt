@@ -16,7 +16,6 @@ import exchange.dydx.abacus.state.internalstate.InternalSubaccountState
 import exchange.dydx.abacus.state.internalstate.InternalTradeInputState
 import exchange.dydx.abacus.state.internalstate.InternalUserState
 import exchange.dydx.abacus.state.internalstate.safeCreate
-import exchange.dydx.abacus.utils.DEFAULT_TARGET_LEVERAGE
 import exchange.dydx.abacus.utils.MAX_FREE_COLLATERAL_BUFFER_PERCENT
 import exchange.dydx.abacus.utils.Numeric
 import exchange.dydx.abacus.utils.Rounder

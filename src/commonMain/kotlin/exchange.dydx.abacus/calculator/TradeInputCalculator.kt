@@ -13,7 +13,6 @@ import exchange.dydx.abacus.calculator.SlippageConstants.TAKE_PROFIT_MARKET_ORDE
 import exchange.dydx.abacus.output.input.MarginMode
 import exchange.dydx.abacus.output.input.OrderSide
 import exchange.dydx.abacus.protocols.ParserProtocol
-import exchange.dydx.abacus.utils.DEFAULT_TARGET_LEVERAGE
 import exchange.dydx.abacus.utils.MAX_FREE_COLLATERAL_BUFFER_PERCENT
 import exchange.dydx.abacus.utils.NUM_PARENT_SUBACCOUNTS
 import exchange.dydx.abacus.utils.Numeric
