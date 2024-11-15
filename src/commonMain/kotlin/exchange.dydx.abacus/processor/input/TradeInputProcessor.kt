@@ -264,7 +264,7 @@ internal class TradeInputProcessor(
                         val market = marketSummaryState.markets[trade.marketId]
                         val maxMarketLeverage = market?.perpetualMarket?.configs?.maxMarketLeverage
                             ?: Numeric.double.ONE
-                        trade.targetLeverage = maxMarketLeverage
+                        trade.targetLeverage = min(DEFAULT_TARGET_LEVERAGE, maxMarketLeverage)
                     }
 
                     val changedSubaccountNumbers =
