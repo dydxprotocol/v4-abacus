@@ -212,7 +212,7 @@ class IsolatedMarginModeTests : V4BaseTests(true) {
             assertEquals("NEAR-USD", trade.marketId)
             assertEquals(MarginMode.Cross, trade.marginMode)
             assertEquals(true, trade.options.needsMarginMode)
-            assertEquals(10.0, trade.targetLeverage)
+            assertEquals(2.0, trade.targetLeverage)
         } else {
             test(
                 {
@@ -225,7 +225,7 @@ class IsolatedMarginModeTests : V4BaseTests(true) {
                         "trade": {
                             "marketId": "NEAR-USD",
                             "marginMode": "CROSS",
-                            "targetLeverage": 10.0,
+                            "targetLeverage": 5.0,
                             "options": {
                                 "needsMarginMode": true
                             }

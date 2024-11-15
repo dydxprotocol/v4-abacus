@@ -10,6 +10,7 @@ import exchange.dydx.abacus.responses.cannotModify
 import exchange.dydx.abacus.state.changes.Changes
 import exchange.dydx.abacus.state.changes.StateChanges
 import exchange.dydx.abacus.state.manager.StatsigConfig
+import exchange.dydx.abacus.utils.DEFAULT_TARGET_LEVERAGE
 import exchange.dydx.abacus.utils.Numeric
 import exchange.dydx.abacus.utils.mutable
 import exchange.dydx.abacus.utils.mutableMapOf
@@ -17,6 +18,7 @@ import exchange.dydx.abacus.utils.safeSet
 import kollections.JsExport
 import kollections.iListOf
 import kotlinx.serialization.Serializable
+import kotlin.math.min
 
 @JsExport
 @Serializable
@@ -114,8 +116,9 @@ fun TradingStateMachine.closePosition(
                     } else {
                         Numeric.double.ONE
                     }
+
                     val currentPositionLeverage = parser.asDouble(parser.value(position, "leverage.current"))?.abs()
-                    trade["targetLeverage"] = if (currentPositionLeverage != null && currentPositionLeverage > 0) currentPositionLeverage else maxMarketLeverage
+                    trade["targetLeverage"] = if (currentPositionLeverage != null && currentPositionLeverage > 0) currentPositionLeverage else min(DEFAULT_TARGET_LEVERAGE, maxMarketLeverage)
 
                     // default full close
                     trade.safeSet("size.percent", 1.0)

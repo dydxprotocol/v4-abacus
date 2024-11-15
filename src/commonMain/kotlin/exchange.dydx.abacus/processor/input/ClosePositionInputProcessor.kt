@@ -25,8 +25,10 @@ import exchange.dydx.abacus.state.internalstate.InternalWalletState
 import exchange.dydx.abacus.state.internalstate.safeCreate
 import exchange.dydx.abacus.state.manager.StatsigConfig
 import exchange.dydx.abacus.state.model.ClosePositionInputField
+import exchange.dydx.abacus.utils.DEFAULT_TARGET_LEVERAGE
 import exchange.dydx.abacus.utils.Numeric
 import kollections.iListOf
+import kotlin.math.min
 
 internal interface ClosePositionInputProcessorProtocol {
     fun closePosition(
@@ -107,7 +109,7 @@ internal class ClosePositionInputProcessor(
                     val maxMarketLeverage = market?.perpetualMarket?.configs?.maxMarketLeverage ?: Numeric.double.ONE
 
                     val currentPositionLeverage = position.calculated[CalculationPeriod.current]?.leverage?.abs()
-                    trade.targetLeverage = if (currentPositionLeverage != null && currentPositionLeverage > Numeric.double.ZERO) currentPositionLeverage else maxMarketLeverage
+                    trade.targetLeverage = if (currentPositionLeverage != null && currentPositionLeverage > Numeric.double.ZERO) currentPositionLeverage else min(DEFAULT_TARGET_LEVERAGE, maxMarketLeverage)
 
                     // default full close
                     trade.sizePercent = 1.0

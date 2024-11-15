@@ -1,8 +1,10 @@
 package exchange.dydx.abacus.calculator
 
+import exchange.dydx.abacus.utils.DEFAULT_TARGET_LEVERAGE
 import exchange.dydx.abacus.utils.Numeric
 import exchange.dydx.abacus.utils.Parser
 import exchange.dydx.abacus.utils.mutable
+import kotlin.math.min
 
 object MarginModeCalculator {
 
@@ -49,7 +51,7 @@ object MarginModeCalculator {
                     subaccountNumber,
                 )
                 val existingPositionLeverage = parser.asDouble(parser.value(existingPosition, "leverage.current"))
-                modified["targetLeverage"] = existingPositionLeverage ?: maxMarketLeverage
+                modified["targetLeverage"] = existingPositionLeverage ?: min(DEFAULT_TARGET_LEVERAGE, maxMarketLeverage)
             }
         } else {
             val marketMarginMode = MarginCalculator.findMarketMarginModeDeprecated(
@@ -60,7 +62,7 @@ object MarginModeCalculator {
                 "ISOLATED" -> {
                     modified["marginMode"] = marketMarginMode
                     if (parser.asDouble(tradeInput["targetLeverage"]) == null) {
-                        modified["targetLeverage"] = maxMarketLeverage
+                        modified["targetLeverage"] = min(DEFAULT_TARGET_LEVERAGE, maxMarketLeverage)
                     }
                 }
 

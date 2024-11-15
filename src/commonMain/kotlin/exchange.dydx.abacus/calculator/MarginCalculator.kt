@@ -14,6 +14,7 @@ import exchange.dydx.abacus.state.internalstate.InternalMarketState
 import exchange.dydx.abacus.state.internalstate.InternalPerpetualPosition
 import exchange.dydx.abacus.state.internalstate.InternalSubaccountState
 import exchange.dydx.abacus.state.internalstate.InternalTradeInputState
+import exchange.dydx.abacus.utils.DEFAULT_TARGET_LEVERAGE
 import exchange.dydx.abacus.utils.IList
 import exchange.dydx.abacus.utils.Logger
 import exchange.dydx.abacus.utils.MAX_LEVERAGE_BUFFER_PERCENT
@@ -702,7 +703,7 @@ internal object MarginCalculator {
         val oraclePrice = market?.perpetualMarket?.oraclePrice ?: return null
         val price = trade.summary?.price ?: return null
         val maxMarketLeverage = market.perpetualMarket?.configs?.maxMarketLeverage ?: return null
-        val targetLeverage = trade.targetLeverage ?: maxMarketLeverage
+        val targetLeverage = trade.targetLeverage ?: min(DEFAULT_TARGET_LEVERAGE, maxMarketLeverage)
         val positionSizeDifference = getPositionSizeDifference(subaccount, trade) ?: return null
 
         return calculateIsolatedMarginTransferAmountFromValues(
@@ -732,7 +733,7 @@ internal object MarginCalculator {
         val effectiveImf = parser.asDouble(parser.value(market, "configs.effectiveInitialMarginFraction")) ?: Numeric.double.ZERO
         val maxMarketLeverage = getMaxMarketLeverageDeprecated(effectiveImf = effectiveImf, imf = initialMarginFraction)
 
-        val targetLeverage = parser.asDouble(trade["targetLeverage"]) ?: maxMarketLeverage
+        val targetLeverage = parser.asDouble(trade["targetLeverage"]) ?: min(DEFAULT_TARGET_LEVERAGE, maxMarketLeverage)
         val positionSizeDifference = getPositionSizeDifferenceDeprecated(parser, subaccount, trade) ?: return null
 
         return calculateIsolatedMarginTransferAmountFromValues(

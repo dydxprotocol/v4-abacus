@@ -28,8 +28,10 @@ import exchange.dydx.abacus.state.internalstate.InternalTradeInputState
 import exchange.dydx.abacus.state.internalstate.InternalWalletState
 import exchange.dydx.abacus.state.internalstate.safeCreate
 import exchange.dydx.abacus.state.model.TradeInputField
+import exchange.dydx.abacus.utils.DEFAULT_TARGET_LEVERAGE
 import exchange.dydx.abacus.utils.Numeric
 import kollections.iListOf
+import kotlin.math.min
 
 internal interface TradeInputProcessorProtocol {
     fun tradeInMarket(
@@ -262,7 +264,7 @@ internal class TradeInputProcessor(
                         val market = marketSummaryState.markets[trade.marketId]
                         val maxMarketLeverage = market?.perpetualMarket?.configs?.maxMarketLeverage
                             ?: Numeric.double.ONE
-                        trade.targetLeverage = maxMarketLeverage
+                        trade.targetLeverage = min(DEFAULT_TARGET_LEVERAGE, maxMarketLeverage)
                     }
 
                     val changedSubaccountNumbers =
@@ -335,7 +337,7 @@ internal class TradeInputProcessor(
         } else if (existingOrder != null) {
             trade.marginMode =
                 if (existingOrder.subaccountNumber == subaccountNumber) MarginMode.Cross else MarginMode.Isolated
-            trade.targetLeverage = maxMarketLeverage
+            trade.targetLeverage = min(DEFAULT_TARGET_LEVERAGE, maxMarketLeverage)
         } else {
             val marketType = marketState?.perpetualMarket?.configs?.perpetualMarketType
             trade.marginMode = when (marketType) {
@@ -343,7 +345,7 @@ internal class TradeInputProcessor(
                 PerpetualMarketType.ISOLATED -> MarginMode.Isolated
                 else -> null
             }
-            trade.targetLeverage = maxMarketLeverage
+            trade.targetLeverage = min(DEFAULT_TARGET_LEVERAGE, maxMarketLeverage)
         }
     }
 

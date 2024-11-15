@@ -675,14 +675,15 @@ internal class TradeInputMarketOrderCalculator() {
         tradeLeverage: Double,
         isTradeSameSide: Boolean,
     ): Double {
-        if (freeCollateral <= Numeric.double.ZERO || tradeLeverage <= Numeric.double.ZERO) {
+        val tradeLeverageAbs = tradeLeverage.abs()
+        if (freeCollateral <= Numeric.double.ZERO || tradeLeverageAbs == Numeric.double.ZERO) {
             return Numeric.double.ZERO
         }
         return if (isTradeSameSide) {
-            (usdcSize / tradeLeverage) / freeCollateral
+            (usdcSize / tradeLeverageAbs) / freeCollateral
         } else {
-            val existingBalance = positionSize.abs() / tradeLeverage
-            (usdcSize / tradeLeverage - existingBalance) / (freeCollateral + existingBalance)
+            val existingBalance = positionSize.abs() / tradeLeverageAbs
+            (usdcSize / tradeLeverageAbs - existingBalance) / (freeCollateral + existingBalance)
         }
     }
 
