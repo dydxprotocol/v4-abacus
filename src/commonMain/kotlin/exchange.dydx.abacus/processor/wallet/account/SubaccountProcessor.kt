@@ -124,14 +124,11 @@ internal open class SubaccountProcessor(
         state.calculated[CalculationPeriod.current] = subaccountCalculated
 
         val fills = parser.asTypedList<IndexerCompositeFillObject>(content["fills"])
-        // fills is sometimes null on this message, doesn't mean there are none
-        if (fills != null) {
-            state = processFills(
-                subaccount = state,
-                payload = fills,
-                reset = false,
-            )
-        }
+        state = processFills(
+            subaccount = state,
+            payload = fills,
+            reset = false,
+        )
 
         val orders = parser.asTypedList<IndexerCompositeOrderObject>(content["orders"])
         state = processOrders(
