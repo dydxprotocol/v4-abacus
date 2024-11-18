@@ -133,9 +133,8 @@ object VaultCalculator {
         } else {
             0.0
         }
-        val thirtyDaysAgoEquity = thirtyDaysAgoEntry.equity ?: 0.0
-        val thirtyDayReturnPercent = if (thirtyDaysAgoEquity != 0.0) {
-            (pnlDifference / thirtyDaysAgoEquity)
+        val thirtyDayReturnPercent = if (totalValue != 0.0) {
+            (pnlDifference / totalValue)
         } else {
             0.0
         }
