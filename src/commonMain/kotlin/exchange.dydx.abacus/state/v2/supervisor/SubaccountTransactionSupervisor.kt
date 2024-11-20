@@ -36,6 +36,7 @@ import exchange.dydx.abacus.utils.IMap
 import exchange.dydx.abacus.utils.IMutableList
 import exchange.dydx.abacus.utils.Logger
 import exchange.dydx.abacus.utils.NUM_PARENT_SUBACCOUNTS
+import exchange.dydx.abacus.utils.POST_TRANSFER_PLACE_ORDER_DELAY
 import exchange.dydx.abacus.utils.ParsingHelper
 import exchange.dydx.abacus.utils.SHORT_TERM_ORDER_FLAGS
 import exchange.dydx.abacus.utils.iMapOf
@@ -666,7 +667,7 @@ internal class SubaccountTransactionSupervisor(
                 // Return submitTransaction after a delay to ensure the transfer is confirmed
                 val timer = helper.ioImplementations.timer ?: CoroutineTimer.instance
 
-                isolatedMarginOrderTimer = timer.run(0.25) {
+                isolatedMarginOrderTimer = timer.run(POST_TRANSFER_PLACE_ORDER_DELAY) {
                     submitTransaction(
                         transactionType = TransactionType.PlaceOrder,
                         transactionPayloadString = string,
