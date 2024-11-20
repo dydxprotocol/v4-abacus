@@ -6,12 +6,14 @@ import exchange.dydx.abacus.output.account.TransferRecordType
 import exchange.dydx.abacus.output.input.OrderSide
 import exchange.dydx.abacus.output.input.OrderStatus
 import exchange.dydx.abacus.protocols.AnalyticsEvent
+import exchange.dydx.abacus.protocols.LocalTimerProtocol
 import exchange.dydx.abacus.protocols.ThreadingType
 import exchange.dydx.abacus.protocols.TransactionCallback
 import exchange.dydx.abacus.protocols.TransactionType
 import exchange.dydx.abacus.responses.ParsingError
 import exchange.dydx.abacus.responses.ParsingErrorType
 import exchange.dydx.abacus.responses.ParsingException
+import exchange.dydx.abacus.protocols.run
 import exchange.dydx.abacus.state.manager.CancelOrderRecord
 import exchange.dydx.abacus.state.manager.FaucetRecord
 import exchange.dydx.abacus.state.manager.HumanReadableCancelAllOrdersPayload
@@ -36,7 +38,6 @@ import exchange.dydx.abacus.utils.Logger
 import exchange.dydx.abacus.utils.NUM_PARENT_SUBACCOUNTS
 import exchange.dydx.abacus.utils.ParsingHelper
 import exchange.dydx.abacus.utils.SHORT_TERM_ORDER_FLAGS
-import exchange.dydx.abacus.utils.Timer
 import exchange.dydx.abacus.utils.iMapOf
 import kollections.iListOf
 import kollections.iMutableListOf
@@ -98,6 +99,14 @@ internal class SubaccountTransactionSupervisor(
 
     private val cancelingOrphanedTriggerOrders = mutableSetOf<String>()
     private val reclaimingChildSubaccountNumbers = mutableSetOf<Int>()
+
+    private var isolatedMarginOrderTimer: LocalTimerProtocol? = null
+        set(value) {
+            if (field !== value) {
+                field?.cancel()
+                field = value
+            }
+        }
 
     private fun fromSlTpDialogParams(fromSlTpDialog: Boolean): IMap<String, Any> {
         return iMapOf(
@@ -657,10 +666,7 @@ internal class SubaccountTransactionSupervisor(
                 // Return submitTransaction after a delay to ensure the transfer is confirmed
                 val timer = helper.ioImplementations.timer ?: CoroutineTimer.instance
 
-                val delayedPlaceOrder = timer.schedule(
-                    delay = 0.25,
-                    repeat = null
-                ) {
+                isolatedMarginOrderTimer = timer.run(0.25) {
                     submitTransaction(
                         transactionType = TransactionType.PlaceOrder,
                         transactionPayloadString = string,
@@ -668,10 +674,7 @@ internal class SubaccountTransactionSupervisor(
                         transactionCallback = orderTransactionCallback,
                         useTransactionQueue = useTransactionQueue,
                     )
-                    true
                 }
-
-                delayedPlaceOrder.cancel()
             } else {
                 // remove pending isolated order since it will not be placed
                 val isolatedOrderRecord = this.pendingIsolatedOrderRecords.firstOrNull {
