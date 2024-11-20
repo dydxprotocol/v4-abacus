@@ -6,6 +6,7 @@ import exchange.dydx.abacus.output.account.TransferRecordType
 import exchange.dydx.abacus.output.input.OrderSide
 import exchange.dydx.abacus.output.input.OrderStatus
 import exchange.dydx.abacus.protocols.AnalyticsEvent
+import exchange.dydx.abacus.protocols.LocalTimerProtocol
 import exchange.dydx.abacus.protocols.ThreadingType
 import exchange.dydx.abacus.protocols.TransactionCallback
 import exchange.dydx.abacus.protocols.TransactionType
@@ -29,12 +30,14 @@ import exchange.dydx.abacus.state.model.findOrder
 import exchange.dydx.abacus.state.model.orderCanceled
 import exchange.dydx.abacus.utils.AnalyticsUtils
 import exchange.dydx.abacus.utils.CONDITIONAL_ORDER_FLAGS
+import exchange.dydx.abacus.utils.CoroutineTimer
 import exchange.dydx.abacus.utils.IMap
 import exchange.dydx.abacus.utils.IMutableList
 import exchange.dydx.abacus.utils.Logger
 import exchange.dydx.abacus.utils.NUM_PARENT_SUBACCOUNTS
 import exchange.dydx.abacus.utils.ParsingHelper
 import exchange.dydx.abacus.utils.SHORT_TERM_ORDER_FLAGS
+import exchange.dydx.abacus.utils.Timer
 import exchange.dydx.abacus.utils.iMapOf
 import kollections.iListOf
 import kollections.iMutableListOf
@@ -652,13 +655,24 @@ internal class SubaccountTransactionSupervisor(
         val isolatedMarginTransactionCallback = { response: String? ->
             val error = parseTransactionResponse(response)
             if (error == null) {
-                submitTransaction(
-                    transactionType = TransactionType.PlaceOrder,
-                    transactionPayloadString = string,
-                    onSubmitTransaction = onSubmitOrderTransaction,
-                    transactionCallback = orderTransactionCallback,
-                    useTransactionQueue = useTransactionQueue,
-                )
+                // Return submitTransaction after a delay to ensure the transfer is confirmed
+                val timer = helper.ioImplementations.timer ?: CoroutineTimer.instance
+
+                val delayedPlaceOrder = timer.schedule(
+                    delay = 0.25,
+                    repeat = null
+                ) {
+                    submitTransaction(
+                        transactionType = TransactionType.PlaceOrder,
+                        transactionPayloadString = string,
+                        onSubmitTransaction = onSubmitOrderTransaction,
+                        transactionCallback = orderTransactionCallback,
+                        useTransactionQueue = useTransactionQueue,
+                    )
+                    true
+                }
+
+                delayedPlaceOrder.cancel()
             } else {
                 // remove pending isolated order since it will not be placed
                 val isolatedOrderRecord = this.pendingIsolatedOrderRecords.firstOrNull {
