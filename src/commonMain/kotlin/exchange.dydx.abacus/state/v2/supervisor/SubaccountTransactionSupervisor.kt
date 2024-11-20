@@ -6,7 +6,6 @@ import exchange.dydx.abacus.output.account.TransferRecordType
 import exchange.dydx.abacus.output.input.OrderSide
 import exchange.dydx.abacus.output.input.OrderStatus
 import exchange.dydx.abacus.protocols.AnalyticsEvent
-import exchange.dydx.abacus.protocols.LocalTimerProtocol
 import exchange.dydx.abacus.protocols.ThreadingType
 import exchange.dydx.abacus.protocols.TransactionCallback
 import exchange.dydx.abacus.protocols.TransactionType
