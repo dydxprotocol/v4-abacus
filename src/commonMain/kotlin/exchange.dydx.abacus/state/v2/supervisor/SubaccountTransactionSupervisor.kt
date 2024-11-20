@@ -6,9 +6,11 @@ import exchange.dydx.abacus.output.account.TransferRecordType
 import exchange.dydx.abacus.output.input.OrderSide
 import exchange.dydx.abacus.output.input.OrderStatus
 import exchange.dydx.abacus.protocols.AnalyticsEvent
+import exchange.dydx.abacus.protocols.LocalTimerProtocol
 import exchange.dydx.abacus.protocols.ThreadingType
 import exchange.dydx.abacus.protocols.TransactionCallback
 import exchange.dydx.abacus.protocols.TransactionType
+import exchange.dydx.abacus.protocols.run
 import exchange.dydx.abacus.responses.ParsingError
 import exchange.dydx.abacus.responses.ParsingErrorType
 import exchange.dydx.abacus.responses.ParsingException
@@ -29,10 +31,12 @@ import exchange.dydx.abacus.state.model.findOrder
 import exchange.dydx.abacus.state.model.orderCanceled
 import exchange.dydx.abacus.utils.AnalyticsUtils
 import exchange.dydx.abacus.utils.CONDITIONAL_ORDER_FLAGS
+import exchange.dydx.abacus.utils.CoroutineTimer
 import exchange.dydx.abacus.utils.IMap
 import exchange.dydx.abacus.utils.IMutableList
 import exchange.dydx.abacus.utils.Logger
 import exchange.dydx.abacus.utils.NUM_PARENT_SUBACCOUNTS
+import exchange.dydx.abacus.utils.POST_TRANSFER_PLACE_ORDER_DELAY
 import exchange.dydx.abacus.utils.ParsingHelper
 import exchange.dydx.abacus.utils.SHORT_TERM_ORDER_FLAGS
 import exchange.dydx.abacus.utils.iMapOf
@@ -96,6 +100,14 @@ internal class SubaccountTransactionSupervisor(
 
     private val cancelingOrphanedTriggerOrders = mutableSetOf<String>()
     private val reclaimingChildSubaccountNumbers = mutableSetOf<Int>()
+
+    private var isolatedMarginOrderTimer: LocalTimerProtocol? = null
+        set(value) {
+            if (field !== value) {
+                field?.cancel()
+                field = value
+            }
+        }
 
     private fun fromSlTpDialogParams(fromSlTpDialog: Boolean): IMap<String, Any> {
         return iMapOf(
@@ -652,13 +664,18 @@ internal class SubaccountTransactionSupervisor(
         val isolatedMarginTransactionCallback = { response: String? ->
             val error = parseTransactionResponse(response)
             if (error == null) {
-                submitTransaction(
-                    transactionType = TransactionType.PlaceOrder,
-                    transactionPayloadString = string,
-                    onSubmitTransaction = onSubmitOrderTransaction,
-                    transactionCallback = orderTransactionCallback,
-                    useTransactionQueue = useTransactionQueue,
-                )
+                // Return submitTransaction after a delay to ensure the transfer is confirmed
+                val timer = helper.ioImplementations.timer ?: CoroutineTimer.instance
+
+                isolatedMarginOrderTimer = timer.run(POST_TRANSFER_PLACE_ORDER_DELAY) {
+                    submitTransaction(
+                        transactionType = TransactionType.PlaceOrder,
+                        transactionPayloadString = string,
+                        onSubmitTransaction = onSubmitOrderTransaction,
+                        transactionCallback = orderTransactionCallback,
+                        useTransactionQueue = useTransactionQueue,
+                    )
+                }
             } else {
                 // remove pending isolated order since it will not be placed
                 val isolatedOrderRecord = this.pendingIsolatedOrderRecords.firstOrNull {
