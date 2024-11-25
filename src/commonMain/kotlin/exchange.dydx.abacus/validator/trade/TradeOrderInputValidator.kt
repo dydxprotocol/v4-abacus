@@ -14,6 +14,7 @@ import exchange.dydx.abacus.state.internalstate.InternalState
 import exchange.dydx.abacus.state.internalstate.InternalSubaccountState
 import exchange.dydx.abacus.state.internalstate.InternalTradeInputState
 import exchange.dydx.abacus.state.manager.V4Environment
+import exchange.dydx.abacus.utils.Logger
 import exchange.dydx.abacus.utils.Numeric
 import exchange.dydx.abacus.validator.BaseInputValidator
 import exchange.dydx.abacus.validator.PositionChange
@@ -159,8 +160,9 @@ internal class TradeOrderInputValidator(
                 val currentFreeCollateral = subaccount.calculated.get(CalculationPeriod.current)?.freeCollateral ?: return null
                 val postFreeCollateral = subaccount.calculated.get(CalculationPeriod.post)?.freeCollateral ?: return null
                 val orderEquity = currentFreeCollateral - postFreeCollateral
+                val isReducingPosition = orderEquity < Numeric.double.ZERO
 
-                if (postFreeCollateral >= Numeric.double.ZERO && orderEquity < isolatedLimitOrderMinimumEquity) {
+                if (postFreeCollateral >= Numeric.double.ZERO && !isReducingPosition && orderEquity < isolatedLimitOrderMinimumEquity) {
                     return createTradeBoxWarningOrError(
                         errorLevel = ErrorType.error,
                         errorCode = "ISOLATED_MARGIN_LIMIT_ORDER_BELOW_MINIMUM",
