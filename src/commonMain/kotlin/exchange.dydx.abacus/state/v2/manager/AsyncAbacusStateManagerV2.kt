@@ -16,6 +16,7 @@ import exchange.dydx.abacus.protocols.ThreadingType
 import exchange.dydx.abacus.protocols.TransactionCallback
 import exchange.dydx.abacus.protocols.asTypedObject
 import exchange.dydx.abacus.protocols.readCachedTextFile
+import exchange.dydx.abacus.responses.ParsingError
 import exchange.dydx.abacus.state.app.adaptors.V4TransactionErrors
 import exchange.dydx.abacus.state.app.helper.DynamicLocalizer
 import exchange.dydx.abacus.state.manager.ApiData
@@ -49,6 +50,7 @@ import exchange.dydx.abacus.utils.DummyFormatter
 import exchange.dydx.abacus.utils.DummyLocalizer
 import exchange.dydx.abacus.utils.IList
 import exchange.dydx.abacus.utils.IOImplementations
+import exchange.dydx.abacus.utils.JsonEncoder
 import exchange.dydx.abacus.utils.Logger
 import exchange.dydx.abacus.utils.Parser
 import exchange.dydx.abacus.utils.ProtocolNativeImpFactory
@@ -506,43 +508,103 @@ class AsyncAbacusStateManagerV2(
     }
 
     override fun placeOrderPayload(): HumanReadablePlaceOrderPayload? {
-        return adaptor?.placeOrderPayload()
+        try {
+            return adaptor?.placeOrderPayload()
+        } catch (e: Exception) {
+            val error = V4TransactionErrors.error(null, e.toString())
+            trackTransactionError("placeOrderPayload", error)
+            throw e
+        }
     }
 
     override fun closePositionPayload(): HumanReadablePlaceOrderPayload? {
-        return adaptor?.closePositionPayload()
+        try {
+            return adaptor?.closePositionPayload()
+        } catch (e: Exception) {
+            val error = V4TransactionErrors.error(null, e.toString())
+            trackTransactionError("closePositionPayload", error)
+            throw e
+        }
     }
 
     override fun cancelOrderPayload(orderId: String): HumanReadableCancelOrderPayload? {
-        return adaptor?.cancelOrderPayload(orderId)
+        try {
+            return adaptor?.cancelOrderPayload(orderId)
+        } catch (e: Exception) {
+            val error = V4TransactionErrors.error(null, e.toString())
+            trackTransactionError("cancelOrderPayload", error)
+            throw e
+        }
     }
 
     override fun cancelAllOrdersPayload(marketId: String?): HumanReadableCancelAllOrdersPayload? {
-        return adaptor?.cancelAllOrdersPayload(marketId)
+        try {
+            return adaptor?.cancelAllOrdersPayload(marketId)
+        } catch (e: Exception) {
+            val error = V4TransactionErrors.error(null, e.toString())
+            trackTransactionError("cancelAllOrdersPayload", error)
+            throw e
+        }
     }
 
     override fun closeAllPositionsPayload(): HumanReadableCloseAllPositionsPayload? {
-        return adaptor?.closeAllPositionsPayload()
+        try {
+            return adaptor?.closeAllPositionsPayload()
+        } catch (e: Exception) {
+            val error = V4TransactionErrors.error(null, e.toString())
+            trackTransactionError("closeAllPositionsPayload", error)
+            throw e
+        }
     }
 
     override fun triggerOrdersPayload(): HumanReadableTriggerOrdersPayload? {
-        return adaptor?.triggerOrdersPayload()
+        try {
+            return adaptor?.triggerOrdersPayload()
+        } catch (e: Exception) {
+            val error = V4TransactionErrors.error(null, e.toString())
+            trackTransactionError("triggerOrdersPayload", error)
+            throw e
+        }
     }
 
     override fun adjustIsolatedMarginPayload(): HumanReadableSubaccountTransferPayload? {
-        return adaptor?.adjustIsolatedMarginPayload()
+        try {
+            return adaptor?.adjustIsolatedMarginPayload()
+        } catch (e: Exception) {
+            val error = V4TransactionErrors.error(null, e.toString())
+            trackTransactionError("adjustIsolatedMarginPayload", error)
+            throw e
+        }
     }
 
     override fun depositPayload(): HumanReadableDepositPayload? {
-        return adaptor?.depositPayload()
+        try {
+            return adaptor?.depositPayload()
+        } catch (e: Exception) {
+            val error = V4TransactionErrors.error(null, e.toString())
+            trackTransactionError("depositPayload", error)
+            throw e
+        }
     }
 
     override fun withdrawPayload(): HumanReadableWithdrawPayload? {
-        return adaptor?.withdrawPayload()
+        try {
+            return adaptor?.withdrawPayload()
+        } catch (e: Exception) {
+            val error = V4TransactionErrors.error(null, e.toString())
+            trackTransactionError("withdrawPayload", error)
+            throw e
+        }
     }
 
     override fun subaccountTransferPayload(): HumanReadableSubaccountTransferPayload? {
-        return adaptor?.subaccountTransferPayload()
+        try {
+            return adaptor?.subaccountTransferPayload()
+        } catch (e: Exception) {
+            val error = V4TransactionErrors.error(null, e.toString())
+            trackTransactionError("subaccountTransferPayload", error)
+            throw e
+        }
     }
 
     override fun commitPlaceOrder(callback: TransactionCallback): HumanReadablePlaceOrderPayload? {
@@ -550,6 +612,7 @@ class AsyncAbacusStateManagerV2(
             adaptor?.commitPlaceOrder(callback)
         } catch (e: Exception) {
             val error = V4TransactionErrors.error(null, e.toString())
+            trackTransactionError("commitPlaceOrder", error)
             callback(false, error, null)
             null
         }
@@ -560,6 +623,7 @@ class AsyncAbacusStateManagerV2(
             adaptor?.commitTriggerOrders(callback)
         } catch (e: Exception) {
             val error = V4TransactionErrors.error(null, e.toString())
+            trackTransactionError("commitTriggerOrders", error)
             callback(false, error, null)
             null
         }
@@ -570,6 +634,7 @@ class AsyncAbacusStateManagerV2(
             adaptor?.commitAdjustIsolatedMargin(callback)
         } catch (e: Exception) {
             val error = V4TransactionErrors.error(null, e.toString())
+            trackTransactionError("commitAdjustIsolatedMargin", error)
             callback(false, error, null)
             null
         }
@@ -580,6 +645,7 @@ class AsyncAbacusStateManagerV2(
             adaptor?.commitClosePosition(callback)
         } catch (e: Exception) {
             val error = V4TransactionErrors.error(null, e.toString())
+            trackTransactionError("commitClosePosition", error)
             callback(false, error, null)
             null
         }
@@ -594,6 +660,7 @@ class AsyncAbacusStateManagerV2(
             adaptor?.commitTransfer(callback)
         } catch (e: Exception) {
             val error = V4TransactionErrors.error(null, e.toString())
+            trackTransactionError("commitTransfer", error)
             callback(false, error, null)
         }
     }
@@ -603,6 +670,7 @@ class AsyncAbacusStateManagerV2(
             adaptor?.commitCCTPWithdraw(callback)
         } catch (e: Exception) {
             val error = V4TransactionErrors.error(null, e.toString())
+            trackTransactionError("commitCCTPWithdraw", error)
             callback(false, error, null)
         }
     }
@@ -612,6 +680,7 @@ class AsyncAbacusStateManagerV2(
             adaptor?.faucet(amount, callback)
         } catch (e: Exception) {
             val error = V4TransactionErrors.error(null, e.toString())
+            trackTransactionError("faucet", error)
             callback(false, error, null)
         }
     }
@@ -621,6 +690,7 @@ class AsyncAbacusStateManagerV2(
             adaptor?.cancelOrder(orderId, callback)
         } catch (e: Exception) {
             val error = V4TransactionErrors.error(null, e.toString())
+            trackTransactionError("cancelOrder", error)
             callback(false, error, null)
         }
     }
@@ -630,6 +700,7 @@ class AsyncAbacusStateManagerV2(
             adaptor?.cancelAllOrders(marketId, callback)
         } catch (e: Exception) {
             val error = V4TransactionErrors.error(null, e.toString())
+            trackTransactionError("cancelAllOrders", error)
             callback(false, error, null)
         }
     }
@@ -639,6 +710,7 @@ class AsyncAbacusStateManagerV2(
             adaptor?.closeAllPositions(callback)
         } catch (e: Exception) {
             val error = V4TransactionErrors.error(null, e.toString())
+            trackTransactionError("closeAllPositions", error)
             callback(false, error, null)
             null
         }
@@ -649,7 +721,27 @@ class AsyncAbacusStateManagerV2(
             adaptor?.triggerCompliance(action, callback)
         } catch (e: Exception) {
             val error = V4TransactionErrors.error(null, e.toString())
+            trackTransactionError("triggerCompliance", error)
             callback(false, error, null)
+        }
+    }
+
+    private fun trackTransactionError(functionName: String, error: ParsingError?) {
+        if (error == null) {
+            return
+        }
+
+        val params = mapOf(
+            "functionName" to functionName,
+            "errorType" to error.type.rawValue,
+            "errorMessage" to error.message,
+            "stackTrace" to error.stackTrace,
+        )
+        ioImplementations.threading?.async(ThreadingType.main) {
+            ioImplementations.tracking?.log(
+                event = "ClientTransactionError",
+                data = JsonEncoder().encode(params),
+            )
         }
     }
 
