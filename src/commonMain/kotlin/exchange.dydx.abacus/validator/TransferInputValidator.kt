@@ -11,6 +11,7 @@ import exchange.dydx.abacus.state.manager.V4Environment
 import exchange.dydx.abacus.validator.transfer.DepositValidator
 import exchange.dydx.abacus.validator.transfer.TransferFieldsValidator
 import exchange.dydx.abacus.validator.transfer.TransferOutValidator
+import exchange.dydx.abacus.validator.transfer.TransferPriceImpactValidator
 import exchange.dydx.abacus.validator.transfer.WithdrawalCapacityValidator
 import exchange.dydx.abacus.validator.transfer.WithdrawalGatingValidator
 
@@ -25,6 +26,7 @@ internal class TransferInputValidator(
         TransferOutValidator(localizer, formatter, parser),
         WithdrawalGatingValidator(localizer, formatter, parser),
         WithdrawalCapacityValidator(localizer, formatter, parser),
+        TransferPriceImpactValidator(localizer, formatter, parser),
     )
 
     override fun validate(
