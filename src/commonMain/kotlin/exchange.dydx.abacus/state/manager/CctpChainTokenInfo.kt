@@ -7,7 +7,7 @@ data class CctpChainTokenInfo(
     val tokenAddress: String,
 ) {
     fun isCctpEnabled(transferInput: TransferInput?) =
-        transferInput?.chain == chainId && transferInput.token == tokenAddress
+        transferInput?.chain == chainId && transferInput.token?.lowercase() == tokenAddress.lowercase()
 }
 
 object CctpConfig {

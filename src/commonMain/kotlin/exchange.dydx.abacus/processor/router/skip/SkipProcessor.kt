@@ -285,7 +285,7 @@ internal class SkipProcessor(
         val cctpChain = cctpChainIds?.find { it.chainId == chainId }
 //        If one does, then check for a token in the filteredTokens whose denom matches the found cctpChainTokenInfo, if one exists
         val filteredCctpToken = filteredTokensForChainId.find {
-            parser.asString(parser.asNativeMap(it)?.get("denom")) == cctpChain?.tokenAddress
+            parser.asString(parser.asNativeMap(it)?.get("denom"))?.lowercase() == cctpChain?.tokenAddress?.lowercase()
         }
         if (filteredCctpToken != null) {
             return parser.asString(parser.asNativeMap(filteredCctpToken)?.get("denom"))
