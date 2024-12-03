@@ -138,6 +138,7 @@ data class EnvironmentLinks(
 data class EnvironmentFeatureFlags(
     val withdrawalSafetyEnabled: Boolean,
     val isSlTpLimitOrdersEnabled: Boolean,
+    val cctpWithdrawalOnly: Boolean,
 ) {
     companion object {
         fun parse(
@@ -146,10 +147,12 @@ data class EnvironmentFeatureFlags(
         ): EnvironmentFeatureFlags {
             val withdrawalSafetyEnabled = parser.asBool(data?.get("withdrawalSafetyEnabled")) ?: false
             val isSlTpLimitOrdersEnabled = parser.asBool(data?.get("isSlTpLimitOrdersEnabled")) ?: false
+            val cctpWithdrawalOnly = parser.asBool(data?.get("CCTPWithdrawalOnly")) ?: false
 
             return EnvironmentFeatureFlags(
                 withdrawalSafetyEnabled,
                 isSlTpLimitOrdersEnabled,
+                cctpWithdrawalOnly,
             )
         }
     }

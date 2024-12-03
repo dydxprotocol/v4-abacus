@@ -132,6 +132,7 @@ class AbacusMockData {
         featureFlags = EnvironmentFeatureFlags(
             withdrawalSafetyEnabled = true,
             isSlTpLimitOrdersEnabled = true,
+            cctpWithdrawalOnly = true,
         ),
     )
 }
