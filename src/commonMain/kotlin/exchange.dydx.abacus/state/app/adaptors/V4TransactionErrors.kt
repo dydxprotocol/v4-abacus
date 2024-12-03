@@ -13,9 +13,9 @@ class V4TransactionErrors {
             return if (code != null) {
                 if (code != 0 && codespace != null) {
                     ParsingError(
-                        ParsingErrorType.BackendError,
-                        message ?: "Unknown error",
-                        "ERRORS.BROADCAST_ERROR_${codespace.uppercase()}_$code",
+                        type = ParsingErrorType.BackendError,
+                        message = message ?: "Unknown error",
+                        stringKey = "ERRORS.BROADCAST_ERROR_${codespace.uppercase()}_$code",
                     )
                 } else {
                     null
@@ -23,14 +23,22 @@ class V4TransactionErrors {
             } else if (message?.startsWith(QUERY_RESULT_ERROR_PREFIX) == true) {
                 parseQueryResultErrorFromMessage(message)
             } else {
-                ParsingError(ParsingErrorType.BackendError, message ?: "Unknown error", null)
+                ParsingError(
+                    type = ParsingErrorType.BackendError,
+                    message = message ?: "Unknown error",
+                    stringKey = null,
+                )
             }
         }
 
         private fun parseQueryResultErrorFromMessage(message: String): ParsingError {
             // Workaround: Regex match different query results until protocol can return codespace/code
             parseSubaccountUpdateError(message)?.let { return it }
-            return ParsingError(ParsingErrorType.BackendError, "Unknown query result error", null)
+            return ParsingError(
+                type = ParsingErrorType.BackendError,
+                message = "Unknown query result error",
+                stringKey = null,
+            )
         }
 
         private fun parseSubaccountUpdateError(message: String): ParsingError? {
@@ -38,9 +46,9 @@ class V4TransactionErrors {
             return matchResult?.groups?.get(1)?.value?.let {
                 val matchedUpdateResult = SubaccountUpdateFailedResult.invoke(it)
                 ParsingError(
-                    ParsingErrorType.BackendError,
-                    "Subaccount update error: $it",
-                    if (matchedUpdateResult != null) "ERRORS.QUERY_ERROR_SUBACCOUNTS_${matchedUpdateResult.toString().uppercase()}" else null,
+                    type = ParsingErrorType.BackendError,
+                    message = "Subaccount update error: $it",
+                    stringKey = if (matchedUpdateResult != null) "ERRORS.QUERY_ERROR_SUBACCOUNTS_${matchedUpdateResult.toString().uppercase()}" else null,
                 )
             }
         }
@@ -48,8 +56,8 @@ class V4TransactionErrors {
         fun parseErrorFromRawLog(rawLog: String): ParsingError? {
             return if (rawLog.startsWith(OUT_OF_GAS_ERROR_RAW_LOG_PREFIX)) {
                 return ParsingError(
-                    ParsingErrorType.BackendError,
-                    "Out of gas: inaccurate gas estimation for transaction",
+                    type = ParsingErrorType.BackendError,
+                    message = "Out of gas: inaccurate gas estimation for transaction",
                 )
             } else {
                 null
