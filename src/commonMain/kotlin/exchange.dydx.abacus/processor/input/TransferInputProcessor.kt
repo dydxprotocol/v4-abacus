@@ -32,7 +32,7 @@ internal class TransferInputProcessor(
     private val parser: ParserProtocol,
     private val calculator: TransferInputCalculatorV2 = TransferInputCalculatorV2(parser = parser),
     private val routerProcessor: IRouterProcessor,
-    private val environment: V4Environment?
+    private val environment: V4Environment?,
 ) {
     fun transfer(
         inputState: InternalInputState,
@@ -250,8 +250,16 @@ internal class TransferInputProcessor(
     private fun updateWithdrawalOptions(
         transfer: InternalTransferInputState,
     ) {
-        val chains: IList<SelectionOption> = transfer.chains?.toIList() ?: iListOf()
-        val assets: IList<SelectionOption> = transfer.tokens?.toIList() ?: iListOf()
+        val chains: IList<SelectionOption> = if (environment?.featureFlags?.cctpWithdrawalOnly == true) {
+            transfer.cctpChains?.toIList() ?: iListOf()
+        } else {
+            transfer.chains?.toIList() ?: iListOf()
+        }
+        val assets: IList<SelectionOption> = if (environment?.featureFlags?.cctpWithdrawalOnly == true) {
+            transfer.cctpTokens?.toIList() ?: iListOf()
+        } else {
+            transfer.tokens?.toIList() ?: iListOf()
+        }
         var exchanges: IMutableList<SelectionOption>? = null
         exchangeList?.let { data ->
             exchanges = iMutableListOf()

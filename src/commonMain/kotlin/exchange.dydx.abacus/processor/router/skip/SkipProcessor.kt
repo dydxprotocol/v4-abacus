@@ -47,6 +47,7 @@ internal class SkipProcessor(
     ): Map<String, Any>? {
         throw NotImplementedError("receivedV2SdkInfo is not implemented in SkipProcessor!")
     }
+
     override fun receivedChains(
         existing: Map<String, Any>?,
         payload: Map<String, Any>

@@ -10,6 +10,7 @@ import exchange.dydx.abacus.output.input.TransferInputTokenResource
 import exchange.dydx.abacus.output.input.TransferOutInputOptions
 import exchange.dydx.abacus.output.input.TransferType
 import exchange.dydx.abacus.output.input.WithdrawalInputOptions
+import exchange.dydx.abacus.state.manager.CctpConfig
 
 internal data class InternalTransferInputState(
     var chains: List<SelectionOption>? = null,
@@ -33,7 +34,19 @@ internal data class InternalTransferInputState(
     var summary: TransferInputSummary? = null,
     var resources: TransferInputResources? = null,
     var route: Map<String, Any>? = null,
-)
+) {
+    val cctpChains: List<SelectionOption>? // chains filtered by cctp.json
+        get() =
+            chains?.filter { chain ->
+                CctpConfig.cctpChainIds?.any { it.chainId == chain.type } == true
+            }
+
+    val cctpTokens: List<SelectionOption>? // tokens filtered by cctp.json
+        get() =
+            tokens?.filter { token ->
+                CctpConfig.cctpChainIds?.any { it.tokenAddress.lowercase() == token.type.lowercase() } == true
+            }
+}
 
 internal fun TransferInputSize.Companion.safeCreate(existing: TransferInputSize?): TransferInputSize {
     return existing ?: TransferInputSize(
