@@ -250,12 +250,12 @@ internal class TransferInputProcessor(
     private fun updateWithdrawalOptions(
         transfer: InternalTransferInputState,
     ) {
-        val chains: IList<SelectionOption> = if (environment?.featureFlags?.cctpWithdrawalOnly == true) {
+        val chains: IList<SelectionOption> = if (environment?.isMainNet == true && environment?.featureFlags?.cctpWithdrawalOnly == true) {
             transfer.cctpChains?.toIList() ?: iListOf()
         } else {
             transfer.chains?.toIList() ?: iListOf()
         }
-        val assets: IList<SelectionOption> = if (environment?.featureFlags?.cctpWithdrawalOnly == true) {
+        val assets: IList<SelectionOption> = if (environment?.isMainNet == true && environment?.featureFlags?.cctpWithdrawalOnly == true) {
             transfer.cctpTokens?.toIList() ?: iListOf()
         } else {
             transfer.tokens?.toIList() ?: iListOf()
