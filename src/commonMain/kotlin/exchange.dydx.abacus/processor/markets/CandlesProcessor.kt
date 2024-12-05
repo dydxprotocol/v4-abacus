@@ -48,8 +48,10 @@ internal class CandlesProcessor(
         payload: List<IndexerCandleResponseObject>?
     ): InternalMarketState {
         if (!payload.isNullOrEmpty()) {
-            val candles = payload.reversed().mapNotNull {
+            val candles = payload.mapNotNull {
                 itemProcessor.process(it)
+            }.sortedBy {
+                it.startedAtMilliseconds
             }
             val merged = merge(
                 parser = parser,
