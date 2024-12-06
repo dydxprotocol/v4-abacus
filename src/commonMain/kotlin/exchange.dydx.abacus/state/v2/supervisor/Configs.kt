@@ -228,31 +228,17 @@ data class AppConfigsV2(
         val forApp = AppConfigsV2(
             systemConfigs = SystemConfigs.forApp,
             marketConfigs = MarketsConfigs.forApp,
-            accountConfigs = AccountConfigs.forApp,
-            onboardingConfigs = OnboardingConfigs.forApp,
-            vaultConfigs = VaultConfigs.forApp,
-            loadRemote = true,
-            triggerOrderToast = true,
-        )
-        val forAppWithIsolatedMargins = AppConfigsV2(
-            systemConfigs = SystemConfigs.forApp,
-            marketConfigs = MarketsConfigs.forApp,
             accountConfigs = AccountConfigs.forAppWithIsolatedMargins,
             onboardingConfigs = OnboardingConfigs.forApp,
             vaultConfigs = VaultConfigs.forApp,
             loadRemote = true,
             triggerOrderToast = true,
         )
-        val forAppDebug = AppConfigsV2(
-            systemConfigs = SystemConfigs.forApp,
-            marketConfigs = MarketsConfigs.forApp,
-            accountConfigs = AccountConfigs.forAppWithIsolatedMargins,
-            onboardingConfigs = OnboardingConfigs.forApp,
-            vaultConfigs = VaultConfigs.forApp,
+
+        val forAppDebug = forApp.copy(
             loadRemote = false,
-            enableLogger = true,
-            triggerOrderToast = true,
         )
+
         val forWeb = AppConfigsV2(
             systemConfigs = SystemConfigs.forApp,
             marketConfigs = MarketsConfigs.forWeb,

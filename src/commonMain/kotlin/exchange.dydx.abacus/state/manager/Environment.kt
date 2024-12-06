@@ -446,6 +446,7 @@ class V4Environment(
     val tokens: IMap<String, TokenInfo>,
     governance: EnvironmentGovernance?,
     featureFlags: EnvironmentFeatureFlags,
+    val restrictedLocales: IList<String>
 ) : Environment(
     id,
     name,
@@ -471,6 +472,7 @@ class V4Environment(
             linksData: Map<String, Any>?,
             walletsData: Map<String, Any>?,
             governanceData: Map<String, Any>?,
+            restrictedLocales: IList<String>,
         ): V4Environment? {
             val name = parser.asString(data["name"])
             val ethereumChainId = parser.asString(data["ethereumChainId"]) ?: return null
@@ -521,6 +523,7 @@ class V4Environment(
                 tokens = tokens,
                 governance = governance,
                 featureFlags = featureFlags,
+                restrictedLocales = restrictedLocales,
             )
         }
 
