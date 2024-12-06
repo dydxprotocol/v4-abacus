@@ -9,6 +9,7 @@ import exchange.dydx.abacus.payload.BaseTests
 import exchange.dydx.abacus.state.manager.setAddresses
 import exchange.dydx.abacus.state.v2.manager.AsyncAbacusStateManagerV2
 import exchange.dydx.abacus.state.v2.manager.StateManagerAdaptorV2
+import exchange.dydx.abacus.state.v2.supervisor.AccountConfigs
 import exchange.dydx.abacus.state.v2.supervisor.AppConfigsV2
 import exchange.dydx.abacus.tests.payloads.AbacusMockData
 import exchange.dydx.abacus.utils.values
@@ -51,9 +52,11 @@ class V4ForegroundCycleTests : NetworkTests() {
             deploymentUri = "https://api.examples.com",
             deployment = "DEV",
             appConfigs = if (forIsolatedMargins) {
-                AppConfigsV2.forAppWithIsolatedMargins
-            } else {
                 AppConfigsV2.forApp
+            } else {
+                AppConfigsV2.forApp.copy(
+                    accountConfigs = AccountConfigs.forApp,
+                )
             },
             ioImplementations = ioImplementations,
             uiImplementations = uiImplementations,

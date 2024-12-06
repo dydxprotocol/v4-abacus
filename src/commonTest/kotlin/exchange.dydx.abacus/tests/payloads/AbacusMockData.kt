@@ -13,6 +13,7 @@ import exchange.dydx.abacus.state.manager.WalletConnectV2
 import exchange.dydx.abacus.state.manager.WalletConnection
 import exchange.dydx.abacus.state.manager.WalletSegue
 import kollections.JsExport
+import kollections.iListOf
 import kollections.toIMap
 
 @JsExport
@@ -134,5 +135,6 @@ class AbacusMockData {
             isSlTpLimitOrdersEnabled = true,
             cctpWithdrawalOnly = true,
         ),
+        restrictedLocales = iListOf(),
     )
 }
