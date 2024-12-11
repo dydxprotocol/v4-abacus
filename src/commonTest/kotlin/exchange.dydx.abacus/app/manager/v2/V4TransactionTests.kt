@@ -72,7 +72,7 @@ class V4TransactionTests : NetworkTests() {
         stateManager = AsyncAbacusStateManagerV2(
             "https://api.examples.com",
             "DEV",
-            AppConfigsV2.forAppWithIsolatedMargins,
+            AppConfigsV2.forApp,
             ioImplementations,
             uiImplementations,
             TestState(),

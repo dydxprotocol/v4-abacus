@@ -59,6 +59,7 @@ import exchange.dydx.abacus.utils.UIImplementations
 import kollections.JsExport
 import kollections.iListOf
 import kollections.iMutableListOf
+import kollections.toIList
 import me.tatarka.inject.annotations.Inject
 
 @JsExport
@@ -390,6 +391,9 @@ class AsyncAbacusStateManagerV2(
         val linksData = parser.asNativeMap(items?.get("links"))
         val walletsData = parser.asNativeMap(items?.get("wallets"))
         val governanceData = parser.asNativeMap(items?.get("governance"))
+        val restrictedLocales = parser.asList(items?.get("restrictedLocales"))?.mapNotNull {
+            parser.asString(it)
+        }?.toIList() ?: iListOf()
 
         if (items != null) {
             val environmentsData = parser.asMap(items["environments"]) ?: return false
@@ -407,6 +411,7 @@ class AsyncAbacusStateManagerV2(
                     linksData = parser.asNativeMap(linksData?.get(dydxChainId)),
                     walletsData = parser.asNativeMap(walletsData?.get(dydxChainId)),
                     governanceData = parser.asNativeMap(governanceData?.get(dydxChainId)),
+                    restrictedLocales = restrictedLocales,
                 ) ?: continue
                 parsedEnvironments[environment.id] = environment
             }
