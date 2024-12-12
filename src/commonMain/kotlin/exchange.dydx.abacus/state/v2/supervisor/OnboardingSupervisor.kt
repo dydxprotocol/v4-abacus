@@ -400,8 +400,8 @@ internal class OnboardingSupervisor(
     internal fun transfer(
         data: String?,
         type: TransferInputField?,
-        accountAddress: String,
-        sourceAddress: String,
+        accountAddress: String?,
+        sourceAddress: String?,
         subaccountNumber: Int?,
     ) {
         helper.ioImplementations.threading?.async(ThreadingType.abacus) {
@@ -411,7 +411,15 @@ internal class OnboardingSupervisor(
                 subaccountNumber = subaccountNumber ?: 0,
                 environment = helper.environment,
             )
-            didUpdateStateForTransfer(data, type, accountAddress, sourceAddress, subaccountNumber)
+            if (accountAddress != null && sourceAddress != null) {
+                processTransferInput(
+                    data = data,
+                    type = type,
+                    accountAddress = accountAddress,
+                    sourceAddress = sourceAddress,
+                    subaccountNumber = subaccountNumber,
+                )
+            }
             helper.ioImplementations.threading?.async(ThreadingType.main) {
                 helper.stateNotification?.stateChanged(
                     stateResponse.state,
@@ -421,7 +429,7 @@ internal class OnboardingSupervisor(
         }
     }
 
-    private fun didUpdateStateForTransfer(
+    private fun processTransferInput(
         data: String?,
         type: TransferInputField?,
         accountAddress: String,
