@@ -642,11 +642,8 @@ internal class StateManagerAdaptorV2(
     }
 
     internal fun transfer(data: String?, type: TransferInputField?) {
-        val address = accountAddress
-        val source = sourceAddress
-        if (address != null && source != null) {
-            onboarding.transfer(data, type, address, source, subaccountNumber)
-        }
+        onboarding.transfer(data, type, accountAddress, sourceAddress, subaccountNumber)
+
         data?.let {
             TransferType(rawValue = data)?.let {
                 system.didSetTransferType(it)
