@@ -2,6 +2,7 @@ package exchange.dydx.abacus.state.manager
 
 import exchange.dydx.abacus.protocols.LocalizerProtocol
 import exchange.dydx.abacus.protocols.ParserProtocol
+import exchange.dydx.abacus.protocols.asTypedList
 import exchange.dydx.abacus.utils.IList
 import exchange.dydx.abacus.utils.IMap
 import exchange.dydx.abacus.utils.ServerTime
@@ -263,6 +264,7 @@ data class WalletConnectV1(
 @JsExport
 data class WalletConnectV2(
     val projectId: String,
+    val wallets: WalletConnectV2Wallets?
 ) {
     companion object {
         fun parse(
@@ -270,7 +272,25 @@ data class WalletConnectV2(
             parser: ParserProtocol,
         ): WalletConnectV2? {
             val projectId = parser.asString(data?.get("projectId")) ?: return null
-            return WalletConnectV2(projectId)
+            val wallets = WalletConnectV2Wallets.parse(parser.asMap(data?.get("wallets")), parser)
+            return WalletConnectV2(projectId, wallets)
+        }
+    }
+}
+
+@JsExport
+data class WalletConnectV2Wallets(
+    val ios: IList<String>?,
+    val android: IList<String>?
+) {
+    companion object {
+        fun parse(
+            data: Map<String, Any>?,
+            parser: ParserProtocol,
+        ): WalletConnectV2Wallets? {
+            val ios = parser.asTypedList<String>(data?.get("ios"))?.toIList()
+            val android = parser.asTypedList<String>(data?.get("android"))?.toIList()
+            return WalletConnectV2Wallets(ios, android)
         }
     }
 }
@@ -345,11 +365,11 @@ data class WalletConnection(
             val signTypedDataDomainName = parser.asString(data?.get("signTypedDataDomainName"))
             return if (walletConnect != null || walletSegue != null) {
                 WalletConnection(
-                    walletConnect,
-                    walletSegue,
-                    "$deploymentUri$images",
-                    signTypedDataAction,
-                    signTypedDataDomainName,
+                    walletConnect = walletConnect,
+                    walletSegue = walletSegue,
+                    images = "$deploymentUri$images",
+                    signTypedDataAction = signTypedDataAction,
+                    signTypedDataDomainName = signTypedDataDomainName,
                 )
             } else {
                 null
