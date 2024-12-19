@@ -94,23 +94,24 @@ class AbacusMockData {
             tradingRewardsLearnMore = "https://docs.dydx.exchange/concepts-trading/rewards_fees_and_parameters",
         ),
         walletConnection = WalletConnection(
-            WalletConnect(
+            walletConnect = WalletConnect(
                 WalletConnectClient(
-                    "test",
-                    "test",
-                    "test",
+                    name = "test",
+                    description = "test",
+                    iconUrl = "test",
                 ),
                 WalletConnectV1(
-                    "test",
+                    bridgeUrl = "test",
                 ),
                 WalletConnectV2(
-                    "test",
+                    projectId = "test",
+                    wallets = null,
                 ),
             ),
-            WalletSegue("callback"),
-            "/images/",
-            "test",
-            "test",
+            walletSegue = WalletSegue("callback"),
+            images = "/images/",
+            signTypedDataAction = "test",
+            signTypedDataDomainName = "test",
         ),
         apps = null,
         tokens = mapOf(
