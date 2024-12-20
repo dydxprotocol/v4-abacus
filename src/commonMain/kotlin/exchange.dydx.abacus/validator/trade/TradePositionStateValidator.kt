@@ -1,6 +1,7 @@
 package exchange.dydx.abacus.validator.trade
 
 import exchange.dydx.abacus.calculator.CalculationPeriod
+import exchange.dydx.abacus.output.Asset
 import exchange.dydx.abacus.output.input.ErrorType
 import exchange.dydx.abacus.output.input.InputType
 import exchange.dydx.abacus.output.input.ValidationError
@@ -42,6 +43,7 @@ internal class TradePositionStateValidator(
         validatePositionSize(
             position = position,
             market = internalState.marketsSummary.markets[trade.marketId],
+            assets = internalState.assets,
         )?.let {
             errors.add(it)
         }
@@ -99,6 +101,7 @@ internal class TradePositionStateValidator(
     private fun validatePositionSize(
         position: InternalPerpetualPosition?,
         market: InternalMarketState?,
+        assets: Map<String, Asset>?,
     ): ValidationError? {
         /*
         NEW_POSITION_SIZE_OVER_MAX
@@ -108,7 +111,8 @@ internal class TradePositionStateValidator(
         if (maxSize == Numeric.double.ZERO) {
             return null
         }
-        val symbol = market?.perpetualMarket?.assetId ?: return null
+        val assetId = market?.perpetualMarket?.assetId ?: return null
+        val symbol = assets?.get(assetId)?.displayableAssetId ?: return null
         return if (size > maxSize) {
             error(
                 type = ErrorType.error,

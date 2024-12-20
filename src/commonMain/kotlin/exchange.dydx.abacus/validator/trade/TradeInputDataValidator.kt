@@ -1,6 +1,7 @@
 package exchange.dydx.abacus.validator.trade
 
 import abs
+import exchange.dydx.abacus.output.Asset
 import exchange.dydx.abacus.output.input.ErrorType
 import exchange.dydx.abacus.output.input.InputType
 import exchange.dydx.abacus.output.input.OrderSide
@@ -60,6 +61,7 @@ internal class TradeInputDataValidator(
         validateSize(
             trade = internalState.input.trade,
             market = market,
+            assets = internalState.assets,
         )?.let {
             errors.addAll(it)
         }
@@ -128,11 +130,13 @@ internal class TradeInputDataValidator(
     private fun validateSize(
         trade: InternalTradeInputState,
         market: InternalMarketState?,
+        assets: Map<String, Asset>?
     ): List<ValidationError>? {
         /*
          ORDER_SIZE_BELOW_MIN_SIZE
          */
-        val symbol = market?.perpetualMarket?.assetId ?: return null
+        val assetId = market?.perpetualMarket?.assetId ?: return null
+        val symbol = assets?.get(assetId)?.displayableAssetId ?: return null
         val size = trade.size?.size ?: return null
         val minOrderSize = market.perpetualMarket?.configs?.minOrderSize ?: return null
         return if (size.abs() < minOrderSize) {

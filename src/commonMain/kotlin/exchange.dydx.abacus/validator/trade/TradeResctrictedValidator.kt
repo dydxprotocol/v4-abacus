@@ -1,5 +1,6 @@
 package exchange.dydx.abacus.validator.trade
 
+import exchange.dydx.abacus.output.Asset
 import exchange.dydx.abacus.output.input.ErrorType
 import exchange.dydx.abacus.output.input.InputType
 import exchange.dydx.abacus.output.input.ValidationError
@@ -35,6 +36,7 @@ internal class TradeResctrictedValidator(
         val closeOnlyError =
             validateClosingOnly(
                 market = market,
+                assets = internalState.assets,
                 change = change,
                 restricted = restricted,
             )
@@ -64,10 +66,12 @@ internal class TradeResctrictedValidator(
 
     private fun validateClosingOnly(
         market: InternalMarketState?,
+        assets: Map<String, Asset>?,
         change: PositionChange,
         restricted: Boolean,
     ): ValidationError? {
-        val marketId = market?.perpetualMarket?.assetId ?: ""
+        val assetId = market?.perpetualMarket?.assetId ?: return null
+        val marketId = assets?.get(assetId)?.displayableAssetId ?: return null
         val canTrade = market?.perpetualMarket?.status?.canTrade ?: true
         val canReduce = market?.perpetualMarket?.status?.canReduce ?: true
 
