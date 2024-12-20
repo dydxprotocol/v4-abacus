@@ -2,6 +2,7 @@ package exchange.dydx.abacus.validator
 
 import abs
 import exchange.dydx.abacus.calculator.CalculationPeriod
+import exchange.dydx.abacus.output.Asset
 import exchange.dydx.abacus.output.input.ErrorType
 import exchange.dydx.abacus.output.input.InputType
 import exchange.dydx.abacus.output.input.OrderSide
@@ -56,7 +57,7 @@ internal class TriggerOrdersInputValidator(
         val tickSize = market?.perpetualMarket?.configs?.tickSize ?: 0.01
         val oraclePrice = market?.perpetualMarket?.oraclePrice ?: return null
 
-        validateTriggerOrders(triggerOrders, market)?.let {
+        validateTriggerOrders(triggerOrders, market, internalState.assets)?.let {
             errors.addAll(it)
         }
 
@@ -64,12 +65,12 @@ internal class TriggerOrdersInputValidator(
         val stopLossOrder = triggerOrders.stopLossOrder
 
         if (takeProfitOrder != null) {
-            validateTriggerOrder(takeProfitOrder, market, oraclePrice, tickSize, position)?.let {
+            validateTriggerOrder(takeProfitOrder, market, internalState.assets, oraclePrice, tickSize, position)?.let {
                 errors.addAll(it)
             }
         }
         if (stopLossOrder != null) {
-            validateTriggerOrder(stopLossOrder, market, oraclePrice, tickSize, position)?.let {
+            validateTriggerOrder(stopLossOrder, market, internalState.assets, oraclePrice, tickSize, position)?.let {
                 errors.addAll(it)
             }
         }
@@ -149,11 +150,12 @@ internal class TriggerOrdersInputValidator(
 
     private fun validateTriggerOrders(
         triggerOrders: InternalTriggerOrdersInputState,
-        market: InternalMarketState?
+        market: InternalMarketState?,
+        assets: Map<String, Asset>?,
     ): List<ValidationError>? {
         val errors = mutableListOf<ValidationError>()
 
-        validateSize(triggerOrders.size, market)?.let {
+        validateSize(triggerOrders.size, market, assets)?.let {
             /*
             ORDER_SIZE_BELOW_MIN_SIZE
              */
@@ -180,6 +182,7 @@ internal class TriggerOrdersInputValidator(
     private fun validateTriggerOrder(
         triggerOrder: InternalTriggerOrderState,
         market: InternalMarketState?,
+        assets: Map<String, Asset>?,
         oraclePrice: Double,
         tickSize: Double,
         position: InternalPerpetualPosition,
@@ -193,7 +196,7 @@ internal class TriggerOrdersInputValidator(
             triggerErrors.addAll(it)
         }
 
-        validateSize(triggerOrder.summary?.size, market)?.let {
+        validateSize(triggerOrder.summary?.size, market, assets)?.let {
             /*
                 ORDER_SIZE_BELOW_MIN_SIZE
              */
@@ -813,8 +816,10 @@ internal class TriggerOrdersInputValidator(
     private fun validateSize(
         orderSize: Double?,
         market: InternalMarketState?,
+        assets: Map<String, Asset>?,
     ): List<ValidationError>? {
-        val symbol = market?.perpetualMarket?.assetId ?: return null
+        val assetId = market?.perpetualMarket?.assetId ?: return null
+        val symbol = assets?.get(assetId)?.displayableAssetId ?: return null
         val orderSize = orderSize ?: return null
         val minOrderSize = market.perpetualMarket?.configs?.minOrderSize ?: return null
 
