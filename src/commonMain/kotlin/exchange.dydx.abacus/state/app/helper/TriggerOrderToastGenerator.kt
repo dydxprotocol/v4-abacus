@@ -34,10 +34,19 @@ class TriggerOrderToastGenerator(
     private val localizer: LocalizerProtocol?,
     private val threading: ThreadingProtocol?,
 ) : TriggerOrderToastGeneratorProtocol {
-    private enum class TriggerOrderStatus {
-        Submitting,
-        Success,
-        Failed
+    private sealed class TriggerOrderStatus {
+        class Submitting : TriggerOrderStatus()
+        class Success : TriggerOrderStatus()
+        class Failed(val reason: String?) : TriggerOrderStatus()
+
+        val failedReason: String?
+            get() {
+                return if (this is Failed) {
+                    return this.reason
+                } else {
+                    null
+                }
+            }
     }
 
     private var orderPayloadStatus: MutableMap<String, TriggerOrderStatus> = mutableMapOf()
@@ -56,11 +65,11 @@ class TriggerOrderToastGenerator(
         this.state = state
 
         payload.cancelOrderPayloads.forEach { cancelOrderPayload ->
-            orderPayloadStatus[cancelOrderPayload.orderId] = TriggerOrderStatus.Submitting
+            orderPayloadStatus[cancelOrderPayload.orderId] = TriggerOrderStatus.Submitting()
         }
         payload.placeOrderPayloads.forEach { placeOrderPayload ->
             orderPayloadStatus[placeOrderPayload.clientId.toString()] =
-                TriggerOrderStatus.Submitting
+                TriggerOrderStatus.Submitting()
         }
 
         val toasts = generateTriggerOrderToast(subaccountNumber, payload)
@@ -79,9 +88,15 @@ class TriggerOrderToastGenerator(
 
         val responsePayload = data as? HumanReadableTriggerOrdersPayload ?: return
         if (successful) {
-            updateOrderStatus(responsePayload, TriggerOrderStatus.Success)
+            updateOrderStatus(responsePayload, TriggerOrderStatus.Success())
         } else {
-            updateOrderStatus(responsePayload, TriggerOrderStatus.Failed)
+            val errorMessage =
+                if (error?.stringKey != null) {
+                    localizer?.localizeWithParams(error.stringKey, mapOf("EQUITY_TIER_LEARN_MORE" to ""))
+                } else {
+                    null
+                }
+            updateOrderStatus(responsePayload, TriggerOrderStatus.Failed(errorMessage))
         }
         val toasts = generateTriggerOrderToast(subaccountNumber, responsePayload)
         showToasts(toasts)
@@ -168,24 +183,24 @@ class TriggerOrderToastGenerator(
             return null
         }
 
-        val status = orderPayloadStatus[cancelOrderPayload.orderId] ?: TriggerOrderStatus.Submitting
+        val status = orderPayloadStatus[cancelOrderPayload.orderId] ?: TriggerOrderStatus.Submitting()
 
         val takeProfitOrder = takeProfitOrders?.firstOrNull { it.id == cancelOrderPayload.orderId }
         val stopLossOrder = stopLossOrders?.firstOrNull { it.id == cancelOrderPayload.orderId }
 
         if (takeProfitOrder != null) {
             return generateForCancelOrderForTP(
-                cancelOrderPayload.orderId,
-                status,
-                takeProfitOrder,
-                tickSize,
+                id = cancelOrderPayload.orderId,
+                status = status,
+                takeProfitOrder = takeProfitOrder,
+                tickSize = tickSize,
             )
         } else if (stopLossOrder != null) {
             return generateForCancelOrderForSL(
-                cancelOrderPayload.orderId,
-                status,
-                stopLossOrder,
-                tickSize,
+                id = cancelOrderPayload.orderId,
+                status = status,
+                stopLossOrder = stopLossOrder,
+                tickSize = tickSize,
             )
         } else {
             return null
@@ -204,17 +219,17 @@ class TriggerOrderToastGenerator(
         }
 
         val orderType: String?
-        val detail: String?
+        var detail: String?
         if (takeProfitOrder != null) {
             val detailStringPath = when (status) {
-                TriggerOrderStatus.Submitting -> "NOTIFICATIONS.TAKE_PROFIT_TRIGGER_REMOVING.BODY"
-                TriggerOrderStatus.Success -> "NOTIFICATIONS.TAKE_PROFIT_TRIGGER_REMOVED.BODY"
-                TriggerOrderStatus.Failed -> "NOTIFICATIONS.TAKE_PROFIT_TRIGGER_REMOVING_ERROR.BODY"
+                is TriggerOrderStatus.Submitting -> "NOTIFICATIONS.TAKE_PROFIT_TRIGGER_REMOVING.BODY"
+                is TriggerOrderStatus.Success -> "NOTIFICATIONS.TAKE_PROFIT_TRIGGER_REMOVED.BODY"
+                is TriggerOrderStatus.Failed -> "NOTIFICATIONS.TAKE_PROFIT_TRIGGER_REMOVING_ERROR.BODY"
             }
             val orderTypePath = when (status) {
-                TriggerOrderStatus.Submitting -> "NOTIFICATIONS.TAKE_PROFIT_TRIGGER_REMOVING.TITLE"
-                TriggerOrderStatus.Success -> "NOTIFICATIONS.TAKE_PROFIT_TRIGGER_REMOVED.TITLE"
-                TriggerOrderStatus.Failed -> "NOTIFICATIONS.TAKE_PROFIT_TRIGGER_REMOVING_ERROR.TITLE"
+                is TriggerOrderStatus.Submitting -> "NOTIFICATIONS.TAKE_PROFIT_TRIGGER_REMOVING.TITLE"
+                is TriggerOrderStatus.Success -> "NOTIFICATIONS.TAKE_PROFIT_TRIGGER_REMOVED.TITLE"
+                is TriggerOrderStatus.Failed -> "NOTIFICATIONS.TAKE_PROFIT_TRIGGER_REMOVING_ERROR.TITLE"
             }
             orderType = localizer.localize(orderTypePath)
             detail = localizer.localizeWithParams(
@@ -228,6 +243,10 @@ class TriggerOrderToastGenerator(
                         ),
                 ),
             )
+            val failedReasons = status.failedReason
+            if (failedReasons != null) {
+                detail += " $failedReasons"
+            }
         } else {
             orderType = null
             detail = null
@@ -236,7 +255,7 @@ class TriggerOrderToastGenerator(
         return if (orderType != null && detail != null) {
             Toast(
                 id = id,
-                type = if (status == TriggerOrderStatus.Failed) ToastType.Warning else ToastType.Info,
+                type = if (status is TriggerOrderStatus.Failed) ToastType.Warning else ToastType.Info,
                 title = orderType,
                 text = detail,
             )
@@ -257,17 +276,17 @@ class TriggerOrderToastGenerator(
         }
 
         val orderType: String?
-        val detail: String?
+        var detail: String?
         if (stopLossOrder != null) {
             val detailStringPath = when (status) {
-                TriggerOrderStatus.Submitting -> "NOTIFICATIONS.STOP_LOSS_TRIGGER_REMOVING.BODY"
-                TriggerOrderStatus.Success -> "NOTIFICATIONS.STOP_LOSS_TRIGGER_REMOVED.BODY"
-                TriggerOrderStatus.Failed -> "NOTIFICATIONS.STOP_LOSS_TRIGGER_REMOVING_ERROR.BODY"
+                is TriggerOrderStatus.Submitting -> "NOTIFICATIONS.STOP_LOSS_TRIGGER_REMOVING.BODY"
+                is TriggerOrderStatus.Success -> "NOTIFICATIONS.STOP_LOSS_TRIGGER_REMOVED.BODY"
+                is TriggerOrderStatus.Failed -> "NOTIFICATIONS.STOP_LOSS_TRIGGER_REMOVING_ERROR.BODY"
             }
             val orderTypePath = when (status) {
-                TriggerOrderStatus.Submitting -> "NOTIFICATIONS.STOP_LOSS_TRIGGER_REMOVING.TITLE"
-                TriggerOrderStatus.Success -> "NOTIFICATIONS.STOP_LOSS_TRIGGER_REMOVED.TITLE"
-                TriggerOrderStatus.Failed -> "NOTIFICATIONS.STOP_LOSS_TRIGGER_REMOVING_ERROR.TITLE"
+                is TriggerOrderStatus.Submitting -> "NOTIFICATIONS.STOP_LOSS_TRIGGER_REMOVING.TITLE"
+                is TriggerOrderStatus.Success -> "NOTIFICATIONS.STOP_LOSS_TRIGGER_REMOVED.TITLE"
+                is TriggerOrderStatus.Failed -> "NOTIFICATIONS.STOP_LOSS_TRIGGER_REMOVING_ERROR.TITLE"
             }
             orderType = localizer.localize(orderTypePath)
             detail = localizer.localizeWithParams(
@@ -281,6 +300,10 @@ class TriggerOrderToastGenerator(
                         ),
                 ),
             )
+            val failedReasons = status.failedReason
+            if (failedReasons != null) {
+                detail += " $failedReasons"
+            }
         } else {
             orderType = null
             detail = null
@@ -289,7 +312,7 @@ class TriggerOrderToastGenerator(
         return if (orderType != null && detail != null) {
             Toast(
                 id = id,
-                type = if (status == TriggerOrderStatus.Failed) ToastType.Warning else ToastType.Info,
+                type = if (status is TriggerOrderStatus.Failed) ToastType.Warning else ToastType.Info,
                 title = orderType,
                 text = detail,
             )
@@ -308,7 +331,7 @@ class TriggerOrderToastGenerator(
         }
 
         val status = orderPayloadStatus[placeOrderPayload.clientId.toString()]
-            ?: TriggerOrderStatus.Submitting
+            ?: TriggerOrderStatus.Submitting()
         val triggerPrice = formatter.dollar(placeOrderPayload.triggerPrice, tickSize) ?: ""
 
         val detailStringPath: String?
@@ -317,27 +340,27 @@ class TriggerOrderToastGenerator(
         when (placeOrderPayload.type) {
             "TAKE_PROFIT_MARKET", "TAKE_PROFIT" -> {
                 detailStringPath = when (status) {
-                    TriggerOrderStatus.Submitting -> "NOTIFICATIONS.TAKE_PROFIT_TRIGGER_CREATING.BODY"
-                    TriggerOrderStatus.Success -> "NOTIFICATIONS.TAKE_PROFIT_TRIGGER_CREATED.BODY"
-                    TriggerOrderStatus.Failed -> "NOTIFICATIONS.TAKE_PROFIT_TRIGGER_CREATING_ERROR.BODY"
+                    is TriggerOrderStatus.Submitting -> "NOTIFICATIONS.TAKE_PROFIT_TRIGGER_CREATING.BODY"
+                    is TriggerOrderStatus.Success -> "NOTIFICATIONS.TAKE_PROFIT_TRIGGER_CREATED.BODY"
+                    is TriggerOrderStatus.Failed -> "NOTIFICATIONS.TAKE_PROFIT_TRIGGER_CREATING_ERROR.BODY"
                 }
                 orderTypePath = when (status) {
-                    TriggerOrderStatus.Submitting -> "NOTIFICATIONS.TAKE_PROFIT_TRIGGER_CREATING.TITLE"
-                    TriggerOrderStatus.Success -> "NOTIFICATIONS.TAKE_PROFIT_TRIGGER_CREATED.TITLE"
-                    TriggerOrderStatus.Failed -> "NOTIFICATIONS.TAKE_PROFIT_TRIGGER_CREATING_ERROR.TITLE"
+                    is TriggerOrderStatus.Submitting -> "NOTIFICATIONS.TAKE_PROFIT_TRIGGER_CREATING.TITLE"
+                    is TriggerOrderStatus.Success -> "NOTIFICATIONS.TAKE_PROFIT_TRIGGER_CREATED.TITLE"
+                    is TriggerOrderStatus.Failed -> "NOTIFICATIONS.TAKE_PROFIT_TRIGGER_CREATING_ERROR.TITLE"
                 }
             }
 
             "STOP_LIMIT", "STOP_MARKET" -> {
                 detailStringPath = when (status) {
-                    TriggerOrderStatus.Submitting -> "NOTIFICATIONS.STOP_LOSS_TRIGGER_CREATING.BODY"
-                    TriggerOrderStatus.Success -> "NOTIFICATIONS.STOP_LOSS_TRIGGER_CREATED.BODY"
-                    TriggerOrderStatus.Failed -> "NOTIFICATIONS.STOP_LOSS_TRIGGER_CREATING_ERROR.BODY"
+                    is TriggerOrderStatus.Submitting -> "NOTIFICATIONS.STOP_LOSS_TRIGGER_CREATING.BODY"
+                    is TriggerOrderStatus.Success -> "NOTIFICATIONS.STOP_LOSS_TRIGGER_CREATED.BODY"
+                    is TriggerOrderStatus.Failed -> "NOTIFICATIONS.STOP_LOSS_TRIGGER_CREATING_ERROR.BODY"
                 }
                 orderTypePath = when (status) {
-                    TriggerOrderStatus.Submitting -> "NOTIFICATIONS.STOP_LOSS_TRIGGER_CREATING.TITLE"
-                    TriggerOrderStatus.Success -> "NOTIFICATIONS.STOP_LOSS_TRIGGER_CREATED.TITLE"
-                    TriggerOrderStatus.Failed -> "NOTIFICATIONS.STOP_LOSS_TRIGGER_CREATING_ERROR.TITLE"
+                    is TriggerOrderStatus.Submitting -> "NOTIFICATIONS.STOP_LOSS_TRIGGER_CREATING.TITLE"
+                    is TriggerOrderStatus.Success -> "NOTIFICATIONS.STOP_LOSS_TRIGGER_CREATED.TITLE"
+                    is TriggerOrderStatus.Failed -> "NOTIFICATIONS.STOP_LOSS_TRIGGER_CREATING_ERROR.TITLE"
                 }
             }
 
@@ -348,17 +371,21 @@ class TriggerOrderToastGenerator(
         }
 
         val orderType = orderTypePath?.let { localizer.localize(it) }
-        val detail = detailStringPath?.let {
+        var detail = detailStringPath?.let {
             localizer.localizeWithParams(
                 path = it,
                 params = mapOf("NEW_VALUE" to triggerPrice),
             )
         }
+        val failedReasons = status.failedReason
+        if (failedReasons != null) {
+            detail += " $failedReasons"
+        }
 
         return if (orderType != null && detail != null) {
             Toast(
                 id = placeOrderPayload.clientId.toString(),
-                type = if (status == TriggerOrderStatus.Failed) ToastType.Warning else ToastType.Info,
+                type = if (status is TriggerOrderStatus.Failed) ToastType.Warning else ToastType.Info,
                 title = orderType,
                 text = detail,
             )
@@ -372,7 +399,7 @@ class TriggerOrderToastGenerator(
             Logger.e { "Threading is null" }
             return
         }
-        threading?.async(ThreadingType.main) {
+        threading.async(ThreadingType.main) {
             for (toast in toasts) {
                 presentation?.showToast(toast)
             }
