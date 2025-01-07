@@ -1,5 +1,6 @@
 package exchange.dydx.abacus.validator
 
+import com.ionspin.kotlin.bignum.decimal.toBigDecimal
 import exchange.dydx.abacus.output.input.ErrorAction
 import exchange.dydx.abacus.output.input.ErrorFormat
 import exchange.dydx.abacus.output.input.ErrorParam
@@ -188,9 +189,7 @@ internal open class BaseInputValidator(
             }
 
             ErrorFormat.Size -> {
-                parser.asDouble(value)?.let { amount ->
-                    "$amount"
-                } ?: run { null }
+                parser.asDouble(value)?.toBigDecimal()?.toPlainString() ?: run { null }
             }
 
             else -> null
