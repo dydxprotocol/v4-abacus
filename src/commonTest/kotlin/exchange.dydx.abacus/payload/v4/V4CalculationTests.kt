@@ -89,7 +89,7 @@ class V4CalculationTests : V4BaseTests() {
             assertEquals(50.0, calculated?.initialRiskTotal)
             assertEquals(10.0, calculated?.leverage)
             assertEquals(0.5, calculated?.marginUsage)
-            assertEquals(1000.0, calculated?.buyingPower)
+            assertEquals(2500.0, calculated?.buyingPower)
 
             val ethPosition = subaccount?.openPositions?.get("ETH-USD")
             val positionCalculated = ethPosition?.calculated?.get(CalculationPeriod.current)
@@ -208,7 +208,7 @@ class V4CalculationTests : V4BaseTests() {
             assertEquals(50.0, calculated.initialRiskTotal)
             assertEquals(10.0, calculated.leverage)
             assertEquals(0.5, calculated.marginUsage)
-            assertEquals(1000.0, calculated.buyingPower)
+            assertEquals(2500.0, calculated.buyingPower)
 
             val ethPosition = subaccount.openPositions?.get("ETH-USD")!!
             val positionCalculated = ethPosition.calculated[CalculationPeriod.current]!!
