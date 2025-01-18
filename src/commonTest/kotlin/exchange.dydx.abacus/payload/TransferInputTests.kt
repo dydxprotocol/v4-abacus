@@ -94,8 +94,8 @@ class TransferInputTests : V4BaseTests() {
             assertEquals(0.27310138690337965, calculatedPostOrder.leverage)
             assertEquals(0.013655195644485585, calculatedCurrent.marginUsage)
             assertEquals(0.013655069345169024, calculatedPostOrder.marginUsage)
-            assertEquals(2132807.5345397857, calculatedCurrent.buyingPower)
-            assertEquals(2132827.5345397857, calculatedPostOrder.buyingPower)
+            assertEquals(5332018.836349465, calculatedCurrent.buyingPower)
+            assertEquals(5332068.836349465, calculatedPostOrder.buyingPower)
         } else {
             test(
                 {
@@ -170,8 +170,8 @@ class TransferInputTests : V4BaseTests() {
             assertEquals(0.2610321394033229, calculatedPostOrder.leverage)
             assertEquals(0.013655195644485585, calculatedCurrent.marginUsage)
             assertEquals(0.013051606970166163, calculatedPostOrder.marginUsage)
-            assertEquals(2132807.5345397857, calculatedCurrent.buyingPower)
-            assertEquals(2232807.5345397857, calculatedPostOrder.buyingPower)
+            assertEquals(5332018.836349465, calculatedCurrent.buyingPower)
+            assertEquals(5582018.836349465, calculatedPostOrder.buyingPower)
         } else {
             test(
                 {
@@ -255,8 +255,8 @@ class TransferInputTests : V4BaseTests() {
             assertEquals(0.2706010528035248, calculatedPostOrder.leverage)
             assertEquals(0.013655195644485585, calculatedCurrent.marginUsage)
             assertEquals(0.01353005264017626, calculatedPostOrder.marginUsage)
-            assertEquals(2132807.5345397857, calculatedCurrent.buyingPower)
-            assertEquals(2152807.5345397857, calculatedPostOrder.buyingPower)
+            assertEquals(5332018.836349465, calculatedCurrent.buyingPower)
+            assertEquals(5382018.836349465, calculatedPostOrder.buyingPower)
         } else {
             test(
                 {
@@ -339,8 +339,8 @@ class TransferInputTests : V4BaseTests() {
             assertEquals(0.27062585430277314, calculatedPostOrder.leverage)
             assertEquals(0.013655195644485585, calculatedCurrent.marginUsage)
             assertEquals(0.013531292715138643, calculatedPostOrder.marginUsage)
-            assertEquals(2132807.5345397857, calculatedCurrent.buyingPower)
-            assertEquals(2152607.5345397857, calculatedPostOrder.buyingPower)
+            assertEquals(5332018.836349465, calculatedCurrent.buyingPower)
+            assertEquals(5381518.836349465, calculatedPostOrder.buyingPower)
         } else {
             test(
                 {
@@ -446,8 +446,8 @@ class TransferInputTests : V4BaseTests() {
             assertEquals(0.2756535044256519, calculatedPostOrder.leverage)
             assertEquals(0.013655195644485585, calculatedCurrent.marginUsage)
             assertEquals(0.013782675221282625, calculatedPostOrder.marginUsage)
-            assertEquals(2132807.5345397857, calculatedCurrent.buyingPower)
-            assertEquals(2112807.5345397857, calculatedPostOrder.buyingPower)
+            assertEquals(5332018.836349465, calculatedCurrent.buyingPower)
+            assertEquals(5282018.836349465, calculatedPostOrder.buyingPower)
         } else {
             test(
                 {
@@ -530,8 +530,8 @@ class TransferInputTests : V4BaseTests() {
             assertEquals(0.2756792407635699, calculatedPostOrder.leverage)
             assertEquals(0.013655195644485585, calculatedCurrent.marginUsage)
             assertEquals(0.013783962038178554, calculatedPostOrder.marginUsage)
-            assertEquals(2132807.5345397857, calculatedCurrent.buyingPower)
-            assertEquals(2112607.5345397857, calculatedPostOrder.buyingPower)
+            assertEquals(5332018.836349465, calculatedCurrent.buyingPower)
+            assertEquals(5281518.836349465, calculatedPostOrder.buyingPower)
         } else {
             test(
                 {
@@ -635,8 +635,8 @@ class TransferInputTests : V4BaseTests() {
             assertEquals(0.2756535044256519, calculatedPostOrder.leverage)
             assertEquals(0.013655195644485585, calculatedCurrent.marginUsage)
             assertEquals(0.013782675221282625, calculatedPostOrder.marginUsage)
-            assertEquals(2132807.5345397857, calculatedCurrent.buyingPower)
-            assertEquals(2112807.5345397857, calculatedPostOrder.buyingPower)
+            assertEquals(5332018.836349465, calculatedCurrent.buyingPower)
+            assertEquals(5282018.836349465, calculatedPostOrder.buyingPower)
 
             assertTrue { perp.state?.input?.transfer?.transferOutOptions?.assets?.count() == 2 }
             assertTrue { perp.state?.input?.transfer?.transferOutOptions?.chains?.count() == 1 }

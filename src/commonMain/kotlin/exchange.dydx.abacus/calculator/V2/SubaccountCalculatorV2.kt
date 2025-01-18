@@ -180,7 +180,7 @@ internal class SubaccountCalculatorV2(
             val equity = calculated?.equity
             val initialRiskTotal = calculated?.initialRiskTotal
             if (quoteBalance != null && equity != null && initialRiskTotal != null) {
-                val imf = configs?.initialMarginFraction ?: 0.05
+                val imf = configs?.initialMarginFraction ?: 0.02
 
                 calculated.buyingPower = calculateBuyingPower(
                     equity = equity,
