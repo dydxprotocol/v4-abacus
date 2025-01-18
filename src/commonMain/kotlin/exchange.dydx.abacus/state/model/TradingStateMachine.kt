@@ -730,7 +730,7 @@ open class TradingStateMachine(
                     marketsSummary = internalState.marketsSummary,
                     periods = periods,
                     price = null, // priceOverwrite(markets),
-                    configs = null, // This is used to get the IMF.. with "null" the default value 0.05 will be used
+                    configs = null, // This is used to get the IMF.. with "null" the default value 0.02 will be used
                 )
             } else {
                 this.marketsSummary?.let { marketsSummary ->
