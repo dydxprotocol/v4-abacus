@@ -17,6 +17,7 @@ data class ConfigsAssetMetadata(
 //    val exchanges: IList<Any>
 )
 
+@Suppress("ConstructorParameterNaming")
 @Serializable
 data class ConfigsAssetMetadataPrice(
     val price: Double,
