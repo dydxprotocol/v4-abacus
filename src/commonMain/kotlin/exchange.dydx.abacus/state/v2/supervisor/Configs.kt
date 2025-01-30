@@ -222,7 +222,6 @@ data class AppConfigsV2(
     var enableLogger: Boolean = false,
     var triggerOrderToast: Boolean = false,
     var staticTyping: Boolean = false,
-    var metadataService: Boolean = false,
 ) {
     companion object {
         val forApp = AppConfigsV2(
