@@ -611,7 +611,8 @@ fun TradingStateMachine.rest(
         "/configs/markets.json" -> {
             if (deploymentUri != null) {
                 changes = configurations(
-                    payload = payload,
+                    infoPayload = payload,
+                    pricesPayload = "",
                     subaccountNumber = subaccountNumber,
                     deploymentUri = deploymentUri,
                 )

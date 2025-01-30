@@ -9,6 +9,7 @@ import exchange.dydx.abacus.state.changes.StateChanges
 import indexer.models.IndexerCompositeMarketObject
 import indexer.models.IndexerWsMarketUpdateResponse
 import indexer.models.configs.ConfigsAssetMetadata
+import indexer.models.configs.ConfigsAssetMetadataPrice
 import kollections.iListOf
 import kollections.toIList
 
@@ -212,13 +213,15 @@ internal fun TradingStateMachine.receivedBatchedMarketsChanges(
 }
 
 internal fun TradingStateMachine.processMarketsConfigurationsWithMetadataService(
-    payload: Map<String, ConfigsAssetMetadata>,
+    infoPayload: Map<String, ConfigsAssetMetadata>,
+    pricesPayload: Map<String, ConfigsAssetMetadataPrice>?,
     subaccountNumber: Int?,
 ): StateChanges {
     internalState.assets = assetsProcessor.processMetadataConfigurations(
         existing = internalState.assets,
-        payload = payload,
+        payload = infoPayload,
     )
+    internalState.marketsSummary.launchableMarketPrices = pricesPayload ?: mapOf()
 
     marketsCalculator.calculate(internalState.marketsSummary)
     val subaccountNumbers = MarginCalculator.getChangedSubaccountNumbers(

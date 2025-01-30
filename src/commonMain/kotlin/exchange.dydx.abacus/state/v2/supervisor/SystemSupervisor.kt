@@ -11,8 +11,13 @@ import exchange.dydx.abacus.state.model.onChainRewardsParams
 import exchange.dydx.abacus.state.model.onChainWithdrawalCapacity
 import exchange.dydx.abacus.state.model.onChainWithdrawalGating
 import exchange.dydx.abacus.utils.AnalyticsUtils
+import exchange.dydx.abacus.utils.Logger
 import exchange.dydx.abacus.utils.ServerTime
 import exchange.dydx.abacus.utils.iMapOf
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.async
+import kotlinx.coroutines.launch
 
 internal class SystemSupervisor(
     stateMachine: TradingStateMachine,
@@ -91,14 +96,32 @@ internal class SystemSupervisor(
 
     private fun retrieveMarketConfigs() {
         val oldState = stateMachine.state
-        val url = helper.configs.metadataServiceInfo()
-        if (url != null) {
-            helper.post(url, null, null) { _, response, httpCode, _ ->
-                if (helper.success(httpCode) && response != null) {
+        val infoUrl = helper.configs.metadataServiceInfo()
+        val pricesUrl = helper.configs.metadataServicePrices()
+        if (infoUrl != null && pricesUrl != null) {
+            val scope = CoroutineScope(Dispatchers.Unconfined)
+            scope.launch {
+                val deferredInfo = async { helper.postAsync(infoUrl, headers = null, body = null) }
+                val deferredPrices =
+                    async { helper.postAsync(pricesUrl, headers = null, body = null) }
+
+                val infoResponse = deferredInfo.await()
+                val pricesResponse = deferredPrices.await()
+
+                if (infoResponse.response != null && pricesResponse.response != null) {
+                    val stateChange = stateMachine.configurations(infoResponse.response, pricesResponse.response, null, helper.deploymentUri)
                     update(
-                        stateMachine.configurations(response, null, helper.deploymentUri),
-                        oldState,
+                        changes = stateChange,
+                        oldState = oldState,
                     )
+                } else if (infoResponse.error != null) {
+                    Logger.e {
+                        "Failed to retrieve day mega vault pnl: ${infoResponse.error}"
+                    }
+                } else if (pricesResponse.error != null) {
+                    Logger.e {
+                        "Failed to retrieve hourly mega vault pnl: ${pricesResponse.error}"
+                    }
                 }
             }
         }

@@ -5,18 +5,6 @@ import exchange.dydx.abacus.utils.IMap
 import kotlinx.serialization.Serializable
 
 /**
- * AssetJson from ${V4_WEB_URL}/configs/markets.json
- */
-@Serializable
-data class ConfigsMarketAsset(
-    val name: String,
-    val websiteLink: String? = null,
-    val whitepaperLink: String? = null,
-    val coinMarketCapsLink: String? = null,
-    val tags: IList<String>? = null,
-)
-
-/**
  * @description Asset from MetadataService Info response
  */
 @Suppress("ConstructorParameterNaming")
@@ -27,4 +15,13 @@ data class ConfigsAssetMetadata(
     val urls: IMap<String, String?>,
     val sector_tags: IList<String>? = null,
 //    val exchanges: IList<Any>
+)
+
+@Serializable
+data class ConfigsAssetMetadataPrice(
+    val price: Double,
+    val percent_change_24h: Double,
+    val volume_24h: Double,
+    val market_cap: Double,
+    val self_reported_market_cap: Double
 )

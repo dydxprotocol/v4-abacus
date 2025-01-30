@@ -183,4 +183,9 @@ class V4StateManagerConfigs(
         val metadataServiceUrl = environment.endpoints.metadataService ?: return null
         return "$metadataServiceUrl/info"
     }
+
+    fun metadataServicePrices(): String? {
+        val metadataServiceUrl = environment.endpoints.metadataService ?: return null
+        return "$metadataServiceUrl/prices"
+    }
 }

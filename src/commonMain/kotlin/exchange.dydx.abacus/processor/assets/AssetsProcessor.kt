@@ -46,9 +46,9 @@ internal class AssetsProcessor(
                 if (marketPayload != null) {
                     val receivedAsset =
                         assetMetadataProcessor.receivedConfigurations(
-                            assetId,
-                            parser.asNativeMap(existing?.get(assetId)),
-                            marketPayload,
+                            assetId = assetId,
+                            asset = parser.asNativeMap(existing?.get(assetId)),
+                            payload = marketPayload,
                         )
                     assets[assetId] = receivedAsset
                 }
