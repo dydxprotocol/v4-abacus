@@ -7,17 +7,14 @@ import exchange.dydx.abacus.protocols.LocalizerProtocol
 import exchange.dydx.abacus.protocols.ParserProtocol
 import exchange.dydx.abacus.utils.mutable
 import indexer.models.configs.ConfigsAssetMetadata
-import indexer.models.configs.ConfigsMarketAsset
 
 internal class AssetsProcessor(
     parser: ParserProtocol,
     localizer: LocalizerProtocol?,
 ) : BaseProcessor(parser) {
-    private val assetProcessor = AssetProcessor(parser = parser, localizer = localizer)
     private val assetMetadataProcessor = AssetMetadataProcessor(parser = parser, localizer = localizer)
 
     override fun environmentChanged() {
-        assetProcessor.environment = environment
         assetMetadataProcessor.environment = environment
     }
 

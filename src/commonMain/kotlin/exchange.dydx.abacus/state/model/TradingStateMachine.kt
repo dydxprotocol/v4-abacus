@@ -79,7 +79,6 @@ import exchange.dydx.abacus.utils.safeSet
 import exchange.dydx.abacus.utils.typedSafeSet
 import exchange.dydx.abacus.validator.InputValidator
 import indexer.models.configs.ConfigsAssetMetadata
-import indexer.models.configs.ConfigsMarketAsset
 import kollections.JsExport
 import kollections.iListOf
 import kollections.iMutableListOf

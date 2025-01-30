@@ -9,7 +9,6 @@ import exchange.dydx.abacus.state.changes.StateChanges
 import indexer.models.IndexerCompositeMarketObject
 import indexer.models.IndexerWsMarketUpdateResponse
 import indexer.models.configs.ConfigsAssetMetadata
-import indexer.models.configs.ConfigsMarketAsset
 import kollections.iListOf
 import kollections.toIList
 
