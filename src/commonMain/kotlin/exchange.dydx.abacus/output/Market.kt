@@ -967,9 +967,10 @@ data class PerpetualMarketSummary(
                 }
 
                 // add to list of markets not yet launched
-                for ((marketId, asset) in internalState.assets) {
-                    val price = marketSummaryState.launchableMarketPrices[marketId]
-                    if (markets.keys.contains(marketId + "-USD") || price == null) {
+                for ((assetId, asset) in internalState.assets) {
+                    val price = marketSummaryState.launchableMarketPrices[assetId]
+                    val marketId = "$assetId-USD"
+                    if (markets.keys.contains(marketId) || price == null) {
                         continue
                     }
 
