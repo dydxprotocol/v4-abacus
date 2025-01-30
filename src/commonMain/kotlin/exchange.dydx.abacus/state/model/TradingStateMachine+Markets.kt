@@ -9,7 +9,6 @@ import exchange.dydx.abacus.state.changes.StateChanges
 import indexer.models.IndexerCompositeMarketObject
 import indexer.models.IndexerWsMarketUpdateResponse
 import indexer.models.configs.ConfigsAssetMetadata
-import indexer.models.configs.ConfigsMarketAsset
 import kollections.iListOf
 import kollections.toIList
 
@@ -215,45 +214,12 @@ internal fun TradingStateMachine.receivedBatchedMarketsChanges(
 internal fun TradingStateMachine.processMarketsConfigurationsWithMetadataService(
     payload: Map<String, ConfigsAssetMetadata>,
     subaccountNumber: Int?,
-    deploymentUri: String,
 ): StateChanges {
     internalState.assets = assetsProcessor.processMetadataConfigurations(
         existing = internalState.assets,
         payload = payload,
     )
 
-    marketsCalculator.calculate(internalState.marketsSummary)
-    val subaccountNumbers = MarginCalculator.getChangedSubaccountNumbers(
-        parser = parser,
-        subaccounts = internalState.wallet.account.subaccounts,
-        subaccountNumber = subaccountNumber ?: 0,
-        tradeInput = internalState.input.trade,
-    )
-    return if (subaccountNumber != null) {
-        StateChanges(
-            changes = iListOf(Changes.markets, Changes.assets, Changes.subaccount, Changes.input),
-            markets = null,
-            subaccountNumbers = subaccountNumbers,
-        )
-    } else {
-        StateChanges(
-            changes = iListOf(Changes.markets, Changes.assets),
-            markets = null,
-            subaccountNumbers = null,
-        )
-    }
-}
-
-internal fun TradingStateMachine.processMarketsConfigurations(
-    payload: Map<String, ConfigsMarketAsset>,
-    subaccountNumber: Int?,
-    deploymentUri: String,
-): StateChanges {
-    internalState.assets = assetsProcessor.processConfigurations(
-        existing = internalState.assets,
-        payload = payload,
-        deploymentUri = deploymentUri,
-    )
     marketsCalculator.calculate(internalState.marketsSummary)
     val subaccountNumbers = MarginCalculator.getChangedSubaccountNumbers(
         parser = parser,
@@ -288,7 +254,6 @@ internal fun TradingStateMachine.receivedMarketsConfigurationsDeprecated(
     assets = assetsProcessor.receivedConfigurations(
         existing = assets,
         payload = payload,
-        deploymentUri = deploymentUri,
     )
     this.marketsSummary = marketsCalculator.calculateDeprecated(
         marketsSummary = this.marketsSummary,

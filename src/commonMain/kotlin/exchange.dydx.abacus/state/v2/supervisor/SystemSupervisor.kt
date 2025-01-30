@@ -90,31 +90,15 @@ internal class SystemSupervisor(
     }
 
     private fun retrieveMarketConfigs() {
-        if (stateMachine.metadataService) {
-            val oldState = stateMachine.state
-            val url = helper.configs.metadataServiceInfo()
-            if (url != null) {
-                helper.post(url, null, null) { _, response, httpCode, _ ->
-                    if (helper.success(httpCode) && response != null) {
-                        update(
-                            stateMachine.configurations(response, null, helper.deploymentUri),
-                            oldState,
-                        )
-                    }
-                }
-            }
-        } else {
-            val oldState = stateMachine.state
-            val url = helper.configs.configsUrl("markets")
-            if (url != null) {
-                helper.get(url, null, null) { _, response, httpCode, _ ->
-                    if (helper.success(httpCode) && response != null) {
-                        update(
-                            // TODO, subaccountNumber required to refresh
-                            stateMachine.configurations(response, null, helper.deploymentUri),
-                            oldState,
-                        )
-                    }
+        val oldState = stateMachine.state
+        val url = helper.configs.metadataServiceInfo()
+        if (url != null) {
+            helper.post(url, null, null) { _, response, httpCode, _ ->
+                if (helper.success(httpCode) && response != null) {
+                    update(
+                        stateMachine.configurations(response, null, helper.deploymentUri),
+                        oldState,
+                    )
                 }
             }
         }

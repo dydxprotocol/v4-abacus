@@ -79,7 +79,6 @@ import exchange.dydx.abacus.utils.safeSet
 import exchange.dydx.abacus.utils.typedSafeSet
 import exchange.dydx.abacus.validator.InputValidator
 import indexer.models.configs.ConfigsAssetMetadata
-import indexer.models.configs.ConfigsMarketAsset
 import kollections.JsExport
 import kollections.iListOf
 import kollections.iMutableListOf
@@ -101,7 +100,6 @@ open class TradingStateMachine(
     private val useParentSubaccount: Boolean,
     val staticTyping: Boolean = false,
     private val trackingProtocol: TrackingProtocol?,
-    val metadataService: Boolean = false,
 ) {
     internal var internalState: InternalState = InternalState()
 
@@ -115,7 +113,6 @@ open class TradingStateMachine(
         val processor = AssetsProcessor(
             parser = parser,
             localizer = localizer,
-            metadataService = metadataService,
         )
         processor.environment = environment
         processor
@@ -317,30 +314,15 @@ open class TradingStateMachine(
     ): StateChanges {
         val json = parser.decodeJsonObject(payload)
         if (staticTyping) {
-            if (metadataService) {
-                val parsedAssetPayload = parser.asTypedStringMap<ConfigsAssetMetadata>(json)
-                if (parsedAssetPayload == null) {
-                    Logger.e { "Error parsing asset payload" }
-                    return StateChanges.noChange
-                }
-                return processMarketsConfigurationsWithMetadataService(
-                    payload = parsedAssetPayload,
-                    subaccountNumber = subaccountNumber,
-                    deploymentUri = deploymentUri,
-                )
-            } else {
-                val parsedAssetPayload = parser.asTypedStringMap<ConfigsMarketAsset>(json)
-                if (parsedAssetPayload == null) {
-                    Logger.e { "Error parsing asset payload" }
-                    return StateChanges.noChange
-                }
-
-                return processMarketsConfigurations(
-                    payload = parsedAssetPayload,
-                    subaccountNumber = subaccountNumber,
-                    deploymentUri = deploymentUri,
-                )
+            val parsedAssetPayload = parser.asTypedStringMap<ConfigsAssetMetadata>(json)
+            if (parsedAssetPayload == null) {
+                Logger.e { "Error parsing asset payload" }
+                return StateChanges.noChange
             }
+            return processMarketsConfigurationsWithMetadataService(
+                payload = parsedAssetPayload,
+                subaccountNumber = subaccountNumber,
+            )
         } else {
             return if (json != null) {
                 receivedMarketsConfigurationsDeprecated(json, subaccountNumber, deploymentUri)
