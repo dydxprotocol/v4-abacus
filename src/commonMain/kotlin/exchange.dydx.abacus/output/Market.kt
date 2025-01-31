@@ -863,6 +863,7 @@ data class PerpetualMarket(
     val marketCaps: Double?,
     val priceChange24H: Double?,
     val priceChange24HPercent: Double?,
+    val spot24hVolume: Double? = null,
     val status: MarketStatus?,
     val configs: MarketConfigs?,
     val perpetual: MarketPerpetual?,
@@ -914,17 +915,18 @@ data class PerpetualMarket(
                 existing
             } else {
                 PerpetualMarket(
-                    id,
-                    assetId,
-                    market,
-                    displayId,
-                    oraclePrice,
-                    marketCaps,
-                    priceChange24H,
-                    priceChange24HPercent,
-                    status,
-                    configs,
-                    perpetual,
+                    id = id,
+                    assetId = assetId,
+                    market = market,
+                    displayId = displayId,
+                    oraclePrice = oraclePrice,
+                    marketCaps = marketCaps,
+                    priceChange24H = priceChange24H,
+                    priceChange24HPercent = priceChange24HPercent,
+                    spot24hVolume = null,
+                    status = status,
+                    configs = configs,
+                    perpetual = perpetual,
                 )
             }
         }
