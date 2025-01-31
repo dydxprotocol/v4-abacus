@@ -79,6 +79,7 @@ import exchange.dydx.abacus.utils.safeSet
 import exchange.dydx.abacus.utils.typedSafeSet
 import exchange.dydx.abacus.validator.InputValidator
 import indexer.models.configs.ConfigsAssetMetadata
+import indexer.models.configs.ConfigsAssetMetadataPrice
 import kollections.JsExport
 import kollections.iListOf
 import kollections.iMutableListOf
@@ -308,19 +309,23 @@ open class TradingStateMachine(
     }
 
     internal fun configurations(
-        payload: String,
+        infoPayload: String,
+        pricesPayload: String,
         subaccountNumber: Int?,
         deploymentUri: String
     ): StateChanges {
-        val json = parser.decodeJsonObject(payload)
+        val json = parser.decodeJsonObject(infoPayload)
         if (staticTyping) {
-            val parsedAssetPayload = parser.asTypedStringMap<ConfigsAssetMetadata>(json)
-            if (parsedAssetPayload == null) {
+            val infoPayload = parser.asTypedStringMap<ConfigsAssetMetadata>(json)
+            val pricesJson = parser.decodeJsonObject(pricesPayload)
+            val pricesPayload = parser.asTypedStringMap<ConfigsAssetMetadataPrice>(pricesJson)
+            if (infoPayload == null) {
                 Logger.e { "Error parsing asset payload" }
                 return StateChanges.noChange
             }
             return processMarketsConfigurationsWithMetadataService(
-                payload = parsedAssetPayload,
+                infoPayload = infoPayload,
+                pricesPayload = pricesPayload,
                 subaccountNumber = subaccountNumber,
             )
         } else {
@@ -952,7 +957,7 @@ open class TradingStateMachine(
                         data = emptyMap(),
                         assets = null,
                         staticTyping = staticTyping,
-                        marketSummaryState = internalState.marketsSummary,
+                        internalState = internalState,
                         changes = changes,
                     )
             } else {
@@ -964,7 +969,7 @@ open class TradingStateMachine(
                             data = it,
                             assets = this.assets,
                             staticTyping = staticTyping,
-                            marketSummaryState = internalState.marketsSummary,
+                            internalState = internalState,
                             changes = changes,
                         )
                 } ?: run {

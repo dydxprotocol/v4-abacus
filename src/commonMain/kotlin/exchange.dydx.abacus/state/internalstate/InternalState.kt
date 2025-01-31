@@ -51,6 +51,7 @@ import indexer.codegen.IndexerPerpetualPositionStatus
 import indexer.codegen.IndexerPositionSide
 import indexer.codegen.IndexerTransferBetweenResponse
 import indexer.models.chain.OnChainAccountVaultResponse
+import indexer.models.configs.ConfigsAssetMetadataPrice
 import kotlinx.datetime.Instant
 
 internal data class InternalState(
@@ -183,6 +184,8 @@ internal data class InternalMarketSummaryState(
     var volume24HUSDC: Double? = null,
     var openInterestUSDC: Double? = null,
     var trades24H: Double? = null,
+
+    var launchableMarketPrices: Map<String, ConfigsAssetMetadataPrice> = mapOf(),
 )
 
 internal data class InternalMarketState(

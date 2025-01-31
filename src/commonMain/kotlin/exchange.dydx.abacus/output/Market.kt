@@ -6,7 +6,7 @@ import exchange.dydx.abacus.protocols.LocalizerProtocol
 import exchange.dydx.abacus.protocols.ParserProtocol
 import exchange.dydx.abacus.state.changes.Changes
 import exchange.dydx.abacus.state.changes.StateChanges
-import exchange.dydx.abacus.state.internalstate.InternalMarketSummaryState
+import exchange.dydx.abacus.state.internalstate.InternalState
 import exchange.dydx.abacus.state.manager.OrderbookGrouping
 import exchange.dydx.abacus.utils.IList
 import exchange.dydx.abacus.utils.IMap
@@ -866,6 +866,7 @@ data class PerpetualMarket(
     val status: MarketStatus?,
     val configs: MarketConfigs?,
     val perpetual: MarketPerpetual?,
+    val isLaunched: Boolean = true,
 ) {
     companion object {
         internal fun create(
@@ -927,22 +928,6 @@ data class PerpetualMarket(
                 )
             }
         }
-
-        private fun trades(
-            existing: IList<MarketTrade>?,
-            parser: ParserProtocol,
-            data: List<Any>?,
-            localizer: LocalizerProtocol?,
-        ): IList<MarketTrade>? {
-            return ParsingHelper.merge(parser, existing?.toIList(), data, { obj, itemData ->
-                val time1 = (obj as MarketTrade).createdAtMilliseconds
-                val time2 =
-                    parser.asDatetime(itemData["createdAt"])?.toEpochMilliseconds()?.toDouble()
-                ParsingHelper.compare(time1, time2 ?: 0.0, false)
-            }, { _, obj, itemData ->
-                obj ?: MarketTrade.create(null, parser, parser.asMap(itemData), localizer)
-            })?.toIList()
-        }
     }
 }
 
@@ -966,10 +951,11 @@ data class PerpetualMarketSummary(
             data: Map<String, Any>,
             assets: Map<String, Any>?,
             staticTyping: Boolean,
-            marketSummaryState: InternalMarketSummaryState,
+            internalState: InternalState,
             changes: StateChanges,
         ): PerpetualMarketSummary? {
             if (staticTyping) {
+                val marketSummaryState = internalState.marketsSummary
                 if (marketSummaryState.markets.isEmpty()) {
                     return null
                 }
@@ -979,6 +965,35 @@ data class PerpetualMarketSummary(
                         markets[marketId] = it
                     }
                 }
+
+                // add to list of markets not yet launched
+                for ((assetId, asset) in internalState.assets) {
+                    val price = marketSummaryState.launchableMarketPrices[assetId]
+                    val marketId = "$assetId-USD"
+                    if (markets.keys.contains(marketId) || price == null) {
+                        continue
+                    }
+
+                    val market = PerpetualMarket(
+                        id = marketId,
+                        assetId = asset.id,
+                        market = asset.name,
+                        displayId = asset.displayableAssetId,
+                        oraclePrice = price.price,
+                        marketCaps = price.market_cap,
+                        priceChange24H = price.percent_change_24h,
+                        priceChange24HPercent = price.percent_change_24h,
+                        status = MarketStatus(
+                            canTrade = false,
+                            canReduce = false,
+                        ),
+                        configs = null,
+                        perpetual = null,
+                        isLaunched = false,
+                    )
+                    markets[marketId] = market
+                }
+
                 return PerpetualMarketSummary(
                     volume24HUSDC = marketSummaryState.volume24HUSDC,
                     openInterestUSDC = marketSummaryState.openInterestUSDC,

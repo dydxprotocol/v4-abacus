@@ -189,6 +189,22 @@ class NetworkHelper(
         }
     }
 
+    suspend fun postAsync(
+        url: String,
+        headers: IMap<String, String>?,
+        body: String?,
+    ): RestResult {
+        return suspendCoroutine { continuation ->
+            post(url, headers, body) { _, response, httpCode, _ ->
+                if (success(httpCode)) {
+                    continuation.resume(RestResult(response, null))
+                } else {
+                    continuation.resume(RestResult(null, response ?: "Unknown error"))
+                }
+            }
+        }
+    }
+
     private fun fullUrl(
         url: String,
         params: Map<String, String>?,
