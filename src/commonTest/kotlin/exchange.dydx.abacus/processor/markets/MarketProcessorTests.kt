@@ -68,7 +68,7 @@ class MarketProcessorTests {
             marketCaps = null,
             priceChange24H = 138.180620,
             priceChange24HPercent = 0.006957097804400636,
-            spot24hVolume = 4.245227823171E8,
+            spot24hVolume = null,
             status = MarketStatus(
                 canTrade = true,
                 canReduce = true,

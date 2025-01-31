@@ -225,7 +225,7 @@ internal class MarketProcessor(
                     priceChange24H = parser.asDouble(payload.priceChange24H),
                     oraclePrice = oraclePrice,
                 ),
-                spot24hVolume = parser.asDouble(payload.volume24H),
+                spot24hVolume = null,
                 status = status,
                 configs = createConfigs(payload),
                 perpetual = createMarketPerpetual(

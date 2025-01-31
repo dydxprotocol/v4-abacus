@@ -985,6 +985,7 @@ data class PerpetualMarketSummary(
                         marketCaps = price.market_cap,
                         priceChange24H = price.percent_change_24h,
                         priceChange24HPercent = price.percent_change_24h,
+                        spot24hVolume = price.volume_24h,
                         status = MarketStatus(
                             canTrade = false,
                             canReduce = false,
