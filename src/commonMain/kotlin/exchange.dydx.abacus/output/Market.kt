@@ -234,7 +234,7 @@ data class MarketConfigs(
         }
     }
 
-    internal val maxMarketLeverage: Double
+    val maxMarketLeverage: Double
         get() {
             val imf = initialMarginFraction ?: Numeric.double.ZERO
             val effectiveImf = effectiveInitialMarginFraction ?: Numeric.double.ZERO
