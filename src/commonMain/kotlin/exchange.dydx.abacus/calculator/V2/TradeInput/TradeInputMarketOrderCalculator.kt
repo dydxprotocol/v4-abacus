@@ -114,7 +114,7 @@ internal class TradeInputMarketOrderCalculator() {
         } else {
             freeCollateral != null && freeCollateral > Numeric.double.ZERO
         }
-        if (tradeSize != null && tradeSide != null && freeCollateral != null && freeCollateralCondition) {
+        if (tradeSize != null && tradeSide != null && freeCollateralCondition) {
             val maxMarketLeverage = market?.perpetualMarket?.configs?.maxMarketLeverage ?: Numeric.double.ONE
             val targetLeverage = trade.targetLeverage
             val marginMode = trade.marginMode ?: MarginMode.Cross
@@ -124,7 +124,7 @@ internal class TradeInputMarketOrderCalculator() {
                 maxMarketLeverage
             }
 
-            val positions = subaccount.openPositions
+            val positions = subaccount?.openPositions
             val marketId = market?.perpetualMarket?.id
             val positionNotionalSize = if (positions != null && marketId != null) {
                 positions[marketId]?.calculated?.get(CalculationPeriod.current)?.notionalTotal ?: Numeric.double.ZERO
@@ -145,7 +145,7 @@ internal class TradeInputMarketOrderCalculator() {
                         size = tradeSize.size,
                         existingPositionNotionalSize = positionNotionalSize,
                         isTradeSameSide = isTradeSameSide,
-                        freeCollateral = freeCollateral,
+                        freeCollateral = freeCollateral ?: Numeric.double.ZERO,
                         tradeLeverage = tradeLeverage,
                         orderbook = orderbook,
                     )
@@ -158,7 +158,7 @@ internal class TradeInputMarketOrderCalculator() {
                         usdcSize = tradeSize.usdcSize,
                         existingPositionNotionalSize = positionNotionalSize,
                         isTradeSameSide = isTradeSameSide,
-                        freeCollateral = freeCollateral,
+                        freeCollateral = freeCollateral ?: Numeric.double.ZERO,
                         tradeLeverage = tradeLeverage,
                         orderbook = orderbook,
                         stepSize = stepSize,
@@ -173,7 +173,7 @@ internal class TradeInputMarketOrderCalculator() {
                         existingPositionSize = positionSize,
                         isTradeSameSide = isTradeSameSide,
                         market = market,
-                        freeCollateral = freeCollateral,
+                        freeCollateral = freeCollateral ?: Numeric.double.ZERO,
                         tradeLeverage = tradeLeverage,
                         subaccount = subaccount,
                         user = user,
@@ -193,7 +193,7 @@ internal class TradeInputMarketOrderCalculator() {
                         existingPositionSize = positionSize,
                         isTradeSameSide = isTradeSameSide,
                         marginMode = marginMode,
-                        freeCollateral = freeCollateral,
+                        freeCollateral = freeCollateral ?: Numeric.double.ZERO,
                         tradeLeverage = tradeLeverage,
                         orderbook = orderbook,
                         stepSize = stepSize,
