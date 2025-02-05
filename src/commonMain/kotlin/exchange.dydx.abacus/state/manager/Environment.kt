@@ -82,6 +82,7 @@ data class EnvironmentLinks(
     val blogs: String?,
     val help: String?,
     val vaultLearnMore: String?,
+    val simpleTradeLearnMore: String?,
     val vaultTos: String?,
     val vaultOperatorLearnMore: String?,
     val launchIncentive: String?,
@@ -105,6 +106,7 @@ data class EnvironmentLinks(
             val blogs = parser.asString(data["blogs"])
             val help = parser.asString(data["help"])
             val vaultLearnMore = parser.asString(data["vaultLearnMore"])
+            val simpleTradeLearnMore = parser.asString(data["simpleTradeLearnMore"])
             val vaultOperatorLearnMore = parser.asString(data["vaultOperatorLearnMore"])
             val launchIncentive = parser.asString(data["launchIncentive"])
             val statusPage = parser.asString(data["statusPage"])
@@ -113,23 +115,24 @@ data class EnvironmentLinks(
             val vaultTos = parser.asString(data["vaultTos"])
             val tradingRewardsLearnMore = parser.asString(data["tradingRewardsLearnMore"])
             return EnvironmentLinks(
-                tos,
-                privacy,
-                mintscan,
-                mintscanBase,
-                documentation,
-                community,
-                feedback,
-                blogs,
-                help,
-                vaultLearnMore,
-                vaultTos,
-                vaultOperatorLearnMore,
-                launchIncentive,
-                statusPage,
-                withdrawalGateLearnMore,
-                equityTiersLearnMore,
-                tradingRewardsLearnMore,
+                tos = tos,
+                privacy = privacy,
+                mintscan = mintscan,
+                mintscanBase = mintscanBase,
+                documentation = documentation,
+                community = community,
+                feedback = feedback,
+                blogs = blogs,
+                help = help,
+                vaultLearnMore = vaultLearnMore,
+                simpleTradeLearnMore = simpleTradeLearnMore,
+                vaultTos = vaultTos,
+                vaultOperatorLearnMore = vaultOperatorLearnMore,
+                launchIncentive = launchIncentive,
+                statusPage = statusPage,
+                withdrawalGateLearnMore = withdrawalGateLearnMore,
+                equityTiersLearnMore = equityTiersLearnMore,
+                tradingRewardsLearnMore = tradingRewardsLearnMore,
             )
         }
     }
