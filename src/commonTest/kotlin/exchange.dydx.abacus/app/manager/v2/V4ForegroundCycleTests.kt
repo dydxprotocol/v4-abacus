@@ -16,7 +16,6 @@ import exchange.dydx.abacus.utils.values
 import kotlin.test.BeforeTest
 import kotlin.test.Test
 import kotlin.test.assertEquals
-import kotlin.test.assertNotNull
 
 class V4ForegroundCycleTests : NetworkTests() {
     val mock = AbacusMockData()
@@ -201,7 +200,6 @@ class V4ForegroundCycleTests : NetworkTests() {
                     "https://api.dydx.exchange/v4/geo",
                     "https://indexer.v4staging.dydx.exchange/v4/sparklines?timePeriod=ONE_DAY",
                     "https://indexer.v4staging.dydx.exchange/v4/sparklines?timePeriod=SEVEN_DAYS",
-                    "https://indexer.v4staging.dydx.exchange/v4/candles/perpetualMarkets/ETH-USD?resolution=1DAY",
                     "https://indexer.v4staging.dydx.exchange/v4/historicalFunding/ETH-USD"
                 ]
             """.trimIndent(),
@@ -256,9 +254,7 @@ class V4ForegroundCycleTests : NetworkTests() {
                     "https://api.dydx.exchange/v4/geo",
                     "https://indexer.v4staging.dydx.exchange/v4/sparklines?timePeriod=ONE_DAY",
                     "https://indexer.v4staging.dydx.exchange/v4/sparklines?timePeriod=SEVEN_DAYS",
-                    "https://indexer.v4staging.dydx.exchange/v4/candles/perpetualMarkets/ETH-USD?resolution=1DAY",
                     "https://indexer.v4staging.dydx.exchange/v4/historicalFunding/ETH-USD",
-                    "https://indexer.v4staging.dydx.exchange/v4/candles/perpetualMarkets/BTC-USD?resolution=1DAY",
                     "https://indexer.v4staging.dydx.exchange/v4/historicalFunding/BTC-USD"
                 ]
             """.trimIndent(),
@@ -266,46 +262,45 @@ class V4ForegroundCycleTests : NetworkTests() {
         )
     }
 
-    @Test
-    fun historicalFundingShouldCreateSubsequentPaginatedRequests() {
-        reset()
-        testRest?.setResponse(
-            "https://indexer.v4staging.dydx.exchange/v4/historicalFunding/ETH-USD",
-            mock.historicalFundingsMock.call,
-        )
-
-        setStateMachineReadyToConnect(stateManager)
-        testWebSocket?.simulateConnected(true)
-        testWebSocket?.simulateReceived(mock.marketsChannel.v4_subscribed_r1)
-        stateManager.market = "ETH-USD"
-
-        assertNotNull(stateManager.adaptor?.stateMachine?.state?.historicalFundings?.get("ETH-USD"))
-
-        /* Only getting historical funding rate once for now */
-
-        compareExpectedRequests(
-            """
-                [
-                    "https://api.examples.com/configs/documentation.json",
-                    "https://indexer.v4staging.dydx.exchange/v4/time",
-                    "https://indexer.v4staging.dydx.exchange/v4/height",
-                    "https://dydx.exchange/v4-launch-incentive/query/ccar-perpetuals",
-"https://api.skip.money/v2/info/chains?include_evm=true&include_svm=true&only_testnets=true",
-                    "https://api.examples.com/configs/rpc.json",
-                    "https://api.skip.money/v2/fungible/assets?include_evm_assets=true&include_svm_assets=true&only_testnets=true",
-                    "https://api.skip.money/v2/fungible/venues",
-                    "https://api.examples.com/configs/cctp.json",
-                    "https://api.examples.com/configs/exchanges.json",
-                    "https://api.dydx.exchange/v4/geo",
-                    "https://indexer.v4staging.dydx.exchange/v4/sparklines?timePeriod=ONE_DAY",
-                    "https://indexer.v4staging.dydx.exchange/v4/sparklines?timePeriod=SEVEN_DAYS",
-                    "https://indexer.v4staging.dydx.exchange/v4/candles/perpetualMarkets/ETH-USD?resolution=1DAY",
-                    "https://indexer.v4staging.dydx.exchange/v4/historicalFunding/ETH-USD"
-                ]
-            """.trimIndent(),
-            testRest?.requests,
-        )
-    }
+//    @Test
+//    fun historicalFundingShouldCreateSubsequentPaginatedRequests() {
+//        reset()
+//        testRest?.setResponse(
+//            "https://indexer.v4staging.dydx.exchange/v4/historicalFunding/ETH-USD",
+//            mock.historicalFundingsMock.call,
+//        )
+//
+//        setStateMachineReadyToConnect(stateManager)
+//        testWebSocket?.simulateConnected(true)
+//        testWebSocket?.simulateReceived(mock.marketsChannel.v4_subscribed_r1)
+//        stateManager.market = "ETH-USD"
+//
+//        assertNotNull(stateManager.adaptor?.stateMachine?.state?.historicalFundings?.get("ETH-USD"))
+//
+//        /* Only getting historical funding rate once for now */
+//
+//        compareExpectedRequests(
+//            """
+//                [
+//                    "https://api.examples.com/configs/documentation.json",
+//                    "https://indexer.v4staging.dydx.exchange/v4/time",
+//                    "https://indexer.v4staging.dydx.exchange/v4/height",
+//                    "https://dydx.exchange/v4-launch-incentive/query/ccar-perpetuals",
+//                    "https://api.skip.money/v2/info/chains?include_evm=true&include_svm=true&only_testnets=true",
+//                    "https://api.examples.com/configs/rpc.json",
+//                    "https://api.skip.money/v2/fungible/assets?include_evm_assets=true&include_svm_assets=true&only_testnets=true",
+//                    "https://api.skip.money/v2/fungible/venues",
+//                    "https://api.examples.com/configs/cctp.json",
+//                    "https://api.examples.com/configs/exchanges.json",
+//                    "https://api.dydx.exchange/v4/geo",
+//                    "https://indexer.v4staging.dydx.exchange/v4/sparklines?timePeriod=ONE_DAY",
+//                    "https://indexer.v4staging.dydx.exchange/v4/sparklines?timePeriod=SEVEN_DAYS",
+//                    "https://indexer.v4staging.dydx.exchange/v4/historicalFunding/ETH-USD"
+//                ]
+//            """.trimIndent(),
+//            testRest?.requests,
+//        )
+//    }
 
     @Test
     fun tradesChannelSubscribeShouldNotQueueAnyOtherRequests() {

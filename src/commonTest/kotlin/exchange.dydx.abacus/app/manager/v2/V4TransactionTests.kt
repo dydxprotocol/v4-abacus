@@ -41,12 +41,12 @@ class V4TransactionTests : NetworkTests() {
     internal fun resetSubaccountSupervisor(): SubaccountSupervisor? {
         return if (v4Adapter !== null) {
             SubaccountSupervisor(
-                v4Adapter!!.stateMachine,
-                v4Adapter!!.networkHelper,
-                v4Adapter!!.analyticsUtils,
-                SubaccountConfigs(true, true, true, true, false),
-                testCosmoAddress,
-                0,
+                stateMachine = v4Adapter!!.stateMachine,
+                helper = v4Adapter!!.networkHelper,
+                analyticsUtils = v4Adapter!!.analyticsUtils,
+                configs = SubaccountConfigs(true, true, true, true, false),
+                accountAddress = testCosmoAddress,
+                subaccountNumber = 0,
             )
         } else {
             null
@@ -70,13 +70,13 @@ class V4TransactionTests : NetworkTests() {
         val localizer = BaseTests.testLocalizer(ioImplementations)
         val uiImplementations = BaseTests.testUIImplementations(localizer)
         stateManager = AsyncAbacusStateManagerV2(
-            "https://api.examples.com",
-            "DEV",
-            AppConfigsV2.forApp,
-            ioImplementations,
-            uiImplementations,
-            TestState(),
-            null,
+            deploymentUri = "https://api.examples.com",
+            deployment = "DEV",
+            appConfigs = AppConfigsV2.forApp,
+            ioImplementations = ioImplementations,
+            uiImplementations = uiImplementations,
+            stateNotification = TestState(),
+            dataNotification = null,
         )
         stateManager.environmentId = "dydxprotocol-staging"
         return stateManager
@@ -89,6 +89,7 @@ class V4TransactionTests : NetworkTests() {
         testWebSocket?.simulateReceived(mock.marketsChannel.v4_subscribed_r1)
         testWebSocket?.simulateReceived(mock.accountsChannel.v4_subscribed)
         stateManager.market = "ETH-USD"
+        testWebSocket?.simulateReceived(mock.orderbookChannel.load_test_2_subscribed)
         stateManager.setAddresses(null, testCosmoAddress)
     }
 
@@ -140,7 +141,7 @@ class V4TransactionTests : NetworkTests() {
 
     @Test
     fun testPlaceOrderTransactionsQueue() {
-        setStateMachineConnected(stateManager)
+        setStateMachineForIsolatedMarginTests(stateManager)
         val transactionQueue = subaccountSupervisor?.transactionQueue
         var transactionCalledCount = 0
         val transactionCallback: TransactionCallback = { _, _, _ -> transactionCalledCount++ }

@@ -381,18 +381,23 @@ open class TradingStateMachine(
                         InputType.TRADE -> {
                             calculateTrade(subaccountNumber)
                         }
+
                         InputType.TRANSFER -> {
                             calculateTransfer(subaccountNumber)
                         }
+
                         InputType.TRIGGER_ORDERS -> {
                             calculateTriggerOrders(subaccountNumber)
                         }
+
                         InputType.ADJUST_ISOLATED_MARGIN -> {
                             calculateAdjustIsolatedMargin(subaccountNumber)
                         }
+
                         InputType.CLOSE_POSITION -> {
                             calculateClosePosition(subaccountNumber)
                         }
+
                         else -> {}
                     }
                 } else {
@@ -461,6 +466,7 @@ open class TradingStateMachine(
                     Logger.d { "Restriction is handled separately and shouldn't have gone through here" }
                     false
                 }
+
                 Changes.compliance -> {
                     Logger.d { "Compliance is handled separately and shouldn't have gone through here" }
                     false

@@ -35,7 +35,6 @@ data class Input(
     val adjustIsolatedMargin: AdjustIsolatedMarginInput?,
     val receiptLines: IList<ReceiptLine>?,
     val errors: IList<ValidationError>?,
-    val childSubaccountErrors: IList<ValidationError>?
 ) {
     companion object {
         internal fun create(
@@ -104,22 +103,12 @@ data class Input(
                     )
                 }
 
-                val errors = if (staticTyping) {
-                    internalState?.input?.errors?.toIList()
-                } else {
-                    ValidationError.create(existing?.errors, parser, parser.asList(data?.get("errors")))
+                var errors = internalState?.input?.errors?.toIList()
+                if (internalState?.input?.currentType == InputType.TRADE && internalState.input.trade.marginMode == MarginMode.Isolated) {
+                    errors = internalState.input.childSubaccountErrors?.toIList()
                 }
-
-                val childSubaccountErrors = if (staticTyping) {
-                    internalState?.input?.childSubaccountErrors?.toIList()
-                } else {
-                    ValidationError.create(
-                        existing?.childSubaccountErrors,
-                        parser,
-                        parser.asList(
-                            data?.get("childSubaccountErrors"),
-                        ),
-                    )
+                if (internalState?.input?.currentType == InputType.CLOSE_POSITION && internalState.input.closePosition.marginMode == MarginMode.Isolated) {
+                    errors = internalState.input.childSubaccountErrors?.toIList()
                 }
 
                 val receiptLines = if (staticTyping) {
@@ -135,8 +124,7 @@ data class Input(
                     existing?.triggerOrders !== triggerOrders ||
                     existing?.adjustIsolatedMargin !== adjustIsolatedMargin ||
                     existing?.receiptLines != receiptLines ||
-                    existing?.errors != errors ||
-                    existing?.childSubaccountErrors != childSubaccountErrors
+                    existing?.errors != errors
                 ) {
                     Input(
                         current,
@@ -147,7 +135,6 @@ data class Input(
                         adjustIsolatedMargin,
                         receiptLines,
                         errors,
-                        childSubaccountErrors,
                     )
                 } else {
                     existing
