@@ -359,13 +359,16 @@ internal class SubaccountSupervisor(
         type: ClosePositionInputField,
     ) {
         helper.ioImplementations.threading?.async(ThreadingType.abacus) {
-            val currentMarket =
+            val currentMarket = if (stateMachine.staticTyping) {
+                stateMachine.internalState.input.closePosition.marketId
+            } else {
                 helper.parser.asString(
                     helper.parser.value(
                         stateMachine.input,
                         "closePosition.marketId",
                     ),
                 )
+            }
             var stateResponse = stateMachine.closePosition(data, type, subaccountNumber)
             if (type == ClosePositionInputField.market && currentMarket != data) {
                 val nextResponse = stateMachine.closePosition(
