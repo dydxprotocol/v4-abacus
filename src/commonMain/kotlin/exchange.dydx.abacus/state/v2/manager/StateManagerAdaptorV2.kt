@@ -256,14 +256,12 @@ internal class StateManagerAdaptorV2(
                 markets.marketId = value
 
                 if (value != null) {
-                    networkHelper.ioImplementations.threading?.async(ThreadingType.abacus) {
-                        val stateResponse = stateMachine.tradeInMarket(value, subaccountNumber)
-                        ioImplementations.threading?.async(ThreadingType.main) {
-                            stateNotification?.stateChanged(
-                                stateResponse.state,
-                                stateResponse.changes,
-                            )
-                        }
+                    val stateResponse = stateMachine.tradeInMarket(value, subaccountNumber)
+                    ioImplementations.threading?.async(ThreadingType.main) {
+                        stateNotification?.stateChanged(
+                            stateResponse.state,
+                            stateResponse.changes,
+                        )
                     }
                 }
             }
