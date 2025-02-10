@@ -40,13 +40,6 @@ class AbacusMockData {
     internal val validationsMock = ValidationsMock()
     internal val historicalFundingsMock = HistoricalFundingsMock()
     internal val heightMock = HeightMock()
-    internal val transactionsMock = TransactionsMock()
-    internal val squidChainsMock = SquidChainsMock()
-    internal val squidTokensMock = SquidTokensMock()
-    internal val squidRouteMock = SquidRouteMock()
-    internal val squidStatusMock = SquidStatusMock()
-    internal val squidV2AssetsMock = SquidV2AssetsMock()
-    internal val squidV2RouteMock = SquidV2RouteMock()
     internal val localizationMock = LocalizationMock()
     internal val launchIncentiveMock = LaunchIncentiveMock()
     internal val v4OnChainMock = V4OnChainMock()
@@ -68,7 +61,6 @@ class AbacusMockData {
             indexers = null,
             validators = null,
             faucet = null,
-            squid = null,
             skip = null,
             metadataService = null,
             nobleValidator = null,

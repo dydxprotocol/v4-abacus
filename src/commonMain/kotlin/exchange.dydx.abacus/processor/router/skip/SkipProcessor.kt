@@ -41,13 +41,6 @@ internal class SkipProcessor(
             }
         }
 
-    override fun receivedV2SdkInfo(
-        existing: Map<String, Any>?,
-        payload: Map<String, Any>
-    ): Map<String, Any>? {
-        throw NotImplementedError("receivedV2SdkInfo is not implemented in SkipProcessor!")
-    }
-
     override fun receivedChains(
         existing: Map<String, Any>?,
         payload: Map<String, Any>
@@ -151,14 +144,6 @@ internal class SkipProcessor(
             }
         }
         return modified
-    }
-
-    override fun receivedRouteV2(
-        existing: Map<String, Any>?,
-        payload: Map<String, Any>,
-        requestId: String?
-    ): Map<String, Any>? {
-        return receivedRoute(existing, payload, requestId)
     }
 
     override fun usdcAmount(data: Map<String, Any>): Double? {

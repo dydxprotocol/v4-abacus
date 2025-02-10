@@ -32,10 +32,10 @@ import exchange.dydx.abacus.state.model.TransferInputField
 import exchange.dydx.abacus.state.model.WalletConnectionType
 import exchange.dydx.abacus.state.model.evmSwapVenues
 import exchange.dydx.abacus.state.model.routerChains
+import exchange.dydx.abacus.state.model.routerRoute
 import exchange.dydx.abacus.state.model.routerStatus
 import exchange.dydx.abacus.state.model.routerTokens
 import exchange.dydx.abacus.state.model.routerTrack
-import exchange.dydx.abacus.state.model.squidRoute
 import exchange.dydx.abacus.state.model.transfer
 import exchange.dydx.abacus.utils.AnalyticsUtils
 import exchange.dydx.abacus.utils.IMap
@@ -108,7 +108,7 @@ internal class OnboardingSupervisor(
         super.didSetReadyToConnect(readyToConnect)
 
         if (readyToConnect) {
-            if (configs.retrieveSquidRoutes) {
+            if (configs.retrieveRoutes) {
                 retrieveAssetsFromRouter()
                 retrieveDepositExchanges()
             }
@@ -321,7 +321,7 @@ internal class OnboardingSupervisor(
                     val currentFromAmount = stateMachine.state?.input?.transfer?.size?.size
                     val oldFromAmount = oldState?.input?.transfer?.size?.size
                     if (currentFromAmount == oldFromAmount) {
-                        update(stateMachine.squidRoute(response, subaccountNumber ?: 0, null), oldState)
+                        update(stateMachine.routerRoute(response, subaccountNumber ?: 0, null), oldState)
                     }
                 } else {
                     Logger.e { "retrieveSkipDepositRouteNonCCTP error, code: $code" }
@@ -389,7 +389,7 @@ internal class OnboardingSupervisor(
                 val currentFromAmount = stateMachine.state?.input?.transfer?.size?.size
                 val oldFromAmount = oldState?.input?.transfer?.size?.size
                 if (currentFromAmount == oldFromAmount) {
-                    update(stateMachine.squidRoute(response, subaccountNumber ?: 0, null), oldState)
+                    update(stateMachine.routerRoute(response, subaccountNumber ?: 0, null), oldState)
                 }
             } else {
                 Logger.e { "retrieveSkipDepositRouteCCTP error, code: $code" }
@@ -675,7 +675,7 @@ internal class OnboardingSupervisor(
         )
         helper.post(url, header, body.toJsonPrettyPrint()) { _, response, code, headers ->
             if (response != null) {
-                update(stateMachine.squidRoute(response, subaccountNumber ?: 0, null), oldState)
+                update(stateMachine.routerRoute(response, subaccountNumber ?: 0, null), oldState)
             } else {
                 Logger.e { "retrieveSkipWithdrawalRouteExchange error, code: $code" }
             }
@@ -753,7 +753,7 @@ internal class OnboardingSupervisor(
                     helper.parser.decodeJsonObject(response),
                     { "retrieveSkipWithdrawalRouteNonCCTP payload received" },
                 )
-                update(stateMachine.squidRoute(response, subaccountNumber ?: 0, null), oldState)
+                update(stateMachine.routerRoute(response, subaccountNumber ?: 0, null), oldState)
             } else {
                 Logger.e { "retrieveSkipWithdrawalRouteNonCCTP error, code: $code" }
             }
@@ -817,7 +817,7 @@ internal class OnboardingSupervisor(
                 val currentFromAmount = stateMachine.state?.input?.transfer?.size?.size
                 val oldFromAmount = oldState?.input?.transfer?.size?.size
                 if (currentFromAmount == oldFromAmount) {
-                    update(stateMachine.squidRoute(response, subaccountNumber ?: 0, null), oldState)
+                    update(stateMachine.routerRoute(response, subaccountNumber ?: 0, null), oldState)
                 }
             } else {
                 Logger.e { "retrieveSkipWithdrawalRouteCCTP error, code: $code" }
