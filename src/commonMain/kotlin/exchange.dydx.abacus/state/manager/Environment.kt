@@ -33,7 +33,6 @@ data class EnvironmentEndpoints(
     val indexers: IList<IndexerURIs>?,
     val validators: IList<String>?,
     val faucet: String?,
-    val squid: String?,
     val skip: String?,
     val metadataService: String?,
     val nobleValidator: String?,
@@ -51,7 +50,6 @@ data class EnvironmentEndpoints(
                 parser.asString(it)
             }?.toIList() ?: return null
             val faucet = parser.asString(data["faucet"])
-            val squid = parser.asString(data["0xsquid"])
             val skip = parser.asString(data["skip"])
             val metadataService = parser.asString(data["metadataService"])
             val nobleValidator = parser.asString(data["nobleValidator"])
@@ -60,7 +58,6 @@ data class EnvironmentEndpoints(
                 indexers = indexers,
                 validators = validators,
                 faucet = faucet,
-                squid = squid,
                 skip = skip,
                 metadataService = metadataService,
                 nobleValidator = nobleValidator,

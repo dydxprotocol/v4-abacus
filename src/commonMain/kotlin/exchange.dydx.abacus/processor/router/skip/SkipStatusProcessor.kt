@@ -45,7 +45,7 @@ internal class SkipStatusProcessor(
         return parser.asString(parser.value(data, path))
     }
 
-    private fun getSquidStatusFromState(state: String?): String? {
+    private fun getStatusFromState(state: String?): String? {
         if (state == null) return null
         if (state.contains("SUCCESS") || state.contains("RECEIVED")) return "success"
         return "ongoing"
@@ -79,7 +79,7 @@ internal class SkipStatusProcessor(
 //        If state is not unknown, it means the FROM tx succeeded
         if (!state.contains("UNKNOWN") && transferDirection == TransferDirection.From) return "success"
 //        Both TO and FROM tx are successful when transfer has succeeded
-        return getSquidStatusFromState(state)
+        return getStatusFromState(state)
     }
 
     private fun getChainDataFromIbcTransfer(ibcTransfer: Map<String, Any>, transferDirection: TransferDirection): ChainData? {
@@ -161,7 +161,7 @@ internal class SkipStatusProcessor(
         val fromChainData = getChainDataFromTransferSequence(payload = payload, transferDirection = TransferDirection.From)
         val toChainData = getChainDataFromTransferSequence(payload = payload, transferDirection = TransferDirection.To)
         val skipState = mutableMapOf(
-            "squidTransactionStatus" to getSquidStatusFromState(getStrFromMap(payload, "transfers.0.state")),
+            "squidTransactionStatus" to getStatusFromState(getStrFromMap(payload, "transfers.0.state")),
             "axelarTransactionUrl" to getAxelarTxUrl(payload),
             "fromChainStatus" to fromChainData?.toTransferChainStatusMap(),
             "toChainStatus" to toChainData?.toTransferChainStatusMap(),

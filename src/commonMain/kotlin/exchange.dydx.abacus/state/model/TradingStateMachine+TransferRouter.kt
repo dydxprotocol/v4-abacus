@@ -36,18 +36,8 @@ internal fun TradingStateMachine.evmSwapVenues(payload: String) {
     }
 }
 
-internal fun TradingStateMachine.squidV2SdkInfo(payload: String): StateChanges? {
-    val json = parser.decodeJsonObject(payload)
-    return if (json != null) {
-        input = routerProcessor.receivedV2SdkInfo(input, json)
-        StateChanges(iListOf(Changes.input))
-    } else {
-        StateChanges.noChange
-    }
-}
-
 // DO-LATER: https://linear.app/dydx/issue/OTE-350/%5Babacus%5D-cleanup
-internal fun TradingStateMachine.squidRoute(
+internal fun TradingStateMachine.routerRoute(
     payload: String,
     subaccountNumber: Int,
     requestId: String?,
@@ -55,23 +45,6 @@ internal fun TradingStateMachine.squidRoute(
     val json = parser.decodeJsonObject(payload)
     return if (json != null) {
         input = routerProcessor.receivedRoute(input, json, requestId)
-        StateChanges(
-            iListOf(Changes.input, Changes.subaccount),
-            subaccountNumbers = iListOf(subaccountNumber),
-        )
-    } else {
-        StateChanges.noChange
-    }
-}
-
-internal fun TradingStateMachine.squidRouteV2(
-    payload: String,
-    subaccountNumber: Int,
-    requestId: String?
-): StateChanges? {
-    val json = parser.decodeJsonObject(payload)
-    return if (json != null) {
-        input = routerProcessor.receivedRouteV2(input, json, requestId)
         StateChanges(
             iListOf(Changes.input, Changes.subaccount),
             subaccountNumbers = iListOf(subaccountNumber),

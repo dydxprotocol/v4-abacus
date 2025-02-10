@@ -86,7 +86,6 @@ class EnvironmentsMock {
                     "validators":[
                        "https://validator.v4staging.dydx.exchange"
                     ],
-                    "0xsquid":"https://squid-api-git-main-cosmos-testnet-0xsquid.vercel.app",
                     "geo": "https://api.dydx.exchange/v4/geo"
                  },
                  "featureFlags":{
@@ -118,7 +117,6 @@ class EnvironmentsMock {
                        "https://dydx-testnet-archive.allthatnode.com:26657/XZvMM41hESf8PJrEQiTzbCOMVyFca79R",
                        "https://test-dydx.kingnodes.com/"
                     ],
-                    "0xsquid":"https://squid-api-git-main-cosmos-testnet-0xsquid.vercel.app",
                     "faucet":"https://faucet.v4testnet.dydx.exchange",
                     "geo": "https://api.dydx.exchange/v4/geo"
                  },

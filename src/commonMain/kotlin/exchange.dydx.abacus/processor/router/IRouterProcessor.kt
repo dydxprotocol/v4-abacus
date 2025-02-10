@@ -31,21 +31,10 @@ interface IRouterProcessor {
         payload: Map<String, Any>
     ): Map<String, Any>?
 
-    fun receivedV2SdkInfo(
-        existing: Map<String, Any>?,
-        payload: Map<String, Any>
-    ): Map<String, Any>?
-
     fun receivedRoute(
         existing: Map<String, Any>?,
         payload: Map<String, Any>,
         requestId: String?,
-    ): Map<String, Any>?
-
-    fun receivedRouteV2(
-        existing: Map<String, Any>?,
-        payload: Map<String, Any>,
-        requestId: String?
     ): Map<String, Any>?
 
     fun usdcAmount(data: Map<String, Any>): Double?

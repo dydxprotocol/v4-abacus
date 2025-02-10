@@ -48,12 +48,6 @@ class V4StateManagerConfigs(
                       "faucet":{
                          "faucet":"/faucet/tokens"
                       },
-                      "0xsquid":{
-                         "chains":"/v1/chains",
-                         "tokens":"/v1/tokens",
-                         "route":"/v1/route",
-                         "status":"/v1/status"
-                      },
                       "configs":{
                          "markets":"/configs/markets.json"
                       },
@@ -78,31 +72,6 @@ class V4StateManagerConfigs(
 
     fun candlesChannel(): String? {
         return parser.asString(parser.value(configs, "channels.candles"))
-    }
-
-    fun squidStatus(): String? {
-        val squid = environment.endpoints.squid ?: return null
-        val path = parser.asString(parser.value(configs, "paths.0xsquid.status"))
-        return "$squid$path"
-    }
-
-    fun squidV2Status(): String? {
-        val path = parser.asString(parser.value(configs, "paths.0xsquid.status"))
-        return "$squidV2Host$path"
-    }
-
-    fun squidRoute(): String? {
-        val squid = environment.endpoints.squid ?: return null
-        val path = parser.asString(parser.value(configs, "paths.0xsquid.route"))
-        return "$squid$path"
-    }
-
-    fun squidV2Assets(): String? {
-        return "$squidV2Host/v2/sdk-info"
-    }
-
-    fun squidV2Route(): String? {
-        return "$squidV2Host/v2/route"
     }
 
     fun nobleChainId(): String {
@@ -158,15 +127,6 @@ class V4StateManagerConfigs(
     private val skipHost: String
         get() {
             return environment.endpoints.skip ?: "https://api.skip.money"
-        }
-
-    private val squidV2Host: String
-        get() {
-            return if (environment.isMainNet) {
-                "https://v2.api.squidrouter.com"
-            } else {
-                "https://testnet.v2.api.squidrouter.com"
-            }
         }
 
     fun launchIncentivePath(type: String): String? {

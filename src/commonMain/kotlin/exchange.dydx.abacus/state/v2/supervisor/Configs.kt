@@ -166,22 +166,16 @@ data class AccountConfigs(
 
 @JsExport
 data class OnboardingConfigs(
-    val retrieveSquidRoutes: Boolean,
+    val retrieveRoutes: Boolean,
 ) {
-    enum class SquidVersion {
-        V2,
-        V2DepositOnly,
-        V2WithdrawalOnly,
-    }
-
     var alchemyApiKey: String? = null
 
     companion object {
         val forApp = OnboardingConfigs(
-            retrieveSquidRoutes = true,
+            retrieveRoutes = true,
         )
         val forProgrammaticTraders = OnboardingConfigs(
-            retrieveSquidRoutes = false,
+            retrieveRoutes = false,
         )
     }
 }
