@@ -59,6 +59,8 @@ interface AsyncAbacusStateManagerProtocol {
         requestId: String?
     )
 
+    fun start()
+
     // Refresh some part of the state
     fun refresh(data: ApiData)
 
