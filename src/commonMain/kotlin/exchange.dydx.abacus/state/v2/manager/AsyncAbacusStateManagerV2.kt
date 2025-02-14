@@ -75,11 +75,28 @@ class AsyncAbacusStateManagerV2(
     val dataNotification: DataNotificationProtocol? = null,
     private val presentationProtocol: PresentationProtocol? = null,
 ) : SingletonAsyncAbacusStateManagerProtocol {
+    private var started: Boolean = false
+        set(value) {
+            if (field != value) {
+                field = value
+                if (field) {
+                    reconnect()
+                }
+            }
+        }
+
     init {
         Logger.clientLogger = ioImplementations.logging
         if (appConfigs.enableLogger) {
             Logger.isDebugEnabled = true
         }
+        if (appConfigs.autoStart) {
+            started = true
+        }
+    }
+
+    override fun start() {
+        started = true
     }
 
     override val state: PerpetualState?
@@ -449,6 +466,10 @@ class AsyncAbacusStateManagerV2(
     }
 
     private fun reconnect() {
+        if (!started) {
+            return
+        }
+
         val environment = environment
         if (environment != null) {
             adaptor = StateManagerAdaptorV2(
