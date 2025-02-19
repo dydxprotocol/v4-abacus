@@ -972,29 +972,37 @@ data class PerpetualMarketSummary(
                 for ((assetId, asset) in internalState.assets) {
                     val price = marketSummaryState.launchableMarketPrices[assetId]
                     val marketId = "$assetId-USD"
-                    if (markets.keys.contains(marketId) || price == null) {
+                    if (price == null) {
                         continue
                     }
 
-                    val market = PerpetualMarket(
-                        id = marketId,
-                        assetId = asset.id,
-                        market = asset.name,
-                        displayId = asset.displayableAssetId,
-                        oraclePrice = price.price,
-                        marketCaps = price.market_cap,
-                        priceChange24H = price.percent_change_24h,
-                        priceChange24HPercent = price.percent_change_24h,
-                        spot24hVolume = price.volume_24h,
-                        status = MarketStatus(
-                            canTrade = false,
-                            canReduce = false,
-                        ),
-                        configs = null,
-                        perpetual = null,
-                        isLaunched = false,
-                    )
-                    markets[marketId] = market
+                    val existingMarket = markets[marketId]
+                    if (existingMarket != null) {
+                        markets[marketId] = existingMarket.copy(
+                            marketCaps = price.market_cap,
+                            spot24hVolume = price.volume_24h,
+                        )
+                    } else {
+                        val market = PerpetualMarket(
+                            id = marketId,
+                            assetId = asset.id,
+                            market = asset.name,
+                            displayId = asset.displayableAssetId,
+                            oraclePrice = price.price,
+                            marketCaps = price.market_cap,
+                            priceChange24H = price.percent_change_24h,
+                            priceChange24HPercent = price.percent_change_24h,
+                            spot24hVolume = price.volume_24h,
+                            status = MarketStatus(
+                                canTrade = false,
+                                canReduce = false,
+                            ),
+                            configs = null,
+                            perpetual = null,
+                            isLaunched = false,
+                        )
+                        markets[marketId] = market
+                    }
                 }
 
                 return PerpetualMarketSummary(
