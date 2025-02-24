@@ -1121,6 +1121,7 @@ open class TradingStateMachine(
                     withdrawalCapacity = WithdrawalCapacity(
                         capacity = internalState.configs.withdrawalCapacity?.capacity,
                     ),
+                    rpcMap = internalState.configs.rpcMap,
                 )
             } else {
                 this.configs?.let {

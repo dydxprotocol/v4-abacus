@@ -144,6 +144,9 @@ internal class OnboardingSupervisor(
         helper.getAsync(url).response?.let { response ->
             RpcConfigsProcessor(helper.parser, configs.alchemyApiKey).received(response).let { rpcMap ->
                 RpcConfigs.chainRpcMap = rpcMap
+                stateMachine.internalState.configs.rpcMap = rpcMap
+                val oldState = stateMachine.state
+                update(StateChanges(iListOf(Changes.configs)), oldState)
             }
         }
     }

@@ -3,6 +3,7 @@ package exchange.dydx.abacus.output
 import com.ionspin.kotlin.bignum.decimal.BigDecimal
 import exchange.dydx.abacus.protocols.LocalizerProtocol
 import exchange.dydx.abacus.protocols.ParserProtocol
+import exchange.dydx.abacus.state.manager.ChainRpcMap
 import exchange.dydx.abacus.utils.IList
 import exchange.dydx.abacus.utils.Logger
 import kollections.JsExport
@@ -447,6 +448,7 @@ data class Configs(
     val equityTiers: EquityTiers?,
     val withdrawalGating: WithdrawalGating?,
     val withdrawalCapacity: WithdrawalCapacity?,
+    val rpcMap: ChainRpcMap?
 ) {
     companion object {
         internal fun create(
@@ -505,6 +507,7 @@ data class Configs(
                         equityTiers = equityTiers,
                         withdrawalGating = withdrawalGating,
                         withdrawalCapacity = withdrawalCapacity,
+                        rpcMap = null,
                     )
                 } else {
                     existing ?: Configs(
@@ -514,6 +517,7 @@ data class Configs(
                         equityTiers = null,
                         withdrawalGating = null,
                         withdrawalCapacity = null,
+                        rpcMap = null,
                     )
                 }
             }
