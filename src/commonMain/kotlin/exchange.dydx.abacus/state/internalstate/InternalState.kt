@@ -43,6 +43,7 @@ import exchange.dydx.abacus.output.input.TradeInputSize
 import exchange.dydx.abacus.output.input.TriggerOrderInputSummary
 import exchange.dydx.abacus.output.input.TriggerPrice
 import exchange.dydx.abacus.output.input.ValidationError
+import exchange.dydx.abacus.state.manager.ChainRpcMap
 import exchange.dydx.abacus.state.manager.HistoricalTradingRewardsPeriod
 import exchange.dydx.abacus.utils.NUM_PARENT_SUBACCOUNTS
 import indexer.codegen.IndexerHistoricalBlockTradingReward
@@ -226,6 +227,7 @@ internal data class InternalConfigsState(
     var feeTiers: List<FeeTier>? = null,
     var withdrawalGating: WithdrawalGating? = null,
     var withdrawalCapacity: InternalWithdrawalCapacityState? = null,
+    var rpcMap: ChainRpcMap? = null,
 )
 
 internal data class InternalWithdrawalCapacityState(
