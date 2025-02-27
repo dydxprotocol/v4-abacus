@@ -35,6 +35,7 @@ interface IRouterProcessor {
         existing: Map<String, Any>?,
         payload: Map<String, Any>,
         requestId: String?,
+        goFast: Boolean,
     ): Map<String, Any>?
 
     fun usdcAmount(data: Map<String, Any>): Double?

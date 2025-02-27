@@ -47,6 +47,7 @@ internal class TransferInputProcessor(
             inputState.currentType = InputType.TRANSFER
 
             inputState.transfer.size = null
+            inputState.transfer.decimals = null
             inputState.transfer.fastSpeed = false
             inputState.transfer.fee = null
             inputState.transfer.exchange = null
@@ -162,7 +163,7 @@ internal class TransferInputProcessor(
             }
 
             TransferInputField.chain -> {
-                if (data != null) {
+                if (data != transfer.chain && data != null) {
                     updateTransferToChainType(transfer, data)
                 }
                 updated = true
@@ -179,6 +180,14 @@ internal class TransferInputProcessor(
             TransferInputField.MEMO -> {
                 if (transfer.memo != data) {
                     transfer.memo = data
+                    updated = true
+                }
+            }
+
+            TransferInputField.decimals -> {
+                val decimals = parser.asInt(data)
+                if (transfer.decimals != decimals) {
+                    transfer.decimals = decimals
                     updated = true
                 }
             }

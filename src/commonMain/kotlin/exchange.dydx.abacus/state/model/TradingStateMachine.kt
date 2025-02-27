@@ -100,6 +100,7 @@ open class TradingStateMachine(
     private val maxSubaccountNumber: Int,
     private val useParentSubaccount: Boolean,
     val staticTyping: Boolean = false,
+    val skipGoFast: Boolean = false,
     private val trackingProtocol: TrackingProtocol?,
 ) {
     internal var internalState: InternalState = InternalState()

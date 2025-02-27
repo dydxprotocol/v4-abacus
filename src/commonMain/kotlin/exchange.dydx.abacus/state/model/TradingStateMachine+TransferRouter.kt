@@ -41,10 +41,11 @@ internal fun TradingStateMachine.routerRoute(
     payload: String,
     subaccountNumber: Int,
     requestId: String?,
+    goFast: Boolean,
 ): StateChanges? {
     val json = parser.decodeJsonObject(payload)
     return if (json != null) {
-        input = routerProcessor.receivedRoute(input, json, requestId)
+        input = routerProcessor.receivedRoute(input, json, requestId, goFast)
         StateChanges(
             iListOf(Changes.input, Changes.subaccount),
             subaccountNumbers = iListOf(subaccountNumber),

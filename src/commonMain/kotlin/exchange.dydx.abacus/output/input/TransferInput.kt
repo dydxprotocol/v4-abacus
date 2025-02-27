@@ -430,33 +430,7 @@ data class TransferInputSummary(
 data class TransferInputSize(
     val usdcSize: String?,
     var size: String?
-) {
-    companion object {
-        internal fun create(
-            existing: TransferInputSize?,
-            parser: ParserProtocol,
-            data: Map<*, *>?
-        ): TransferInputSize? {
-            Logger.d { "creating Transfer Input Size\n" }
-
-            data?.let {
-                val usdcSize = parser.asString(data["usdcSize"])
-                val size = parser.asString(data["size"])
-
-                return if (
-                    existing?.usdcSize != usdcSize ||
-                    existing?.size != size
-                ) {
-                    TransferInputSize(usdcSize, size)
-                } else {
-                    existing
-                }
-            }
-            Logger.d { "Transfer Input Size not valid" }
-            return null
-        }
-    }
-}
+)
 
 @JsExport
 @Serializable
@@ -487,8 +461,10 @@ data class TransferInput(
     val withdrawalOptions: WithdrawalInputOptions?,
     val transferOutOptions: TransferOutInputOptions?,
     val summary: TransferInputSummary?,
+    val goFastSummary: TransferInputSummary?,
     val resources: TransferInputResources?,
     val requestPayload: TransferInputRequestPayload?,
+    val goFastRequestPayload: TransferInputRequestPayload?,
     val errors: String?,
     val errorMessage: String?,
     val warning: String?,
@@ -501,108 +477,56 @@ data class TransferInput(
             existing: TransferInput?,
             parser: ParserProtocol,
             data: Map<*, *>?,
-            environment: V4Environment?,
             internalState: InternalTransferInputState?,
-            staticTyping: Boolean,
         ): TransferInput? {
             Logger.d { "creating Transfer Input\n" }
 
             if (internalState != null || data != null) {
-                val type = if (staticTyping) {
-                    internalState?.type
-                } else {
-                    parser.asString(data?.get("type"))?.let {
-                        TransferType.invoke(it)
-                    }
-                }
+                val type = internalState?.type
+                val size = internalState?.size
 
-                val size = if (staticTyping) {
-                    internalState?.size
-                } else {
-                    TransferInputSize.create(existing?.size, parser, parser.asMap(data?.get("size")))
-                }
-                val fastSpeed = if (staticTyping) internalState?.fastSpeed ?: false else parser.asBool(data?.get("fastSpeed")) ?: false
-                val fee = if (staticTyping) internalState?.fee else parser.asDouble(data?.get("fee"))
-                val exchange = if (staticTyping) internalState?.exchange else parser.asString(data?.get("exchange"))
-                val chain = if (staticTyping) internalState?.chain else parser.asString(data?.get("chain"))
-                val token = if (staticTyping) internalState?.token else parser.asString(data?.get("token"))
-                val address = if (staticTyping) internalState?.address else parser.asString(data?.get("address"))
-                val memo = if (staticTyping) internalState?.memo else parser.asString(data?.get("memo"))
+                val fastSpeed = internalState?.fastSpeed ?: false
+                val fee = internalState?.fee
+                val exchange = internalState?.exchange
+                val chain = internalState?.chain
+                val token = internalState?.token
+                val address = internalState?.address
+                val memo = internalState?.memo
 
                 var depositOptions: DepositInputOptions? = null
                 if (type == TransferType.deposit) {
-                    depositOptions = if (staticTyping) {
-                        internalState?.depositOptions
-                    } else {
-                        DepositInputOptions.create(
-                            existing = existing?.depositOptions,
-                            parser = parser,
-                            data = parser.asMap(data?.get("depositOptions")),
-                            internalState = internalState,
-                        )
-                    }
+                    depositOptions = internalState.depositOptions
                 }
 
                 var withdrawalOptions: WithdrawalInputOptions? = null
                 if (type == TransferType.withdrawal) {
-                    withdrawalOptions = if (staticTyping) {
-                        internalState?.withdrawalOptions
-                    } else {
-                        WithdrawalInputOptions.create(
-                            existing = existing?.withdrawalOptions,
-                            parser = parser,
-                            data = parser.asMap(data?.get("withdrawalOptions")),
-                            internalState = internalState,
-                        )
-                    }
+                    withdrawalOptions = internalState.withdrawalOptions
                 }
 
                 var transferOutOptions: TransferOutInputOptions? = null
                 if (type == TransferType.transferOut) {
-                    transferOutOptions = if (staticTyping) {
-                        internalState?.transferOutOptions
-                    } else {
-                        TransferOutInputOptions.create(
-                            existing = existing?.transferOutOptions,
-                            parser = parser,
-                            data = parser.asMap(data?.get("transferOutOptions")),
-                            environment = environment,
-                        )
-                    }
+                    transferOutOptions = internalState.transferOutOptions
                 }
 
-                val summary = if (staticTyping) {
-                    internalState?.summary
-                } else {
-                    TransferInputSummary.create(
-                        existing = existing?.summary,
-                        parser = parser,
-                        data = parser.asMap(data?.get("summary")),
-                    )
-                }
+                val summary = internalState?.summary
+                val goFastSummary = internalState?.goFastSummary
 
-                val resources = if (staticTyping) {
-                    internalState?.resources
-                } else {
-                    TransferInputResources.create(
-                        existing = existing?.resources,
-                        internalState = internalState,
-                    )
-                }
+                val resources = internalState?.resources
 
-                val route = if (staticTyping) {
-                    internalState?.route
-                } else {
-                    parser.asMap(data?.get("route"))
-                }
+                val route = internalState?.route
+                val goFastRoute = internalState?.goFastRoute
                 val requestPayload = TransferInputRequestPayload.create(
                     existing = null,
                     parser = parser,
                     data = parser.asMap(route?.get("requestPayload")),
                 )
+                val goFastRequestPayload = TransferInputRequestPayload.create(
+                    existing = null,
+                    parser = parser,
+                    data = parser.asMap(goFastRoute?.get("requestPayload")),
+                )
 
-                val errors = parser.asString(route?.get("errors"))
-
+                val errors = parser.asString(route?.get("errors")) ?: parser.asString(goFastRoute?.get("errors"))
                 val errorMessage: String? =
                     if (errors != null) {
                         val errorArray = parser.decodeJsonArray(errors)
@@ -611,7 +535,7 @@ data class TransferInput(
                     } else {
                         null
                     }
-                val warning = parser.asString(route?.get("warning"))
+                val warning = parser.asString(route?.get("warning")) ?: parser.asString(goFastRoute?.get("warning"))
 
                 return if (existing?.type !== type ||
                     existing?.size !== size ||
@@ -626,8 +550,10 @@ data class TransferInput(
                     existing.withdrawalOptions != withdrawalOptions ||
                     existing.transferOutOptions != transferOutOptions ||
                     existing.summary !== summary ||
+                    existing.goFastSummary != goFastSummary ||
                     existing.resources !== resources ||
                     existing.requestPayload !== requestPayload ||
+                    existing.goFastRequestPayload != goFastRequestPayload ||
                     existing.errors != errors ||
                     existing.errorMessage != errorMessage ||
                     existing.warning != warning
@@ -646,8 +572,10 @@ data class TransferInput(
                         withdrawalOptions = withdrawalOptions,
                         transferOutOptions = transferOutOptions,
                         summary = summary,
+                        goFastSummary = goFastSummary,
                         resources = resources,
                         requestPayload = requestPayload,
+                        goFastRequestPayload = goFastRequestPayload,
                         errors = errors,
                         errorMessage = errorMessage,
                         warning = warning,

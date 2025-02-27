@@ -41,6 +41,7 @@ import exchange.dydx.abacus.utils.AnalyticsUtils
 import exchange.dydx.abacus.utils.IMap
 import exchange.dydx.abacus.utils.Logger
 import exchange.dydx.abacus.utils.Numeric
+import exchange.dydx.abacus.utils.Numeric.Companion.decimal
 import exchange.dydx.abacus.utils.SLIPPAGE_PERCENT
 import exchange.dydx.abacus.utils.filterNotNull
 import exchange.dydx.abacus.utils.iMapOf
@@ -221,23 +222,144 @@ internal class OnboardingSupervisor(
         sourceAddress: String,
         subaccountNumber: Int?,
     ) {
-        val isCctp = state?.input?.transfer?.isCctp ?: false
-        if (isCctp) {
-            retrieveSkipDepositRouteCCTP(
+        if (stateMachine.skipGoFast) {
+            stateMachine.internalState.input.transfer.goFastRoute = null
+            stateMachine.internalState.input.transfer.route = null
+            stateMachine.internalState.input.transfer.goFastSummary = null
+            stateMachine.internalState.input.transfer.summary = null
+            retrieveSkipDepositRouteGoFast(
                 state = state,
                 accountAddress = accountAddress,
                 sourceAddress = sourceAddress,
                 subaccountNumber = subaccountNumber,
+                goFast = true,
+            )
+            retrieveSkipDepositRouteGoFast(
+                state = state,
+                accountAddress = accountAddress,
+                sourceAddress = sourceAddress,
+                subaccountNumber = subaccountNumber,
+                goFast = false,
             )
         } else {
-            retrieveSkipDepositRouteNonCCTP(
-                state,
-                accountAddress,
-                sourceAddress,
-                subaccountNumber,
-            )
+            val isCctp = state?.input?.transfer?.isCctp ?: false
+            if (isCctp) {
+                retrieveSkipDepositRouteCCTP(
+                    state = state,
+                    accountAddress = accountAddress,
+                    sourceAddress = sourceAddress,
+                    subaccountNumber = subaccountNumber,
+                )
+            } else {
+                retrieveSkipDepositRouteNonCCTP(
+                    state = state,
+                    accountAddress = accountAddress,
+                    sourceAddress = sourceAddress,
+                    subaccountNumber = subaccountNumber,
+                )
+            }
         }
-        return
+    }
+
+    private fun retrieveSkipDepositRouteGoFast(
+        state: PerpetualState?,
+        accountAddress: String,
+        sourceAddress: String,
+        subaccountNumber: Int?,
+        goFast: Boolean
+    ) {
+        val fromChain = state?.input?.transfer?.chain ?: return
+        val fromTokenDenom = state.input.transfer.token ?: return
+        val fromTokenSkipDenom = stateMachine.routerProcessor.getTokenByDenomAndChainId(
+            tokenDenom = fromTokenDenom,
+            chainId = fromChain,
+        )?.get("skipDenom")
+//        Denoms for tokens on their native chains are returned from the skip API in an incompatible
+//        format for our frontend SDKs but are required by the skip API for other API calls.
+//        So we prefer the skimDenom and default to the regular denom for API calls.
+        val fromTokenDenomForAPIUse = fromTokenSkipDenom ?: fromTokenDenom
+
+        val decimals = stateMachine.internalState.input.transfer.decimals ?: return
+        val fromAmount = helper.parser.asDecimal(state.input.transfer.size?.size)?.let {
+            (it * Numeric.decimal.TEN.pow(decimals)).toBigInteger()
+        }
+        if (fromAmount == null || fromAmount <= 0) {
+            return
+        }
+        val fromAmountString = helper.parser.asString(fromAmount) ?: return
+
+        val nonEvmSwapVenues = listOf(
+            OSMOSIS_SWAP_VENUE,
+            NEUTRON_SWAP_VENUE,
+        )
+        val evmSwapVenues = stateMachine.internalState.input.transfer.evmSwapVenues
+        val swapVenues = evmSwapVenues + nonEvmSwapVenues
+
+        val chainId = helper.environment.dydxChainId ?: return
+        val nativeChainUSDCDenom = helper.environment.tokens["usdc"]?.denom ?: return
+
+        val osmosisChainId = helper.configs.osmosisChainId()
+        val nobleChainId = helper.configs.nobleChainId()
+        val neutronChainId = helper.configs.neutronChainId()
+
+        val body = mutableMapOf(
+            "amount_in" to fromAmountString,
+            "source_asset_denom" to fromTokenDenomForAPIUse,
+            "source_asset_chain_id" to fromChain,
+            "dest_asset_denom" to nativeChainUSDCDenom,
+            "dest_asset_chain_id" to chainId,
+            "chain_ids_to_addresses" to mapOf(
+                fromChain to sourceAddress,
+                osmosisChainId to accountAddress.toOsmosisAddress(),
+                nobleChainId to accountAddress.toNobleAddress(),
+                neutronChainId to accountAddress.toNeutronAddress(),
+                chainId to accountAddress,
+            ),
+            "slippage_tolerance_percent" to SLIPPAGE_PERCENT,
+            "allow_unsafe" to true,
+            "smart_relay" to true,
+            "go_fast" to goFast,
+            "smart_swap_options" to mapOf(
+                "split_routes" to false,
+                "evm_swaps" to true,
+            ),
+            "bridges" to listOf(
+                "IBC",
+                "AXELAR",
+                "CCTP",
+                "GO_FAST",
+            ),
+            "swap_venues" to swapVenues,
+        )
+
+        val oldState = stateMachine.state
+        val header = iMapOf(
+            "Content-Type" to "application/json",
+        )
+        Logger.ddInfo(body.toIMap(), { "retrieveSkipDepositRouteGoFast payload sending" })
+        val url = helper.configs.skipV2MsgsDirect()
+
+        helper.post(url, header, body.toJsonPrettyPrint()) { _, response, code, headers ->
+            if (response != null) {
+                Logger.ddInfo(
+                    helper.parser.decodeJsonObject(response),
+                    { "retrieveSkipDepositRouteGoFast payload received" },
+                )
+                val currentFromAmount = stateMachine.state?.input?.transfer?.size?.size
+                val oldFromAmount = oldState?.input?.transfer?.size?.size
+                if (currentFromAmount == oldFromAmount) {
+                    val change = stateMachine.routerRoute(
+                        payload = response,
+                        subaccountNumber = subaccountNumber ?: 0,
+                        requestId = null,
+                        goFast = goFast,
+                    )
+                    update(change, oldState)
+                }
+            } else {
+                Logger.e { "retrieveSkipDepositRouteGoFast error, code: $code" }
+            }
+        }
     }
 
     private fun retrieveSkipDepositRouteNonCCTP(
@@ -319,12 +441,12 @@ internal class OnboardingSupervisor(
                 if (response != null) {
                     Logger.ddInfo(
                         helper.parser.decodeJsonObject(response),
-                        { "retrieveSkipDepositRouteCCTP payload received" },
+                        { "retrieveSkipDepositRouteNonCCTP payload received" },
                     )
                     val currentFromAmount = stateMachine.state?.input?.transfer?.size?.size
                     val oldFromAmount = oldState?.input?.transfer?.size?.size
                     if (currentFromAmount == oldFromAmount) {
-                        update(stateMachine.routerRoute(response, subaccountNumber ?: 0, null), oldState)
+                        update(stateMachine.routerRoute(response, subaccountNumber ?: 0, null, false), oldState)
                     }
                 } else {
                     Logger.e { "retrieveSkipDepositRouteNonCCTP error, code: $code" }
@@ -392,7 +514,7 @@ internal class OnboardingSupervisor(
                 val currentFromAmount = stateMachine.state?.input?.transfer?.size?.size
                 val oldFromAmount = oldState?.input?.transfer?.size?.size
                 if (currentFromAmount == oldFromAmount) {
-                    update(stateMachine.routerRoute(response, subaccountNumber ?: 0, null), oldState)
+                    update(stateMachine.routerRoute(response, subaccountNumber ?: 0, null, false), oldState)
                 }
             } else {
                 Logger.e { "retrieveSkipDepositRouteCCTP error, code: $code" }
@@ -416,7 +538,6 @@ internal class OnboardingSupervisor(
             )
             if (accountAddress != null && sourceAddress != null) {
                 processTransferInput(
-                    data = data,
                     type = type,
                     accountAddress = accountAddress,
                     sourceAddress = sourceAddress,
@@ -433,7 +554,6 @@ internal class OnboardingSupervisor(
     }
 
     private fun processTransferInput(
-        data: String?,
         type: TransferInputField?,
         accountAddress: String,
         sourceAddress: String,
@@ -678,7 +798,7 @@ internal class OnboardingSupervisor(
         )
         helper.post(url, header, body.toJsonPrettyPrint()) { _, response, code, headers ->
             if (response != null) {
-                update(stateMachine.routerRoute(response, subaccountNumber ?: 0, null), oldState)
+                update(stateMachine.routerRoute(response, subaccountNumber ?: 0, null, false), oldState)
             } else {
                 Logger.e { "retrieveSkipWithdrawalRouteExchange error, code: $code" }
             }
@@ -756,7 +876,7 @@ internal class OnboardingSupervisor(
                     helper.parser.decodeJsonObject(response),
                     { "retrieveSkipWithdrawalRouteNonCCTP payload received" },
                 )
-                update(stateMachine.routerRoute(response, subaccountNumber ?: 0, null), oldState)
+                update(stateMachine.routerRoute(response, subaccountNumber ?: 0, null, false), oldState)
             } else {
                 Logger.e { "retrieveSkipWithdrawalRouteNonCCTP error, code: $code" }
             }
@@ -820,7 +940,7 @@ internal class OnboardingSupervisor(
                 val currentFromAmount = stateMachine.state?.input?.transfer?.size?.size
                 val oldFromAmount = oldState?.input?.transfer?.size?.size
                 if (currentFromAmount == oldFromAmount) {
-                    update(stateMachine.routerRoute(response, subaccountNumber ?: 0, null), oldState)
+                    update(stateMachine.routerRoute(response, subaccountNumber ?: 0, null, false), oldState)
                 }
             } else {
                 Logger.e { "retrieveSkipWithdrawalRouteCCTP error, code: $code" }
@@ -896,7 +1016,7 @@ internal class OnboardingSupervisor(
     }
 
     @Throws(Exception::class)
-    fun depositPayload(subaccountNumber: Int?): HumanReadableDepositPayload {
+    private fun depositPayload(subaccountNumber: Int?): HumanReadableDepositPayload {
         val transfer = stateMachine.state?.input?.transfer ?: throw Exception("Transfer is null")
         val amount = transfer.size?.size ?: throw Exception("size is null")
         return HumanReadableDepositPayload(
@@ -905,12 +1025,8 @@ internal class OnboardingSupervisor(
         )
     }
 
-    fun depositPayloadJson(subaccountNumber: Int?): String {
-        return Json.encodeToString(depositPayload(subaccountNumber))
-    }
-
     @Throws(Exception::class)
-    fun withdrawPayload(subaccountNumber: Int?): HumanReadableWithdrawPayload {
+    private fun withdrawPayload(subaccountNumber: Int?): HumanReadableWithdrawPayload {
         val transfer = stateMachine.state?.input?.transfer ?: throw Exception("Transfer is null")
         val amount = transfer.size?.usdcSize ?: throw Exception("usdcSize is null")
         return HumanReadableWithdrawPayload(
@@ -919,12 +1035,12 @@ internal class OnboardingSupervisor(
         )
     }
 
-    fun transferNativeTokenPayloadJson(subaccountNumber: Int?): String {
+    private fun transferNativeTokenPayloadJson(subaccountNumber: Int?): String {
         return Json.encodeToString(transferNativeTokenPayload(subaccountNumber))
     }
 
     @Throws(Exception::class)
-    fun transferNativeTokenPayload(subaccountNumber: Int?): HumanReadableTransferPayload {
+    private fun transferNativeTokenPayload(subaccountNumber: Int?): HumanReadableTransferPayload {
         val transfer = stateMachine.state?.input?.transfer ?: throw Exception("Transfer is null")
         val amount = transfer.size?.size ?: throw Exception("size is null")
         val recipient = transfer.address ?: throw Exception("address is null")
@@ -935,12 +1051,12 @@ internal class OnboardingSupervisor(
         )
     }
 
-    fun withdrawPayloadJson(subaccountNumber: Int?): String {
+    private fun withdrawPayloadJson(subaccountNumber: Int?): String {
         return Json.encodeToString(withdrawPayload(subaccountNumber))
     }
 
     @Throws(Exception::class)
-    fun subaccountTransferPayload(subaccountNumber: Int?): HumanReadableSubaccountTransferPayload {
+    private fun subaccountTransferPayload(subaccountNumber: Int?): HumanReadableSubaccountTransferPayload {
         val transfer = stateMachine.state?.input?.transfer ?: error("Transfer is null")
         val size = transfer.size?.size ?: error("size is null")
         val destinationAddress = transfer.address ?: error("destination address is null")

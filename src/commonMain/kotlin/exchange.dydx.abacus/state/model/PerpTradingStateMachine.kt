@@ -12,9 +12,19 @@ class PerpTradingStateMachine(
     maxSubaccountNumber: Int,
     useParentSubaccount: Boolean,
     staticTyping: Boolean = false,
+    skipGoFast: Boolean = false,
     trackingProtocol: TrackingProtocol?,
 ) :
-    TradingStateMachine(environment, localizer, formatter, maxSubaccountNumber, useParentSubaccount, staticTyping, trackingProtocol) {
+    TradingStateMachine(
+        environment = environment,
+        localizer = localizer,
+        formatter = formatter,
+        maxSubaccountNumber = maxSubaccountNumber,
+        useParentSubaccount = useParentSubaccount,
+        staticTyping = staticTyping,
+        skipGoFast = skipGoFast,
+        trackingProtocol = trackingProtocol,
+    ) {
     /*
     Placeholder for now. Eventually, the code specifically for Perpetual will be in this class
      */
