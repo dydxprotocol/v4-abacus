@@ -41,6 +41,8 @@ style:
     active: false
   MagicNumber:
     active: false
+  ThrowsCount:
+    active: false
 
 empty-blocks:
   EmptyDefaultConstructor:
