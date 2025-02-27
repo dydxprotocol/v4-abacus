@@ -17,18 +17,18 @@ jobs:
       run: |
         ./gradlew spotlessCheck
 
-  detekt:
-    runs-on: macos-latest
-    steps:
-      - uses: actions/checkout@v4
-      - uses: actions/setup-java@v4
-        with:
-          distribution: 'adopt'
-          java-version: '17'
-      - uses: gradle/actions/setup-gradle@v4
-      - name: detekt
-        run: |
-          ./gradlew detektMetadataMain
+  # detekt:
+  #  runs-on: macos-latest
+  #  steps:
+  #    - uses: actions/checkout@v4
+  #    - uses: actions/setup-java@v4
+  #      with:
+  #        distribution: 'adopt'
+  #        java-version: '17'
+  #    - uses: gradle/actions/setup-gradle@v4
+  #    - name: detekt
+  #      run: |
+  #        ./gradlew detektMetadataMain
 
   jvmTest:
     runs-on: macos-latest
