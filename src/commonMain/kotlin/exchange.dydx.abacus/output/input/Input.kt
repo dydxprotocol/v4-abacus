@@ -73,9 +73,7 @@ data class Input(
                     existing = existing?.transfer,
                     parser = parser,
                     data = parser.asMap(data?.get("transfer")),
-                    environment = environment,
                     internalState = internalState?.input?.transfer,
-                    staticTyping = staticTyping,
                 )
 
                 val triggerOrders = if (staticTyping) {

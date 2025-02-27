@@ -353,6 +353,7 @@ class SkipProcessorTests {
             existing = mapOf(),
             payload = payload,
             requestId = null,
+            goFast = false,
         )
         val expected = mapOf(
             "transfer" to mapOf(

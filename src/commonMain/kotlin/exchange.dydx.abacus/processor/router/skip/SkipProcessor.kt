@@ -115,6 +115,7 @@ internal class SkipProcessor(
         existing: Map<String, Any>?,
         payload: Map<String, Any>,
         requestId: String?,
+        goFast: Boolean,
     ): Map<String, Any>? {
         var modified = mutableMapOf<String, Any>()
         existing?.let {
@@ -122,27 +123,43 @@ internal class SkipProcessor(
         }
         val tokenAddress = parser.asString(parser.value(payload, "route.dest_asset_denom"))
         val selectedChainId = parser.asString(parser.value(payload, "route.dest_asset_chain_id"))
-        val decimals = parser.asDouble(selectedTokenDecimals(tokenAddress = tokenAddress, selectedChainId = selectedChainId))
-        val processor = SkipRouteProcessor(parser)
-
-        val route = processor.received(null, payload, decimals = decimals) as MutableMap<String, Any>
+        val decimals = parser.asDouble(
+            selectedTokenDecimals(
+                tokenAddress = tokenAddress,
+                selectedChainId = selectedChainId,
+            ),
+        )
+        val route =
+            SkipRouteProcessor(parser).received(null, payload, decimals = decimals).toMutableMap()
         if (requestId != null) {
             route.safeSet("requestPayload.requestId", requestId)
         }
         modified.safeSet("transfer.route", route)
-        internalState.route = route
-
-        if (staticTyping) {
-            if (internalState.type == TransferType.deposit) {
-                val value = usdcAmount(modified)
-                internalState.size = TransferInputSize.safeCreate(internalState.size).copy(usdcSize = parser.asString(value))
+        if (goFast) {
+            val operations = parser.asList(parser.value(payload, "route.operations"))
+            var goFastFound = false
+            for (operation in operations ?: emptyList()) {
+                val transaction = parser.asNativeMap(operation)
+                if (transaction?.keys?.contains("go_fast_transfer") == true) {
+                    goFastFound = true
+                    break
+                }
+            }
+            if (goFastFound) {
+                internalState.goFastRoute = route
+            } else {
+                internalState.goFastRoute = null
             }
         } else {
-            if (parser.asNativeMap(existing?.get("transfer"))?.get("type") == "DEPOSIT") {
-                val value = usdcAmount(modified)
-                modified.safeSet("transfer.size.usdcSize", value)
-            }
+            internalState.route = route
         }
+
+        if (internalState.type == TransferType.deposit) {
+            val value = usdcAmount(modified)
+            internalState.size = TransferInputSize.safeCreate(internalState.size)
+                .copy(usdcSize = parser.asString(value))
+        }
+
         return modified
     }
 

@@ -121,6 +121,7 @@ internal class StateManagerAdaptorV2(
         maxSubaccountNumber = 127,
         useParentSubaccount = appConfigs.accountConfigs.subaccountConfigs.useParentSubaccount,
         staticTyping = appConfigs.staticTyping,
+        skipGoFast = appConfigs.skipGoFast,
         trackingProtocol = ioImplementations.tracking,
     )
 

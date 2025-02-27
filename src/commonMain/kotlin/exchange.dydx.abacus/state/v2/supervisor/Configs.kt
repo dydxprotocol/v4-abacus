@@ -217,6 +217,7 @@ data class AppConfigsV2(
     var triggerOrderToast: Boolean = false,
     var staticTyping: Boolean = true,
     var autoStart: Boolean = true,
+    var skipGoFast: Boolean = false,
 ) {
     companion object {
         val forApp = AppConfigsV2(

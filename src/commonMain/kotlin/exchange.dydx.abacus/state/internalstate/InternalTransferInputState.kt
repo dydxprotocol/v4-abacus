@@ -21,6 +21,7 @@ internal data class InternalTransferInputState(
 
     var type: TransferType? = null,
     var size: TransferInputSize? = null,
+    var decimals: Int? = null,
     var fastSpeed: Boolean = false,
     var fee: Double? = null,
     var exchange: String? = null,
@@ -34,6 +35,8 @@ internal data class InternalTransferInputState(
     var summary: TransferInputSummary? = null,
     var resources: TransferInputResources? = null,
     var route: Map<String, Any>? = null,
+    var goFastRoute: Map<String, Any>? = null,
+    var goFastSummary: TransferInputSummary? = null,
 ) {
     val cctpChains: List<SelectionOption>? // chains filtered by cctp.json
         get() =
