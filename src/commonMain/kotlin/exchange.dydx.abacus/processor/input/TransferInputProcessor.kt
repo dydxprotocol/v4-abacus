@@ -59,8 +59,10 @@ internal class TransferInputProcessor(
             inputState.transfer.withdrawalOptions = null
             inputState.transfer.transferOutOptions = null
             inputState.transfer.summary = null
+            inputState.transfer.goFastSummary = null
             inputState.transfer.resources = null
             inputState.transfer.route = null
+            inputState.transfer.goFastRoute = null
 
             inputState.transfer.type = TransferType.deposit
             val chainType = routerProcessor.defaultChainId()
@@ -88,6 +90,7 @@ internal class TransferInputProcessor(
                         TransferInputSize.safeCreate(transfer.size)
                             .copy(size = null, usdcSize = null)
                     transfer.route = null
+                    transfer.goFastRoute = null
                     transfer.memo = null
                     if (type == TransferType.transferOut) {
                         transfer.chain = "chain"
@@ -107,6 +110,7 @@ internal class TransferInputProcessor(
                 if (transfer.address != data) {
                     transfer.address = data
                     transfer.route = null
+                    transfer.goFastRoute = null
                     updated = true
                 }
             }
@@ -130,6 +134,7 @@ internal class TransferInputProcessor(
                     transfer.size =
                         TransferInputSize.safeCreate(transfer.size).copy(usdcSize = data)
                     transfer.route = null
+                    transfer.goFastRoute = null
                     updated = true
                 }
             }
@@ -139,6 +144,7 @@ internal class TransferInputProcessor(
                 if (transfer.fee != fee) {
                     transfer.fee = fee
                     transfer.route = null
+                    transfer.goFastRoute = null
                     updated = true
                 }
             }
@@ -147,6 +153,7 @@ internal class TransferInputProcessor(
                 if (transfer.size?.size != data) {
                     transfer.size = TransferInputSize.safeCreate(transfer.size).copy(size = data)
                     transfer.route = null
+                    transfer.goFastRoute = null
                     if (transfer.type == TransferType.deposit) {
                         transfer.size?.copy(usdcSize = null)
                     }
@@ -337,6 +344,7 @@ internal class TransferInputProcessor(
         transfer.exchange = null
         transfer.size = TransferInputSize.safeCreate(transfer.size).copy(size = null)
         transfer.route = null
+        transfer.goFastRoute = null
         // needed to pass tests, remove later
         transfer.depositOptions = DepositInputOptions.safeCreate(transfer.depositOptions)
             .copy(assets = tokenOptions.toIList())
@@ -365,6 +373,7 @@ internal class TransferInputProcessor(
 //            )
 //        }
         transfer.route = null
+        transfer.goFastRoute = null
     }
 
     private fun updateTransferExchangeType(
@@ -388,5 +397,6 @@ internal class TransferInputProcessor(
         transfer.chain = null
         transfer.size = TransferInputSize.safeCreate(transfer.size).copy(size = null)
         transfer.route = null
+        transfer.goFastRoute = null
     }
 }
