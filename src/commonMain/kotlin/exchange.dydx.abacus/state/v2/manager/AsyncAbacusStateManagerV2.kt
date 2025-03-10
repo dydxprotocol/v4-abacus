@@ -75,33 +75,6 @@ class AsyncAbacusStateManagerV2(
     val dataNotification: DataNotificationProtocol? = null,
     private val presentationProtocol: PresentationProtocol? = null,
 ) : SingletonAsyncAbacusStateManagerProtocol {
-    private var started: Boolean = false
-        set(value) {
-            if (field != value) {
-                field = value
-                if (field) {
-                    reconnect()
-                }
-            }
-        }
-
-    init {
-        Logger.clientLogger = ioImplementations.logging
-        if (appConfigs.enableLogger) {
-            Logger.isDebugEnabled = true
-        }
-        if (appConfigs.autoStart) {
-            initAfterStart()
-            started = true
-        }
-    }
-
-    override fun start() {
-        if (!started) {
-            initAfterStart()
-            started = true
-        }
-    }
 
     override val state: PerpetualState?
         get() = adaptor?.stateMachine?.state
@@ -287,6 +260,33 @@ class AsyncAbacusStateManagerV2(
                 localizer = _nativeImplementations.localizer ?: DummyLocalizer(),
                 formatter = _nativeImplementations.formatter ?: DummyFormatter(),
             )
+        }
+    }
+    private var started: Boolean = false
+        set(value) {
+            if (field != value) {
+                field = value
+                if (field) {
+                    reconnect()
+                }
+            }
+        }
+
+    init {
+        Logger.clientLogger = ioImplementations.logging
+        if (appConfigs.enableLogger) {
+            Logger.isDebugEnabled = true
+        }
+        if (appConfigs.autoStart) {
+            initAfterStart()
+            started = true
+        }
+    }
+
+    override fun start() {
+        if (!started) {
+            initAfterStart()
+            started = true
         }
     }
 
