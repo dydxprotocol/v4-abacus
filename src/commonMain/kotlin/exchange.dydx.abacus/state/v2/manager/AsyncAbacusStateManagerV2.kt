@@ -91,12 +91,16 @@ class AsyncAbacusStateManagerV2(
             Logger.isDebugEnabled = true
         }
         if (appConfigs.autoStart) {
+            initAfterStart()
             started = true
         }
     }
 
     override fun start() {
-        started = true
+        if (!started) {
+            initAfterStart()
+            started = true
+        }
     }
 
     override val state: PerpetualState?
@@ -286,7 +290,7 @@ class AsyncAbacusStateManagerV2(
         }
     }
 
-    init {
+    private fun initAfterStart() {
         if (ioImplementations.rest === null) {
             throw Error("IOImplementations.rest is not set")
         }

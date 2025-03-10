@@ -297,9 +297,9 @@ internal class SubaccountSupervisor(
         val channel = helper.configs.subaccountChannel(parent)
             ?: throw Exception("subaccount channel is null")
         helper.socket(
-            helper.socketAction(subscribe),
-            channel,
-            subaccountChannelParams(accountAddress, subaccountNumber, subscribe),
+            type = helper.socketAction(subscribe),
+            channel = channel,
+            params = subaccountChannelParams(accountAddress, subaccountNumber, subscribe),
         )
     }
 
