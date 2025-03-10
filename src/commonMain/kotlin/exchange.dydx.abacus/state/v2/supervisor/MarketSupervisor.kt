@@ -238,9 +238,9 @@ internal open class MarketSupervisor(
         val channel =
             helper.configs.marketTradesChannel() ?: throw Exception("trades channel is null")
         helper.socket(
-            helper.socketAction(subscribe),
-            channel,
-            if (subscribe && shouldBatchMarketTradesChannelData()) {
+            type = helper.socketAction(subscribe),
+            channel = channel,
+            params = if (subscribe && shouldBatchMarketTradesChannelData()) {
                 iMapOf("id" to marketId, "batched" to "true")
             } else {
                 iMapOf("id" to marketId)
@@ -256,9 +256,9 @@ internal open class MarketSupervisor(
     fun candlesChannelSubscription(resolution: String, subscribe: Boolean = true) {
         val channel = helper.configs.candlesChannel() ?: throw Exception("candlesChannel is null")
         helper.socket(
-            helper.socketAction(subscribe),
-            channel,
-            if (subscribe) {
+            type = helper.socketAction(subscribe),
+            channel = channel,
+            params = if (subscribe) {
                 iMapOf("id" to "$marketId/$resolution", "batched" to "true")
             } else {
                 iMapOf("id" to "$marketId/$resolution")

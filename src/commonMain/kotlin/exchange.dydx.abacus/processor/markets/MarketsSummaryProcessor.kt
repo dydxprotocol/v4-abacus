@@ -350,10 +350,10 @@ internal class MarketsSummaryProcessor(
         payload: Map<String, Any>
     ): Map<String, Any>? {
         val markets = marketsProcessor.receivedCandlesChanges(
-            parser.asNativeMap(existing?.get("markets")),
-            market,
-            resolution,
-            payload,
+            existing = parser.asNativeMap(existing?.get("markets")),
+            market = market,
+            resolution = resolution,
+            payload = payload,
         )
         return modify(existing, markets)
     }

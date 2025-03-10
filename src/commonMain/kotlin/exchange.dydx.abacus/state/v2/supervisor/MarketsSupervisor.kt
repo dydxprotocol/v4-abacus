@@ -118,9 +118,9 @@ internal class MarketsSupervisor(
         val channel =
             helper.configs.marketsChannel() ?: throw Exception("markets channel is null")
         helper.socket(
-            helper.socketAction(subscribe),
-            channel,
-            if (subscribe && shouldBatchMarketsChannelData()) {
+            type = helper.socketAction(subscribe),
+            channel = channel,
+            params = if (subscribe && shouldBatchMarketsChannelData()) {
                 iMapOf("batched" to "true")
             } else {
                 null
