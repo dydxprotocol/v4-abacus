@@ -52,7 +52,7 @@ allprojects {
 }
 
 group = "exchange.dydx.abacus"
-version = "1.13.63"
+version = "1.12.64"
 
 repositories {
     google()
@@ -95,7 +95,6 @@ kotlin {
     val iosTargets = listOf(
         iosArm64(),
         iosSimulatorArm64(),
-        iosX64(),
     )
 
     iosTargets.forEach {
