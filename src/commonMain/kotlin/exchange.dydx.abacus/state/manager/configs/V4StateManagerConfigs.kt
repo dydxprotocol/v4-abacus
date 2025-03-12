@@ -17,33 +17,33 @@ class V4StateManagerConfigs(
                 {
                    "paths":{
                       "public":{
-                         "fills":"/v4/fills",
-                         "candles":"/v4/candles/perpetualMarkets",
-                         "config":"/v4/config",
-                         "historical-funding":"/v4/historicalFunding",
-                         "historical-pnl":"/v4/historical-pnl",
-                         "sparklines":"/v4/sparklines",
-                         "account":"/v4/addresses",
-                         "time":"/v4/time",
-                         "screen":"/v4/screen",
-                         "complianceScreen":"/v4/compliance/screen",
-                         "complianceGeoblock":"/v4/compliance/geoblock",
-                         "complianceGeoblockKeplr":"/v4/compliance/geoblock-keplr",
-                         "height":"/v4/height",
-                         "vaultPositions":"/v4/vault/v1/megavault/positions",
-                         "vaultHistoricalPnl":"/v4/vault/v1/megavault/historicalPnl",
-                         "vaultMarketPnls":"/v4/vault/v1/vaults/historicalPnl",
-                         "transfers":"/v4/transfers/between"
+                         "fills":"/fills",
+                         "candles":"/candles/perpetualMarkets",
+                         "config":"/config",
+                         "historical-funding":"/historicalFunding",
+                         "historical-pnl":"/historical-pnl",
+                         "sparklines":"/sparklines",
+                         "account":"/addresses",
+                         "time":"/time",
+                         "screen":"/screen",
+                         "complianceScreen":"/compliance/screen",
+                         "complianceGeoblock":"/compliance/geoblock",
+                         "complianceGeoblockKeplr":"/compliance/geoblock-keplr",
+                         "height":"/height",
+                         "vaultPositions":"/vault/v1/megavault/positions",
+                         "vaultHistoricalPnl":"/vault/v1/megavault/historicalPnl",
+                         "vaultMarketPnls":"/vault/v1/vaults/historicalPnl",
+                         "transfers":"/transfers/between"
                       },
                       "private":{
-                         "account":"/v4/addresses",
-                         "fills":"/v4/fills",
-                         "historical-pnl":"/v4/historical-pnl",
-                         "parent-historical-pnl":"/v4/historical-pnl/parentSubaccountNumber",
-                         "transfers":"/v4/transfers",
-                         "historicalTradingRewardAggregations":"/v4/historicalTradingRewardAggregations",
-                         "parent-fills":"/v4/fills/parentSubaccountNumber",
-                         "parent-transfers": "/v4/transfers/parentSubaccountNumber"
+                         "account":"/addresses",
+                         "fills":"/fills",
+                         "historical-pnl":"/historical-pnl",
+                         "parent-historical-pnl":"/historical-pnl/parentSubaccountNumber",
+                         "transfers":"/transfers",
+                         "historicalTradingRewardAggregations":"/historicalTradingRewardAggregations",
+                         "parent-fills":"/fills/parentSubaccountNumber",
+                         "parent-transfers": "/transfers/parentSubaccountNumber"
                       },
                       "faucet":{
                          "faucet":"/faucet/tokens"
