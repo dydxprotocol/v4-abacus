@@ -168,6 +168,7 @@ internal class StateManagerAdaptorV2(
         helper = networkHelper,
         analyticsUtils = analyticsUtils,
         configs = appConfigs.accountConfigs,
+        screening = appConfigs.screening,
     )
 
     private val markets = MarketsSupervisor(

@@ -38,7 +38,8 @@ internal class AccountsSupervisor(
     stateMachine: TradingStateMachine,
     helper: NetworkHelper,
     analyticsUtils: AnalyticsUtils,
-    internal val configs: AccountConfigs,
+    private val configs: AccountConfigs,
+    private val screening: Boolean,
 ) : NetworkSupervisor(stateMachine, helper, analyticsUtils) {
     internal val accounts = mutableMapOf<String, AccountSupervisor>()
 
@@ -86,7 +87,14 @@ internal class AccountsSupervisor(
         val accountSupervisor = accounts[address]
         accountSupervisor?.retain() ?: run {
             val newAccountSupervisor =
-                AccountSupervisor(stateMachine, helper, analyticsUtils, configs, address)
+                AccountSupervisor(
+                    stateMachine = stateMachine,
+                    helper = helper,
+                    analyticsUtils = analyticsUtils,
+                    configs = configs,
+                    screening = screening,
+                    accountAddress = address,
+                )
             newAccountSupervisor.historicalTradingRewardPeriod = historicalTradingRewardPeriod
             newAccountSupervisor.readyToConnect = readyToConnect
             newAccountSupervisor.indexerConnected = indexerConnected
