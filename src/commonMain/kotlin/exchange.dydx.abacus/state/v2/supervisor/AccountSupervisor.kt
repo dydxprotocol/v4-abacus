@@ -74,7 +74,8 @@ internal open class AccountSupervisor(
     stateMachine: TradingStateMachine,
     helper: NetworkHelper,
     analyticsUtils: AnalyticsUtils,
-    internal val configs: AccountConfigs,
+    private val configs: AccountConfigs,
+    private val screening: Boolean,
     internal val accountAddress: String,
     private val pushNotificationRegistrationHandler: PushNotificationRegistrationHandlerProtocol = PushNotificationRegistrationHandler(
         helper = helper,
@@ -966,11 +967,13 @@ internal open class AccountSupervisor(
     private var complianceScreeningAddress: String? = null
 
     private fun doComplianceScreening() {
-        val sourceAddress = sourceAddress
-        if (sourceAddress != null && indexerConnected && complianceScreeningAddress != sourceAddress) {
-            screenSourceAddress()
-            complianceScreen(EvmAddress(sourceAddress))
-            complianceScreeningAddress = sourceAddress
+        if (screening) {
+            val sourceAddress = sourceAddress
+            if (sourceAddress != null && indexerConnected && complianceScreeningAddress != sourceAddress) {
+                screenSourceAddress()
+                complianceScreen(EvmAddress(sourceAddress))
+                complianceScreeningAddress = sourceAddress
+            }
         }
     }
 

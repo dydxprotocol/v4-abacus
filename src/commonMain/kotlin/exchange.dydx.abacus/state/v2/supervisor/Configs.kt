@@ -129,6 +129,7 @@ data class AccountConfigs(
     val retrieveLaunchIncentivePoints: Boolean,
     val transferNobleBalances: Boolean,
     val subaccountConfigs: SubaccountConfigs,
+
 ) {
     companion object {
         val forApp = AccountConfigs(
@@ -218,6 +219,7 @@ data class AppConfigsV2(
     var staticTyping: Boolean = true,
     var autoStart: Boolean = true,
     var skipGoFast: Boolean = false,
+    var screening: Boolean = true,
 ) {
     companion object {
         val forApp = AppConfigsV2(
