@@ -39,7 +39,7 @@ class V4SubaccountTests : V4BaseTests() {
     private fun testSubaccountsReceived() {
         if (perp.staticTyping) {
             perp.rest(
-                url = AbUrl.fromString("$testRestUrl/v4/addresses/cosmo"),
+                url = AbUrl.fromString("$testRestUrl/addresses/cosmo"),
                 payload = mock.batchedSubaccountsChannel.rest_response,
                 subaccountNumber = 0,
                 height = null,
@@ -56,7 +56,7 @@ class V4SubaccountTests : V4BaseTests() {
             test(
                 {
                     perp.rest(
-                        AbUrl.fromString("$testRestUrl/v4/addresses/cosmo"),
+                        AbUrl.fromString("$testRestUrl/addresses/cosmo"),
                         mock.batchedSubaccountsChannel.rest_response,
                         0,
                         null,

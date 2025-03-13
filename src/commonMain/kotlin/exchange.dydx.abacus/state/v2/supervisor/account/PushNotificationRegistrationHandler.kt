@@ -29,7 +29,7 @@ internal class PushNotificationRegistrationHandler(
         payload: Map<String, Any>,
     ) {
         val indexerUrl = helper.configs.indexerConfig?.api ?: return
-        val registrationUrl = "$indexerUrl/v4/addresses/$accountAddress/registerToken"
+        val registrationUrl = "$indexerUrl/addresses/$accountAddress/registerToken"
         val header =
             iMapOf(
                 "Content-Type" to "application/json",

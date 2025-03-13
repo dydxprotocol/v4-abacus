@@ -265,7 +265,7 @@ class V4MarketsTests : V4BaseTests() {
     private fun testMarketsSparklinesChanged() {
         if (perp.staticTyping) {
             perp.rest(
-                url = AbUrl.fromString("$testRestUrl/v4/sparklines?timePeriod=ONE_DAY"),
+                url = AbUrl.fromString("$testRestUrl/sparklines?timePeriod=ONE_DAY"),
                 payload = mock.candles.v4SparklinesFirstCall,
                 subaccountNumber = 0,
                 height = null,
@@ -277,7 +277,7 @@ class V4MarketsTests : V4BaseTests() {
             test(
                 {
                     perp.rest(
-                        AbUrl.fromString("$testRestUrl/v4/sparklines?timePeriod=ONE_DAY"),
+                        AbUrl.fromString("$testRestUrl/sparklines?timePeriod=ONE_DAY"),
                         mock.candles.v4SparklinesFirstCall,
                         0,
                         null,

@@ -30,7 +30,7 @@ class AdjustIsolatedMarginInputTests : V4BaseTests(useParentSubaccount = true) {
     private fun loadSubaccountsWithRealData(): StateResponse {
         return test({
             perp.rest(
-                AbUrl.fromString("$testRestUrl/v4/addresses/dydxaddress"),
+                AbUrl.fromString("$testRestUrl/addresses/dydxaddress"),
                 mock.parentSubaccountsChannel.rest_response,
                 0,
                 null,

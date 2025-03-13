@@ -58,7 +58,7 @@ open class V4TradeInputTests : V4BaseTests() {
 
     override fun loadSubaccounts(): StateResponse {
         return test({
-            perp.loadv4Accounts(mock, "$testRestUrl/v4/addresses/cosmo")
+            perp.loadv4Accounts(mock, "$testRestUrl/addresses/cosmo")
         }, null)
     }
 

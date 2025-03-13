@@ -84,7 +84,7 @@ class V4AccountTests : V4BaseTests() {
 
     private fun testSubaccountsReceived() {
         if (perp.staticTyping) {
-            perp.loadv4SubaccountsWithPositions(mock, "$testRestUrl/v4/addresses/cosmo")
+            perp.loadv4SubaccountsWithPositions(mock, "$testRestUrl/addresses/cosmo")
 
             val account = perp.internalState.wallet.account
             assertEquals(2800.8, account.tradingRewards.total)
@@ -97,7 +97,7 @@ class V4AccountTests : V4BaseTests() {
         } else {
             test(
                 {
-                    perp.loadv4SubaccountsWithPositions(mock, "$testRestUrl/v4/addresses/cosmo")
+                    perp.loadv4SubaccountsWithPositions(mock, "$testRestUrl/addresses/cosmo")
                 },
                 """
             {
@@ -305,7 +305,7 @@ class V4AccountTests : V4BaseTests() {
     private fun testSubaccountFillsReceived() {
         if (perp.staticTyping) {
             perp.rest(
-                url = AbUrl.fromString("$testRestUrl/v4/fills?subaccountNumber=0"),
+                url = AbUrl.fromString("$testRestUrl/fills?subaccountNumber=0"),
                 payload = mock.fillsChannel.v4_rest,
                 subaccountNumber = 0,
                 height = null,
@@ -317,7 +317,7 @@ class V4AccountTests : V4BaseTests() {
             test(
                 load = {
                     perp.rest(
-                        AbUrl.fromString("$testRestUrl/v4/fills?subaccountNumber=0"),
+                        AbUrl.fromString("$testRestUrl/fills?subaccountNumber=0"),
                         mock.fillsChannel.v4_rest,
                         0,
                         null,
@@ -433,7 +433,7 @@ class V4AccountTests : V4BaseTests() {
     private fun testSubaccountTransfersReceived() {
         if (perp.staticTyping) {
             perp.rest(
-                url = AbUrl.fromString("$testRestUrl/v4/transfers?subaccountNumber=0"),
+                url = AbUrl.fromString("$testRestUrl/transfers?subaccountNumber=0"),
                 payload = mock.transfersMock.transfer_data,
                 subaccountNumber = 0,
                 height = null,
@@ -457,7 +457,7 @@ class V4AccountTests : V4BaseTests() {
             test(
                 {
                     perp.rest(
-                        AbUrl.fromString("$testRestUrl/v4/transfers?subaccountNumber=0"),
+                        AbUrl.fromString("$testRestUrl/transfers?subaccountNumber=0"),
                         mock.transfersMock.transfer_data,
                         0,
                         null,

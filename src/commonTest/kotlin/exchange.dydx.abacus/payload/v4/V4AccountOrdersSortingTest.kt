@@ -32,7 +32,7 @@ class V4AccountOrdersSortingTest : V4BaseTests() {
 
     private fun testSubaccountsReceived() {
         if (perp.staticTyping) {
-            perp.loadv4SubaccountsWithPositions(mock, "$testRestUrl/v4/addresses/cosmo")
+            perp.loadv4SubaccountsWithPositions(mock, "$testRestUrl/addresses/cosmo")
 
             val subaccounts = perp.internalState?.wallet?.account?.subaccounts
             val subaccount = subaccounts?.get(0)
@@ -43,7 +43,7 @@ class V4AccountOrdersSortingTest : V4BaseTests() {
         } else {
             test(
                 {
-                    perp.loadv4SubaccountsWithPositions(mock, "$testRestUrl/v4/addresses/cosmo")
+                    perp.loadv4SubaccountsWithPositions(mock, "$testRestUrl/addresses/cosmo")
                 },
                 """
             {

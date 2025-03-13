@@ -567,7 +567,7 @@ fun TradingStateMachine.rest(
     var changes: StateChanges? = null
     var error: ParsingError? = null
     when (url.path) {
-        "/v3/historical-pnl", "/v4/historical-pnl" -> {
+        "/v3/historical-pnl", "/historical-pnl" -> {
             val subaccountNumber =
                 parser.asInt(url.params?.firstOrNull { param -> param.key == "subaccountNumber" }?.value)
                     ?: 0
@@ -578,33 +578,33 @@ fun TradingStateMachine.rest(
             changes = candles(payload)
         }
 
-        "/v4/sparklines" -> {
+        "/sparklines" -> {
             changes = sparklines(payload, IndexerSparklineTimePeriod.ONEDAY)
         }
 
-        "/v4/fills" -> {
+        "/fills" -> {
             val subaccountNumber =
                 parser.asInt(url.params?.firstOrNull { param -> param.key == "subaccountNumber" }?.value)
                     ?: 0
             changes = fills(payload, subaccountNumber)
         }
 
-        "/v4/transfers" -> {
+        "/transfers" -> {
             val subaccountNumber =
                 parser.asInt(url.params?.firstOrNull { param -> param.key == "subaccountNumber" }?.value)
                     ?: 0
             changes = transfers(payload, subaccountNumber)
         }
 
-        "/v4/vault/v1/megavault/historicalPnl" -> {
+        "/vault/v1/megavault/historicalPnl" -> {
             changes = onMegaVaultPnl(payload)
         }
 
-        "/v4/vault/v1/megavault/positions" -> {
+        "/vault/v1/megavault/positions" -> {
             changes = onVaultMarketPositions(payload)
         }
 
-        "/v4/vault/v1/vaults/historicalPnl" -> {
+        "/vault/v1/vaults/historicalPnl" -> {
             changes = onVaultMarketPnls(payload)
         }
 
@@ -619,11 +619,11 @@ fun TradingStateMachine.rest(
         }
 
         else -> {
-            if (url.path.contains("/v3/historical-funding/") || url.path.contains("/v4/historicalFunding/")) {
+            if (url.path.contains("/v3/historical-funding/") || url.path.contains("/historicalFunding/")) {
                 changes = historicalFundings(payload)
-            } else if (url.path.contains("/v3/candles/") || url.path.contains("/v4/candles/")) {
+            } else if (url.path.contains("/v3/candles/") || url.path.contains("/candles/")) {
                 changes = candles(payload)
-            } else if (url.path.contains("/v4/addresses/")) {
+            } else if (url.path.contains("/addresses/")) {
                 changes = account(payload)
             } else {
                 error = ParsingError(

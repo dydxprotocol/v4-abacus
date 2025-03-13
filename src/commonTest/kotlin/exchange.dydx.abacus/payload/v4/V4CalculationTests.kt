@@ -53,7 +53,7 @@ class V4CalculationTests : V4BaseTests() {
 
     override fun loadSubaccounts(): StateResponse {
         return perp.rest(
-            AbUrl.fromString("$testRestUrl/v4/addresses/cosmo"),
+            AbUrl.fromString("$testRestUrl/addresses/cosmo"),
             mock.accountsChannel.v4_accounts_received_for_calculation,
             0,
             null,
@@ -63,7 +63,7 @@ class V4CalculationTests : V4BaseTests() {
     fun testAccountsOnce() {
         if (perp.staticTyping) {
             perp.rest(
-                url = AbUrl.fromString("$testRestUrl/v4/addresses/cosmo"),
+                url = AbUrl.fromString("$testRestUrl/addresses/cosmo"),
                 payload = mock.accountsChannel.v4_accounts_received_for_calculation,
                 subaccountNumber = 0,
                 height = null,
@@ -104,7 +104,7 @@ class V4CalculationTests : V4BaseTests() {
             test(
                 {
                     perp.rest(
-                        AbUrl.fromString("$testRestUrl/v4/addresses/cosmo"),
+                        AbUrl.fromString("$testRestUrl/addresses/cosmo"),
                         mock.accountsChannel.v4_accounts_received_for_calculation,
                         0,
                         null,

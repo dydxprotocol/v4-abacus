@@ -61,7 +61,7 @@ open class V4BaseTests(
 
     internal open fun loadSubaccounts(): StateResponse {
         return test({
-            perp.loadv4SubaccountsWithPositions(mock, "$testRestUrl/v4/addresses/cosmo")
+            perp.loadv4SubaccountsWithPositions(mock, "$testRestUrl/addresses/cosmo")
         }, null)
     }
 

@@ -62,7 +62,7 @@ class V4StateManagerConfigs(
                          "points":"/query/api/dydx/points"
                       }
                    },
-                   "socket":"/v4/ws",
+                   "socket":"/ws",
                    "channels":{
                       "markets":"v4_markets",
                       "trades":"v4_trades",

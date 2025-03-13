@@ -17,7 +17,7 @@ import kotlin.test.assertTrue
 class TriggerOrderInputTests : V4BaseTests() {
     override fun loadSubaccounts(): StateResponse {
         return perp.rest(
-            AbUrl.fromString("$testRestUrl/v4/addresses/cosmo"),
+            AbUrl.fromString("$testRestUrl/addresses/cosmo"),
             mock.accountsChannel.v4_accounts_received_for_calculation,
             0,
             null,
@@ -53,7 +53,7 @@ class TriggerOrderInputTests : V4BaseTests() {
         test(
             {
                 perp.rest(
-                    AbUrl.fromString("$testRestUrl/v4/addresses/cosmo"),
+                    AbUrl.fromString("$testRestUrl/addresses/cosmo"),
                     mock.accountsChannel.v4_accounts_received_for_calculation_2,
                     0,
                     null,
