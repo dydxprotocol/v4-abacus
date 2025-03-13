@@ -304,6 +304,7 @@ internal open class AccountSupervisor(
             }
 
             sendPushNotificationToken()
+            doComplianceScreening()
         } else {
             subaccountsTimer = null
             screenAccountAddressTimer = null
@@ -831,7 +832,7 @@ internal open class AccountSupervisor(
         return helper.configs.publicApiUrl("complianceGeoblockKeplr")
     }
 
-    open fun screenSourceAddress() {
+    private fun screenSourceAddress() {
         val address = sourceAddress
         if (address != null) {
             screen(address) { restriction ->
@@ -959,9 +960,17 @@ internal open class AccountSupervisor(
     private fun didSetSourceAddress(sourceAddress: String?, oldValue: String?) {
         screenSourceAddressTimer = null
         sourceAddressRestriction = null
-        if (sourceAddress != null) {
+        doComplianceScreening()
+    }
+
+    private var complianceScreeningAddress: String? = null
+
+    private fun doComplianceScreening() {
+        val sourceAddress = sourceAddress
+        if (sourceAddress != null && indexerConnected && complianceScreeningAddress != sourceAddress) {
             screenSourceAddress()
             complianceScreen(EvmAddress(sourceAddress))
+            complianceScreeningAddress = sourceAddress
         }
     }
 
