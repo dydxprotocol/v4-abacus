@@ -12,7 +12,14 @@ internal class SkipTrackProcessor(
         payload: Map<String, Any>
     ): Map<String, Any>? {
         val modified = existing?.mutable() ?: mutableMapOf()
-        var txHash = parser.asString(payload.get("tx_hash")) ?: return modified
+        var txHash = parser.asString(payload["tx_hash"]) ?: return modified
+        val explorerLink = parser.asString(payload["explorer_link"])
+        if (explorerLink != null && explorerLink.contains("solscan.io")) {
+            // Solana tx hashes are case-sensitive
+            modified[txHash] = true
+            return modified
+        }
+
         if (!txHash.startsWith("0x")) {
             txHash = "0x$txHash"
         }
