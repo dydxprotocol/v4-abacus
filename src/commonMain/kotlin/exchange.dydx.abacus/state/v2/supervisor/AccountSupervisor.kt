@@ -231,8 +231,10 @@ internal open class AccountSupervisor(
     private var pushNotificationLanguageCode: String? = null
 
     init {
-        screenAccountAddress()
-        complianceScreen(DydxAddress(accountAddress), ComplianceAction.CONNECT)
+        if (screening) {
+            screenAccountAddress()
+            complianceScreen(DydxAddress(accountAddress), ComplianceAction.CONNECT)
+        }
     }
 
     internal fun subscribeToSubaccount(subaccountNumber: Int) {
