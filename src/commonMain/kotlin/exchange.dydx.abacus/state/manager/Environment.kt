@@ -338,9 +338,27 @@ data class WalletSegue(
 }
 
 @JsExport
+data class Phantom(
+    val callbackUrl: String,
+) {
+    companion object {
+        fun parse(
+            data: Map<String, Any>?,
+            parser: ParserProtocol,
+            deploymentUri: String,
+        ): Phantom? {
+            val callbackUrl = parser.asString(data?.get("callbackUrl")) ?: return null
+            return Phantom("$deploymentUri$callbackUrl")
+        }
+    }
+}
+
+
+@JsExport
 data class WalletConnection(
     val walletConnect: WalletConnect?,
     val walletSegue: WalletSegue?,
+    val phantom: Phantom?,
     val images: String,
     val signTypedDataAction: String?,
     val signTypedDataDomainName: String?,
@@ -360,6 +378,8 @@ data class WalletConnection(
                 )
             val walletSegue =
                 WalletSegue.parse(parser.asMap(data?.get("walletSegue")), parser, deploymentUri)
+            val phantom =
+                Phantom.parse(parser.asMap(data?.get("phantom")), parser, deploymentUri)
             val images = parser.asString(data?.get("images")) ?: return null
             val signTypedDataAction = parser.asString(data?.get("signTypedDataAction"))
             val signTypedDataDomainName = parser.asString(data?.get("signTypedDataDomainName"))
@@ -367,6 +387,7 @@ data class WalletConnection(
                 WalletConnection(
                     walletConnect = walletConnect,
                     walletSegue = walletSegue,
+                    phantom = phantom,
                     images = "$deploymentUri$images",
                     signTypedDataAction = signTypedDataAction,
                     signTypedDataDomainName = signTypedDataDomainName,
