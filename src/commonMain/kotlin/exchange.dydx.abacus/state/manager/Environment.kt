@@ -353,7 +353,6 @@ data class Phantom(
     }
 }
 
-
 @JsExport
 data class WalletConnection(
     val walletConnect: WalletConnect?,

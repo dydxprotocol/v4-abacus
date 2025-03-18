@@ -952,7 +952,6 @@ internal class OnboardingSupervisor(
         hash: String,
         fromChainId: String?,
     ) {
-        val hash = hash.lowercase()
         val oldState = stateMachine.state
 //        If transfer is not yet tracked, must track first before querying status
         val isTracked = oldState?.trackStatuses?.get(hash) == true
