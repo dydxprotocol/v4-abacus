@@ -64,6 +64,9 @@ class EnvironmentsMock {
                     "walletSegue":{
                        "callbackUrl":"/walletsegue"
                     },
+                    "phantom":{
+                       "callbackUrl":"/phantom"
+                    },
                     "images":"/wallets/"
                }
            },

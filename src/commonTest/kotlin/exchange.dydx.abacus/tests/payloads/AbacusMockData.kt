@@ -4,6 +4,7 @@ import exchange.dydx.abacus.state.app.adaptors.AbUrl
 import exchange.dydx.abacus.state.manager.EnvironmentEndpoints
 import exchange.dydx.abacus.state.manager.EnvironmentFeatureFlags
 import exchange.dydx.abacus.state.manager.EnvironmentLinks
+import exchange.dydx.abacus.state.manager.Phantom
 import exchange.dydx.abacus.state.manager.TokenInfo
 import exchange.dydx.abacus.state.manager.V4Environment
 import exchange.dydx.abacus.state.manager.WalletConnect
@@ -102,6 +103,7 @@ class AbacusMockData {
                 ),
             ),
             walletSegue = WalletSegue("callback"),
+            phantom = Phantom("callback"),
             images = "/images/",
             signTypedDataAction = "test",
             signTypedDataDomainName = "test",
