@@ -289,6 +289,7 @@ open class TradingStateMachine(
         if (accountAddress != internalState.wallet.walletAddress) {
             internalState.wallet.walletAddress = accountAddress
             internalState.wallet.account = InternalAccountState()
+            internalState.wallet.user = null
         }
         if (accountAddress == null) {
             this.account = null
@@ -1214,6 +1215,13 @@ open class TradingStateMachine(
                     staticTyping = staticTyping,
                     internalState = internalState.wallet.account,
                 )
+            }
+
+            if (internalState.wallet.account.subaccounts.isEmpty()) {
+                fills = null
+                historicalPnl = null
+                transfers = null
+                fundingPayments = null
             }
         } else {
             account = null
