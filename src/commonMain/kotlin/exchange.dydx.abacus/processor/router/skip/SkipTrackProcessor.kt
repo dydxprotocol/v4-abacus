@@ -23,7 +23,7 @@ internal class SkipTrackProcessor(
         if (!txHash.startsWith("0x")) {
             txHash = "0x$txHash"
         }
-        modified[txHash.lowercase()] = true
+        modified[txHash] = true
         return modified
     }
 }

@@ -216,8 +216,12 @@ internal class SkipProcessor(
 
     override fun defaultChainId(): String? {
         val firstChain = this.chains?.firstOrNull { parser.asString(parser.asNativeMap(it)?.get("chain_type")) == selectedChainType?.rawValue }
-        val selectedChain = getChainById(chainId = ETHEREUM_CHAIN_ID) ?: parser.asNativeMap(firstChain)
-
+        val selectedChain = when (selectedChainType) {
+                ChainType.EVM -> getChainById(chainId = ETHEREUM_CHAIN_ID) ?: parser.asNativeMap(firstChain)
+                ChainType.COSMOS -> parser.asNativeMap(firstChain)
+                ChainType.SVM -> getChainById(chainId = "solana") ?: parser.asNativeMap(firstChain)
+                null -> return null
+        }
         return parser.asString(selectedChain?.get("chain_id"))
     }
 
