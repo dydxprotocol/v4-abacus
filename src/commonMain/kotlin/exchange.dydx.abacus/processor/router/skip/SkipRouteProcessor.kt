@@ -18,12 +18,6 @@ internal class SkipRouteProcessor(internal val parser: ParserProtocol) {
             "route.swap_price_impact_percent" to "aggregatePriceImpact",
             "route.warning" to "warning",
             "route.estimated_route_duration_seconds" to "estimatedRouteDurationSeconds",
-//            SQUID PARAMS THAT ARE NOW DEPRECATED:
-//            "route.estimate.gasCosts.0.amountUSD" to "gasFee",
-//            "route.estimate.exchangeRate" to "exchangeRate",
-//            "route.estimate.estimatedRouteDuration" to "estimatedRouteDuration",
-//            "route.estimate.toAmountMin" to "toAmountMin",
-
         ),
     )
 

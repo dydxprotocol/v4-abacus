@@ -5,6 +5,7 @@ import exchange.dydx.abacus.protocols.ParserProtocol
 import exchange.dydx.abacus.utils.mutable
 
 internal class SkipTrackProcessor(
+    private val hash: String,
     parser: ParserProtocol
 ) : BaseProcessor(parser) {
     override fun received(
@@ -12,18 +13,20 @@ internal class SkipTrackProcessor(
         payload: Map<String, Any>
     ): Map<String, Any>? {
         val modified = existing?.mutable() ?: mutableMapOf()
-        var txHash = parser.asString(payload["tx_hash"]) ?: return modified
-        val explorerLink = parser.asString(payload["explorer_link"])
-        if (explorerLink != null && explorerLink.contains("solscan.io")) {
-            // Solana tx hashes are case-sensitive
-            modified[txHash] = true
-            return modified
+        var txHash = parser.asString(payload["tx_hash"])
+        if (txHash != null) {
+            // txHash could be returned with or without the 0x prefix, and cases can be different
+            if (txHash.startsWith("0x")) {
+                txHash = txHash.substring(2)
+            }
+            var workingHash = hash
+            if (workingHash.startsWith("0x")) {
+                workingHash = hash.substring(2)
+            }
+            if (txHash.uppercase() == workingHash.uppercase()) {
+                modified[hash] = true
+            }
         }
-
-        if (!txHash.startsWith("0x")) {
-            txHash = "0x$txHash"
-        }
-        modified[txHash.lowercase()] = true
         return modified
     }
 }

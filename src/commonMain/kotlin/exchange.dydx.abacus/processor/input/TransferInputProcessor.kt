@@ -9,7 +9,7 @@ import exchange.dydx.abacus.output.input.TransferInputSize
 import exchange.dydx.abacus.output.input.TransferOutInputOptions
 import exchange.dydx.abacus.output.input.TransferType
 import exchange.dydx.abacus.output.input.WithdrawalInputOptions
-import exchange.dydx.abacus.processor.router.IRouterProcessor
+import exchange.dydx.abacus.processor.router.skip.SkipProcessor
 import exchange.dydx.abacus.protocols.ParserProtocol
 import exchange.dydx.abacus.responses.ParsingError
 import exchange.dydx.abacus.state.changes.Changes
@@ -31,7 +31,7 @@ import kollections.toIMap
 internal class TransferInputProcessor(
     private val parser: ParserProtocol,
     private val calculator: TransferInputCalculatorV2 = TransferInputCalculatorV2(parser = parser),
-    private val routerProcessor: IRouterProcessor,
+    private val routerProcessor: SkipProcessor,
     private val environment: V4Environment?,
 ) {
     fun transfer(
