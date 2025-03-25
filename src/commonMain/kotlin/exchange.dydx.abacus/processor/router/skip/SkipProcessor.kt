@@ -7,7 +7,6 @@ import exchange.dydx.abacus.output.input.TransferInputTokenResource
 import exchange.dydx.abacus.output.input.TransferType
 import exchange.dydx.abacus.processor.base.BaseProcessor
 import exchange.dydx.abacus.processor.router.ChainType
-import exchange.dydx.abacus.processor.router.IRouterProcessor
 import exchange.dydx.abacus.protocols.ParserProtocol
 import exchange.dydx.abacus.state.internalstate.InternalTransferInputState
 import exchange.dydx.abacus.state.internalstate.safeCreate
@@ -24,16 +23,12 @@ internal class SkipProcessor(
     parser: ParserProtocol,
     private val internalState: InternalTransferInputState,
     private val staticTyping: Boolean,
-) : BaseProcessor(parser), IRouterProcessor {
-    override var chains: List<Any>? = null
-
-//    possibly want to use a different variable so we aren't stuck with this bad type
-//    actual type of the tokens payload is Map<str, Map<str, List<Map<str, Any>>>>
-    override var tokens: List<Any>? = null
+) : BaseProcessor(parser) {
+    var chains: List<Any>? = null
 
     var skipTokens: Map<String, Map<String, List<Map<String, Any>>>>? = null
-    override var exchangeDestinationChainId: String? = null
-    override var selectedChainType: ChainType? = ChainType.EVM
+    var exchangeDestinationChainId: String? = null
+    var selectedChainType: ChainType? = ChainType.EVM
         set(value) {
             if (field != value) {
                 field = value
@@ -41,7 +36,7 @@ internal class SkipProcessor(
             }
         }
 
-    override fun receivedChains(
+    fun receivedChains(
         existing: Map<String, Any>?,
         payload: Map<String, Any>
     ): Map<String, Any>? {
@@ -68,7 +63,7 @@ internal class SkipProcessor(
         return modified
     }
 
-    override fun receivedEvmSwapVenues(
+    fun receivedEvmSwapVenues(
         existing: Map<String, Any>?,
         payload: Map<String, Any>
     ) {
@@ -87,7 +82,7 @@ internal class SkipProcessor(
         }
     }
 
-    override fun receivedTokens(
+    fun receivedTokens(
         existing: Map<String, Any>?,
         payload: Map<String, Any>
     ): Map<String, Any>? {
@@ -111,7 +106,7 @@ internal class SkipProcessor(
         return modified
     }
 
-    override fun receivedRoute(
+    fun receivedRoute(
         existing: Map<String, Any>?,
         payload: Map<String, Any>,
         requestId: String?,
@@ -163,7 +158,7 @@ internal class SkipProcessor(
         return modified
     }
 
-    override fun usdcAmount(data: Map<String, Any>): Double? {
+    fun usdcAmount(data: Map<String, Any>): Double? {
         if (staticTyping) {
             val route = internalState.route
             val toAmountUSD = parser.asString(parser.value(route, "toAmountUSD"))
@@ -178,7 +173,7 @@ internal class SkipProcessor(
         }
     }
 
-    override fun receivedStatus(
+    fun receivedStatus(
         existing: Map<String, Any>?,
         payload: Map<String, Any>,
         transactionId: String?,
@@ -187,15 +182,16 @@ internal class SkipProcessor(
         return processor.received(existing, payload)
     }
 
-    override fun receivedTrack(
+    fun receivedTrack(
+        hash: String,
         existing: Map<String, Any>?,
         payload: Map<String, Any>,
     ): Map<String, Any>? {
-        val processor = SkipTrackProcessor(parser)
+        val processor = SkipTrackProcessor(hash, parser)
         return processor.received(existing, payload)
     }
 
-    override fun updateTokensDefaults(modified: MutableMap<String, Any>, selectedChainId: String?) {
+    fun updateTokensDefaults(modified: MutableMap<String, Any>, selectedChainId: String?) {
         val tokenOptions = tokenOptions(selectedChainId)
         internalState.tokens = tokenOptions
         if (staticTyping) {
@@ -210,22 +206,22 @@ internal class SkipProcessor(
 
 //    Update this when we move chains to state
 //    https://linear.app/dydx/issue/OTE-470/migrate-chains-and-tokens-to-abacus-state
-    override fun getChainById(chainId: String): Map<String, Any>? {
+    fun getChainById(chainId: String): Map<String, Any>? {
         return parser.asNativeMap(this.chains?.find { parser.asString(parser.asNativeMap(it)?.get("chain_id")) == chainId })
     }
 
-    override fun defaultChainId(): String? {
+    fun defaultChainId(): String? {
         val firstChain = this.chains?.firstOrNull { parser.asString(parser.asNativeMap(it)?.get("chain_type")) == selectedChainType?.rawValue }
         val selectedChain = when (selectedChainType) {
-                ChainType.EVM -> getChainById(chainId = ETHEREUM_CHAIN_ID) ?: parser.asNativeMap(firstChain)
-                ChainType.COSMOS -> parser.asNativeMap(firstChain)
-                ChainType.SVM -> getChainById(chainId = "solana") ?: parser.asNativeMap(firstChain)
-                null -> return null
+            ChainType.EVM -> getChainById(chainId = ETHEREUM_CHAIN_ID) ?: parser.asNativeMap(firstChain)
+            ChainType.COSMOS -> parser.asNativeMap(firstChain)
+            ChainType.SVM -> getChainById(chainId = "solana") ?: parser.asNativeMap(firstChain)
+            null -> return null
         }
         return parser.asString(selectedChain?.get("chain_id"))
     }
 
-    override fun getTokenByDenomAndChainId(tokenDenom: String?, chainId: String?): Map<String, Any>? {
+    fun getTokenByDenomAndChainId(tokenDenom: String?, chainId: String?): Map<String, Any>? {
         val tokensList = filteredTokens(chainId)
         tokensList?.find {
             parser.asString(parser.asNativeMap(it)?.get("denom")) == (tokenDenom ?: NATIVE_TOKEN_DEFAULT_ADDRESS)
@@ -235,12 +231,12 @@ internal class SkipProcessor(
         return null
     }
 
-    override fun selectedTokenSymbol(tokenAddress: String?, selectedChainId: String?): String? {
+    fun selectedTokenSymbol(tokenAddress: String?, selectedChainId: String?): String? {
         val token = getTokenByDenomAndChainId(tokenAddress, selectedChainId) ?: return null
         return parser.asString(token.get("symbol"))
     }
 
-    override fun selectedTokenDecimals(tokenAddress: String?, selectedChainId: String?): String? {
+    fun selectedTokenDecimals(tokenAddress: String?, selectedChainId: String?): String? {
         val tokensList = filteredTokens(selectedChainId)
         tokensList?.find {
             (parser.asString(parser.asNativeMap(it)?.get("denom")) == tokenAddress || parser.asString(parser.asNativeMap(it)?.get("skipDenom")) == tokenAddress)
@@ -250,7 +246,7 @@ internal class SkipProcessor(
         return null
     }
 
-    override fun filteredTokens(chainId: String?): List<Any>? {
+    fun filteredTokens(chainId: String?): List<Any>? {
         val chainIdToUse = chainId ?: defaultChainId()
         val assetsMapForChainId = parser.asNativeMap(this.skipTokens?.get(chainIdToUse))
         val assetsForChainId = parser.asNativeList(assetsMapForChainId?.get("assets"))
@@ -282,7 +278,7 @@ internal class SkipProcessor(
         return tokensWithSkipDenom
     }
 
-    override fun defaultTokenAddress(chainId: String?): String? {
+    fun defaultTokenAddress(chainId: String?): String? {
         if (chainId == null) {
             return null
         }
@@ -298,21 +294,21 @@ internal class SkipProcessor(
             return parser.asString(parser.asNativeMap(filteredCctpToken)?.get("denom"))
         }
 //        If no cctp item available, check for a native token item
-        val nativeChain = filteredTokensForChainId?.find {
+        val nativeChain = filteredTokensForChainId.find {
             parser.asString(parser.asNativeMap(it)?.get("denom")) == NATIVE_TOKEN_DEFAULT_ADDRESS
         }
         if (nativeChain != null) {
             return parser.asString(parser.asNativeMap(nativeChain)?.get("denom"))
         }
 //        Otherwise, just grab the first available token if any exist
-        val firstTokenOrNull = parser.asNativeMap(filteredTokensForChainId?.firstOrNull())
+        val firstTokenOrNull = parser.asNativeMap(filteredTokensForChainId.firstOrNull())
         if (firstTokenOrNull != null) {
             return parser.asString(parser.asNativeMap(firstTokenOrNull)?.get("denom"))
         }
         return null
     }
 
-    override fun chainResources(chainId: String?): Map<String, TransferInputChainResource>? {
+    fun chainResources(chainId: String?): Map<String, TransferInputChainResource>? {
         val chainResources = mutableMapOf<String, TransferInputChainResource>()
         chainId?.let {
             this.chains?.find {
@@ -327,7 +323,7 @@ internal class SkipProcessor(
         return chainResources
     }
 
-    override fun tokenResources(chainId: String?): Map<String, TransferInputTokenResource>? {
+    fun tokenResources(chainId: String?): Map<String, TransferInputTokenResource>? {
         val tokenResources = mutableMapOf<String, TransferInputTokenResource>()
         filteredTokens(chainId)?.forEach {
             parser.asString(parser.asNativeMap(it)?.get("denom"))?.let { key ->
@@ -340,7 +336,7 @@ internal class SkipProcessor(
         return tokenResources
     }
 
-    override fun chainOptions(): List<SelectionOption> {
+    fun chainOptions(): List<SelectionOption> {
         val chainProcessor = SkipChainProcessor(parser)
         val options = mutableListOf<SelectionOption>()
 
@@ -358,7 +354,7 @@ internal class SkipProcessor(
         return options
     }
 
-    override fun tokenOptions(chainId: String?): List<SelectionOption> {
+    fun tokenOptions(chainId: String?): List<SelectionOption> {
         val processor = SkipTokenProcessor(parser)
         val options = mutableListOf<SelectionOption>()
         val tokensForSelectedChain = filteredTokens(chainId)

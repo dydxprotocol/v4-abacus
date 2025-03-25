@@ -7,7 +7,7 @@ import kotlin.test.assertEquals
 
 class SkipTrackProcessorTests {
     val parser = Parser()
-    internal val processor = SkipTrackProcessor(parser = parser)
+    internal val processor = SkipTrackProcessor(hash = "0x897a7464fe7736def48f5eb77ffe06f11beacadc9805d3f9237c17767567c00f", parser = parser)
     val mock = SkipTrackMock
 
     /**

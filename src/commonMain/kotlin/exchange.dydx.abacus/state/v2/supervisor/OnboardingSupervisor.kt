@@ -957,18 +957,18 @@ internal class OnboardingSupervisor(
         val isTracked = oldState?.trackStatuses?.get(hash) == true
         if (!isTracked) {
             trackTransferSkip(hash = hash, fromChainId = fromChainId)
-            return
-        }
-        val params: IMap<String, String> = iMapOf(
-            "tx_hash" to hash,
-            "chain_id" to fromChainId,
-        ).filterNotNull()
-        val url = helper.configs.skipV2Status()
-        helper.get(url, params) { _, response, httpCode, _ ->
-            if (response != null) {
-                update(stateMachine.routerStatus(response, hash), oldState)
-            } else {
-                Logger.e { "fetchTransferStatus error, code: $httpCode" }
+        } else {
+            val params: IMap<String, String> = iMapOf(
+                "tx_hash" to hash,
+                "chain_id" to fromChainId,
+            ).filterNotNull()
+            val url = helper.configs.skipV2Status()
+            helper.get(url, params) { _, response, httpCode, _ ->
+                if (response != null) {
+                    update(stateMachine.routerStatus(response, hash), oldState)
+                } else {
+                    Logger.e { "fetchTransferStatus error, code: $httpCode" }
+                }
             }
         }
     }
@@ -985,7 +985,7 @@ internal class OnboardingSupervisor(
         val oldState = stateMachine.state
         helper.post(url, null, body.toJsonPrettyPrint()) { _, response, httpCode, _ ->
             if (response != null) {
-                update(stateMachine.routerTrack(response), oldState)
+                update(stateMachine.routerTrack(hash, response), oldState)
                 val isTracked = oldState?.trackStatuses?.get(hash) == true
                 if (isTracked) {
                     fetchTransferStatusSkip(hash, fromChainId)

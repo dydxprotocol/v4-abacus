@@ -70,6 +70,7 @@ internal fun TradingStateMachine.routerStatus(
 }
 
 internal fun TradingStateMachine.routerTrack(
+    hash: String,
     payload: String,
 ): StateChanges? {
     val json = try {
@@ -78,6 +79,6 @@ internal fun TradingStateMachine.routerTrack(
         Logger.e { "Failed to deserialize skipTrack: $payload \nException: $exception" }
         return StateChanges(iEmptyList())
     }
-    trackStatuses = routerProcessor.receivedTrack(trackStatuses, json)
+    trackStatuses = routerProcessor.receivedTrack(hash, trackStatuses, json)
     return StateChanges(iListOf(Changes.trackStatuses))
 }
