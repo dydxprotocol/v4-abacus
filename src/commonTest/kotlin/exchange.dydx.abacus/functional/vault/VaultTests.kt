@@ -66,6 +66,7 @@ class VaultTests {
         val expectedVaultDetails = VaultDetails(
             totalValue = 10000.0,
             thirtyDayReturnPercent = 0.05 * 365,
+            ninetyDayReturnPercent = 0.05 * 365,
             history = iListOf(
                 VaultHistoryEntry(
                     date = 1659465600000.0,
