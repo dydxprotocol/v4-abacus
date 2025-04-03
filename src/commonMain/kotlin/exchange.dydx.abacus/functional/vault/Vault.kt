@@ -32,6 +32,7 @@ import kotlin.time.Duration.Companion.milliseconds
 data class VaultDetails(
     val totalValue: Double? = null,
     val thirtyDayReturnPercent: Double? = null,
+    val ninetyDayReturnPercent: Double? = null,
     val history: IList<VaultHistoryEntry>? = null
 )
 
@@ -95,53 +96,76 @@ object VaultCalculator {
     }
 
     fun calculateVaultSummary(historicals: Array<IndexerMegavaultHistoricalPnlResponse>?, dataCutoffMs: Double = 0.0): VaultDetails? {
-        val combinedPnls = historicals?.flatMap { it.megavaultPnl?.toList() ?: emptyList() } // Convert Array to List
+        val combinedPnls = historicals?.flatMap {
+            it.megavaultPnl?.toList() ?: emptyList()
+        } // Convert Array to List
 
         if (combinedPnls.isNullOrEmpty()) {
             return null
         }
 
         val vaultOfVaultsPnl =
-            combinedPnls.sortedByDescending { parser.asDatetime(it.createdAt)?.toEpochMilliseconds() ?: 0 }
+            combinedPnls.sortedByDescending {
+                parser.asDatetime(it.createdAt)?.toEpochMilliseconds() ?: 0
+            }
 
         val history = vaultOfVaultsPnl.mapNotNull { entry ->
-            parser.asDatetime(entry.createdAt)?.toEpochMilliseconds()?.toDouble()?.let { createdAt ->
-                VaultHistoryEntry(
-                    date = createdAt,
-                    equity = parser.asDouble(entry.equity) ?: 0.0,
-                    totalPnl = parser.asDouble(entry.totalPnl) ?: 0.0,
-                )
-            }
+            parser.asDatetime(entry.createdAt)?.toEpochMilliseconds()?.toDouble()
+                ?.let { createdAt ->
+                    VaultHistoryEntry(
+                        date = createdAt,
+                        equity = parser.asDouble(entry.equity) ?: 0.0,
+                        totalPnl = parser.asDouble(entry.totalPnl) ?: 0.0,
+                    )
+                }
         }.filter { entry -> entry.date != null && entry.date >= dataCutoffMs }
 
         val latestEntry = history.firstOrNull() ?: return null
         val latestTime = latestEntry.date ?: Clock.System.now().toEpochMilliseconds().toDouble()
-        val thirtyDaysAgoTime = latestTime - 30.days.inWholeMilliseconds
 
         val thirtyDaysAgoEntry = history.find {
-            (it.date ?: Double.MAX_VALUE) <= thirtyDaysAgoTime
+            (it.date ?: Double.MAX_VALUE) <= latestTime - 30.days.inWholeMilliseconds
+        } ?: history.last()
+        val ninetyDaysAgoEntry = history.find {
+            (it.date ?: Double.MAX_VALUE) <= latestTime - 90.days.inWholeMilliseconds
         } ?: history.last()
 
         val totalValue = latestEntry.equity ?: 0.0
 
         val latestTotalPnl = latestEntry.totalPnl ?: 0.0
         val thirtyDaysAgoTotalPnl = thirtyDaysAgoEntry.totalPnl ?: 0.0
+        val ninetyDaysAgoTotalPnl = ninetyDaysAgoEntry.totalPnl ?: 0.0
 
-        val pnlDifference = latestTotalPnl - thirtyDaysAgoTotalPnl
-        val timeDifferenceMs = if (latestEntry.date != null && thirtyDaysAgoEntry.date != null) {
-            latestEntry.date - thirtyDaysAgoEntry.date
+        val thirtyDayPnlDifference = latestTotalPnl - thirtyDaysAgoTotalPnl
+        val thirtyDayTimeDifferenceMs =
+            if (latestEntry.date != null && thirtyDaysAgoEntry.date != null) {
+                latestEntry.date - thirtyDaysAgoEntry.date
+            } else {
+                0.0
+            }
+        val ninetyDayPnlDifference = latestTotalPnl - ninetyDaysAgoTotalPnl
+        val ninetyDayTimeDifferenceMs =
+            if (latestEntry.date != null && ninetyDaysAgoEntry.date != null) {
+                latestEntry.date - ninetyDaysAgoEntry.date
+            } else {
+                0.0
+            }
+
+        val thirtyDayReturnPercent = if (totalValue != 0.0) {
+            (thirtyDayPnlDifference / totalValue)
         } else {
             0.0
         }
-        val thirtyDayReturnPercent = if (totalValue != 0.0) {
-            (pnlDifference / totalValue)
+        val ninetyDayReturnPercent = if (totalValue != 0.0) {
+            (ninetyDayPnlDifference / totalValue)
         } else {
             0.0
         }
 
         return VaultDetails(
             totalValue = totalValue,
-            thirtyDayReturnPercent = if (timeDifferenceMs > 0) thirtyDayReturnPercent * 365.days.inWholeMilliseconds / timeDifferenceMs else 0.0,
+            thirtyDayReturnPercent = if (thirtyDayTimeDifferenceMs > 0) thirtyDayReturnPercent * 365.days.inWholeMilliseconds / thirtyDayTimeDifferenceMs else 0.0,
+            ninetyDayReturnPercent = if (ninetyDayTimeDifferenceMs > 0) ninetyDayReturnPercent * 365.days.inWholeMilliseconds / ninetyDayTimeDifferenceMs else 0.0,
             history = history.toIList(),
         )
     }
