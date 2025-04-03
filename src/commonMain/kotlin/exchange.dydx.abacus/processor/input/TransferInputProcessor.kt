@@ -155,7 +155,11 @@ internal class TransferInputProcessor(
                     transfer.route = null
                     transfer.goFastRoute = null
                     if (transfer.type == TransferType.deposit) {
-                        transfer.size?.copy(usdcSize = null)
+                        val size = TransferInputSize(
+                            size = data,
+                            usdcSize = null,
+                        )
+                        transfer.size = size
                     }
                     updated = true
                 }
