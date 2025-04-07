@@ -87,6 +87,8 @@ data class EnvironmentLinks(
     val withdrawalGateLearnMore: String?,
     val equityTiersLearnMore: String?,
     val tradingRewardsLearnMore: String?,
+    val incentiveProgram: String?,
+    val incentiveProgramLeaderboard: String?,
 ) {
     companion object {
         fun parse(
@@ -111,6 +113,8 @@ data class EnvironmentLinks(
             val equityTiersLearnMore = parser.asString(data["equityTiersLearnMore"])
             val vaultTos = parser.asString(data["vaultTos"])
             val tradingRewardsLearnMore = parser.asString(data["tradingRewardsLearnMore"])
+            val incentiveProgram = parser.asString(data["incentiveProgram"])
+            val incentiveProgramLeaderboard = parser.asString(data["incentiveProgramLeaderboard"])
             return EnvironmentLinks(
                 tos = tos,
                 privacy = privacy,
@@ -130,6 +134,8 @@ data class EnvironmentLinks(
                 withdrawalGateLearnMore = withdrawalGateLearnMore,
                 equityTiersLearnMore = equityTiersLearnMore,
                 tradingRewardsLearnMore = tradingRewardsLearnMore,
+                incentiveProgram = incentiveProgram,
+                incentiveProgramLeaderboard = incentiveProgramLeaderboard,
             )
         }
     }
