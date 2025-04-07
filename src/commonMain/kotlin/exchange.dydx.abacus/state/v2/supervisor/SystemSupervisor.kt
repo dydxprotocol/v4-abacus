@@ -24,6 +24,7 @@ internal class SystemSupervisor(
     helper: NetworkHelper,
     analyticsUtils: AnalyticsUtils,
     internal val configs: SystemConfigs,
+    private val incentiveSeasonReceived: (String?) -> Unit,
 ) : NetworkSupervisor(stateMachine, helper, analyticsUtils) {
     override fun didSetReadyToConnect(readyToConnect: Boolean) {
         super.didSetReadyToConnect(readyToConnect)
@@ -178,7 +179,7 @@ internal class SystemSupervisor(
                     val oldState = stateMachine.state
                     update(stateMachine.launchIncentiveSeasons(response), oldState)
 
-//                    retrieveLaunchIncentivePoints()
+                    incentiveSeasonReceived(stateMachine.state?.launchIncentive?.currentSeason)
                 }
             }
         }
