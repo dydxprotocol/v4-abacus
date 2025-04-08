@@ -84,6 +84,14 @@ internal open class AccountSupervisor(
 ) : DynamicNetworkSupervisor(stateMachine, helper, analyticsUtils) {
     val subaccounts = mutableMapOf<Int, SubaccountSupervisor>()
 
+    var currentIncentiveSeason: String? = null
+        set(value) {
+            if (field != value) {
+                field = value
+                retrieveLaunchIncentivePoints()
+            }
+        }
+
     private val accountBalancePollingDuration = 10.0
     private var accountBalancesTimer: LocalTimerProtocol? = null
         set(value) {

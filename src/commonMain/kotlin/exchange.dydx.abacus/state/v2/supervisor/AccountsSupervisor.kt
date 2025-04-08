@@ -46,6 +46,16 @@ internal class AccountsSupervisor(
     private var pushNotificationToken: String? = null
     private var pushNotificationLanguageCode: String? = null
 
+    var currentIncentiveSeason: String? = null
+        set(value) {
+            if (field != value) {
+                field = value
+                for (account in accounts.values) {
+                    account.currentIncentiveSeason = value
+                }
+            }
+        }
+
     internal var historicalPnlPeriod: HistoricalPnlPeriod
         get() {
             return when (stateMachine.historicalPnlDays) {

@@ -149,11 +149,22 @@ internal class StateManagerAdaptorV2(
         delegate = this,
     )
 
+    private val accounts = AccountsSupervisor(
+        stateMachine = stateMachine,
+        helper = networkHelper,
+        analyticsUtils = analyticsUtils,
+        configs = appConfigs.accountConfigs,
+        screening = appConfigs.screening,
+    )
+
     private val system = SystemSupervisor(
         stateMachine = stateMachine,
         helper = networkHelper,
         analyticsUtils = analyticsUtils,
         configs = appConfigs.systemConfigs,
+        incentiveSeasonReceived = {
+            accounts.currentIncentiveSeason = it
+        },
     )
 
     private val onboarding = OnboardingSupervisor(
@@ -161,14 +172,6 @@ internal class StateManagerAdaptorV2(
         helper = networkHelper,
         analyticsUtils = analyticsUtils,
         configs = appConfigs.onboardingConfigs,
-    )
-
-    private val accounts = AccountsSupervisor(
-        stateMachine = stateMachine,
-        helper = networkHelper,
-        analyticsUtils = analyticsUtils,
-        configs = appConfigs.accountConfigs,
-        screening = appConfigs.screening,
     )
 
     private val markets = MarketsSupervisor(
