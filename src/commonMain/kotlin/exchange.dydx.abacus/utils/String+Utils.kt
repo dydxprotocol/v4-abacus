@@ -64,3 +64,12 @@ fun String.toCamelCase(): String {
         .mapIndexed { index, s -> if (index == 0) s.lowercase() else s.replaceFirstChar { if (it.isLowerCase()) it.titlecase() else it.toString() } }
         .joinToString("")
 }
+
+// Need to wrap this in a class so iOS can access it
+class AbacusStringUtils {
+    companion object {
+        fun toNobleAddress(dydxAddress: String): String? {
+            return dydxAddress.toNobleAddress()
+        }
+    }
+}
