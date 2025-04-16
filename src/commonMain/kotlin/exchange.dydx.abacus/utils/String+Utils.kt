@@ -66,10 +66,8 @@ fun String.toCamelCase(): String {
 }
 
 // Need to wrap this in a class so iOS can access it
-class AbacusStringUtils {
-    companion object {
-        fun toNobleAddress(dydxAddress: String): String? {
-            return dydxAddress.toNobleAddress()
-        }
+object AbacusStringUtils {
+    fun toNobleAddress(dydxAddress: String): String? {
+        return dydxAddress.toNobleAddress()
     }
 }
