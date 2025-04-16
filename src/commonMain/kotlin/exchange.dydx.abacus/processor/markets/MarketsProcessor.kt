@@ -35,7 +35,6 @@ internal interface MarketsProcessorProtocol : BaseProcessorProtocol {
     ): InternalMarketSummaryState
 }
 
-
 internal class MarketsProcessor(
     parser: ParserProtocol,
     calculateSparklines: Boolean,
