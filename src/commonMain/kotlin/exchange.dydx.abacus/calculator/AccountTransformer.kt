@@ -1,91 +1,102 @@
 package exchange.dydx.abacus.calculator
 
+import exchange.dydx.abacus.output.input.MarginMode
 import exchange.dydx.abacus.protocols.ParserProtocol
-import exchange.dydx.abacus.utils.mutable
-import exchange.dydx.abacus.utils.safeSet
+import exchange.dydx.abacus.state.internalstate.InternalAccountState
+import exchange.dydx.abacus.state.internalstate.InternalMarketState
+import exchange.dydx.abacus.state.internalstate.InternalSubaccountState
+import exchange.dydx.abacus.state.internalstate.InternalTradeInputState
 
-class AccountTransformer() {
-    private val subaccountTransformer = SubaccountTransformer()
-    internal fun applyTradeToAccount(
-        account: Map<String, Any>?,
+internal class AccountTransformer(
+    val parser: ParserProtocol,
+    private val subaccountTransformer: SubaccountTransformer = SubaccountTransformer(parser)
+) {
+    fun applyTradeToAccount(
+        account: InternalAccountState,
         subaccountNumber: Int,
-        trade: Map<String, Any>,
-        market: Map<String, Any>?,
-        parser: ParserProtocol,
-        period: String,
-    ): Map<String, Any>? {
-        val modified = account?.mutable() ?: return null
-        val childSubaccountNumber =
-            MarginCalculator.getChildSubaccountNumberForIsolatedMarginTradeDeprecated(
-                parser,
-                account,
-                subaccountNumber ?: 0,
-                trade,
-            )
-        val subaccount = parser.asNativeMap(
-            parser.value(
-                account,
-                "subaccounts.$subaccountNumber",
-            ),
-        ) ?: mapOf()
+        trade: InternalTradeInputState,
+        market: InternalMarketState?,
+        period: CalculationPeriod,
+    ) {
+        val childSubaccountNumber = if (trade.marginMode == MarginMode.Isolated) {
+            val marketId = trade.marketId
+            if (marketId != null) {
+                MarginCalculator.getChildSubaccountNumberForIsolatedMarginTrade(
+                    parser = parser,
+                    subaccounts = account.subaccounts,
+                    subaccountNumber = subaccountNumber,
+                    marketId = marketId,
+                )
+            } else {
+                null
+            }
+        } else {
+            subaccountNumber
+        }
+
+        val subaccount = account.subaccounts[subaccountNumber] ?: InternalSubaccountState(
+            subaccountNumber = subaccountNumber,
+        )
+        account.subaccounts[subaccountNumber] = subaccount
+
         if (subaccountNumber == childSubaccountNumber) {
             // CROSS
-            val modifiedSubaccount =
-                subaccountTransformer.applyTradeToSubaccount(
-                    subaccount,
-                    trade,
-                    market,
-                    parser,
-                    period,
-                )
-            modified.safeSet("subaccounts.$subaccountNumber", modifiedSubaccount)
-            return modified
+            subaccountTransformer.applyTradeToSubaccount(
+                subaccount = subaccount,
+                trade = trade,
+                market = market,
+                period = period,
+            )
         } else if (childSubaccountNumber != null) {
-            val childSubaccount = parser.asNativeMap(
-                parser.value(
-                    account,
-                    "subaccounts.$childSubaccountNumber",
-                ),
-            ) ?: mapOf()
+            val childSubaccount = account.subaccounts[childSubaccountNumber] ?: InternalSubaccountState(
+                subaccountNumber = childSubaccountNumber,
+            )
+            account.subaccounts[childSubaccountNumber] = childSubaccount
 
             var transferAmountAppliedToParent = 0.0
             var transferAmountAppliedToChild = 0.0
 
-            val shouldTransferCollateralToChild = MarginCalculator.getShouldTransferInCollateralDeprecated(parser, subaccount = childSubaccount, trade)
-            val shouldTransferOutRemainingCollateralFromChild = MarginCalculator.getShouldTransferOutRemainingCollateralDeprecated(parser, subaccount = childSubaccount, trade)
+            val shouldTransferCollateralToChild = MarginCalculator.getShouldTransferInCollateral(
+                subaccount = childSubaccount,
+                tradeInput = trade,
+            )
+            val shouldTransferOutRemainingCollateralFromChild =
+                MarginCalculator.getShouldTransferOutRemainingCollateral(
+                    subaccount = childSubaccount,
+                    tradeInput = trade,
+                )
 
             if (shouldTransferCollateralToChild) {
-                val transferAmount = MarginCalculator.calculateIsolatedMarginTransferAmountDeprecated(parser, trade, market, subaccount = childSubaccount) ?: 0.0
+                val transferAmount = MarginCalculator.calculateIsolatedMarginTransferAmount(
+                    trade = trade,
+                    market = market,
+                    subaccount = childSubaccount,
+                ) ?: 0.0
                 transferAmountAppliedToParent = transferAmount * -1
                 transferAmountAppliedToChild = transferAmount
             } else if (shouldTransferOutRemainingCollateralFromChild) {
-                val remainingCollateral = MarginCalculator.getEstimateRemainingCollateralAfterClosePositionDeprecated(parser, subaccount = childSubaccount, trade) ?: 0.0
+                val remainingCollateral =
+                    MarginCalculator.getEstimateRemainingCollateralAfterClosePosition(
+                        subaccount = childSubaccount,
+                        tradeInput = trade,
+                    ) ?: 0.0
                 transferAmountAppliedToParent = remainingCollateral
             }
-
-            val modifiedParentSubaccount = subaccountTransformer.applyTransferToSubaccount(
-                subaccount,
+            subaccountTransformer.applyTransferToSubaccount(
+                subaccount = subaccount,
                 transfer = transferAmountAppliedToParent,
-                parser,
-                period,
+                period = period,
             )
-            modified.safeSet("subaccounts.$subaccountNumber", modifiedParentSubaccount)
 
             // when transfer out is true, post order position margin should be null
-            val modifiedChildSubaccount = subaccountTransformer.applyTradeToSubaccount(
-                childSubaccount,
-                trade,
-                market,
-                parser,
-                period,
-                transferAmountAppliedToChild,
+            subaccountTransformer.applyTradeToSubaccount(
+                subaccount = childSubaccount,
+                trade = trade,
+                market = market,
+                period = period,
+                transfer = transferAmountAppliedToChild,
                 isTransferOut = shouldTransferOutRemainingCollateralFromChild,
             )
-            modified.safeSet("subaccounts.$childSubaccountNumber", modifiedChildSubaccount)
-
-            return modified
         }
-
-        return modified
     }
 }

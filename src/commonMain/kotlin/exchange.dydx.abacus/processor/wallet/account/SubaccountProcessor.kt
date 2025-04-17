@@ -1,7 +1,7 @@
 package exchange.dydx.abacus.processor.wallet.account
 
 import exchange.dydx.abacus.calculator.CalculationPeriod
-import exchange.dydx.abacus.calculator.v2.SubaccountCalculatorV2
+import exchange.dydx.abacus.calculator.SubaccountCalculator
 import exchange.dydx.abacus.processor.base.BaseProcessor
 import exchange.dydx.abacus.protocols.LocalizerProtocol
 import exchange.dydx.abacus.protocols.ParserProtocol
@@ -30,7 +30,7 @@ internal open class SubaccountProcessor(
     private val fillsProcessor = FillsProcessor(parser, localizer)
     private val transfersProcessor = TransfersProcessor(parser, localizer)
     private val historicalPNLsProcessor = HistoricalPNLsProcessor(parser)
-    private val subaccountCalculator = SubaccountCalculatorV2(parser)
+    private val subaccountCalculator = SubaccountCalculator(parser)
 
     internal fun processSubscribed(
         existing: InternalSubaccountState,

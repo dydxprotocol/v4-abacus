@@ -3,8 +3,8 @@ package exchange.dydx.abacus.processor.input
 import abs
 import exchange.dydx.abacus.calculator.CalculationPeriod
 import exchange.dydx.abacus.calculator.MarginCalculator
-import exchange.dydx.abacus.calculator.TradeCalculation
-import exchange.dydx.abacus.calculator.v2.tradeinput.TradeInputCalculatorV2
+import exchange.dydx.abacus.calculator.tradeinput.TradeCalculation
+import exchange.dydx.abacus.calculator.tradeinput.TradeInputCalculator
 import exchange.dydx.abacus.output.input.InputType
 import exchange.dydx.abacus.output.input.OrderSide
 import exchange.dydx.abacus.output.input.OrderType
@@ -237,7 +237,7 @@ internal class ClosePositionInputProcessor(
             input = "size.percent",
         )
 
-        val calculator = TradeInputCalculatorV2(parser, TradeCalculation.closePosition)
+        val calculator = TradeInputCalculator(parser, TradeCalculation.closePosition)
         return calculator.calculate(
             trade = closePosition,
             wallet = walletState,

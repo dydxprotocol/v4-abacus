@@ -1,6 +1,6 @@
 @file:Suppress("ktlint:standard:property-naming")
 
-package exchange.dydx.abacus.calculator.v2.tradeinput
+package exchange.dydx.abacus.calculator.tradeinput
 
 import abs
 import exchange.dydx.abacus.calculator.CalculationPeriod

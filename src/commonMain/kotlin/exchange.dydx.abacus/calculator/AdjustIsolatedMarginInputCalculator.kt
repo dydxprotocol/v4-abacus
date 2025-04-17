@@ -1,136 +1,140 @@
 package exchange.dydx.abacus.calculator
 
+import exchange.dydx.abacus.output.input.AdjustIsolatedMarginInputOptions
+import exchange.dydx.abacus.output.input.AdjustIsolatedMarginInputSummary
 import exchange.dydx.abacus.output.input.IsolatedMarginAdjustmentType
 import exchange.dydx.abacus.output.input.IsolatedMarginInputType
 import exchange.dydx.abacus.protocols.ParserProtocol
+import exchange.dydx.abacus.state.internalstate.InternalAdjustIsolatedMarginInputState
+import exchange.dydx.abacus.state.internalstate.InternalMarketState
+import exchange.dydx.abacus.state.internalstate.InternalSubaccountState
+import exchange.dydx.abacus.state.internalstate.InternalWalletState
 import exchange.dydx.abacus.utils.MARGIN_COLLATERALIZATION_CHECK_BUFFER
 import exchange.dydx.abacus.utils.MAX_LEVERAGE_BUFFER_PERCENT
 import exchange.dydx.abacus.utils.Numeric
-import exchange.dydx.abacus.utils.mutable
-import exchange.dydx.abacus.utils.safeSet
+import kotlin.collections.get
 import kotlin.math.max
 import kotlin.math.min
 
-@Suppress("UNCHECKED_CAST")
-internal class AdjustIsolatedMarginInputCalculator(val parser: ParserProtocol) {
-    private val subaccountTransformer = SubaccountTransformer()
-
-    internal fun calculate(
-        state: Map<String, Any>,
+internal class AdjustIsolatedMarginInputCalculator(
+    private val parser: ParserProtocol,
+    private val subaccountTransformer: SubaccountTransformer = SubaccountTransformer(parser)
+) {
+    fun calculate(
+        adjustIsolatedMargin: InternalAdjustIsolatedMarginInputState,
+        walletState: InternalWalletState,
+        markets: Map<String, InternalMarketState>?,
         parentSubaccountNumber: Int?,
-    ): Map<String, Any> {
-        val wallet = parser.asNativeMap(state["wallet"])
-        val isolatedMarginAdjustment = parser.asNativeMap(state["adjustIsolatedMargin"])
-        val childSubaccountNumber = parser.asInt(isolatedMarginAdjustment?.get("ChildSubaccountNumber"))
-        val type = parser.asString(isolatedMarginAdjustment?.get("Type"))?.let {
-            IsolatedMarginAdjustmentType.valueOf(it)
-        } ?: IsolatedMarginAdjustmentType.Add
+    ): InternalAdjustIsolatedMarginInputState {
+        val market = markets?.get(adjustIsolatedMargin.market) ?: return adjustIsolatedMargin
 
-        val markets = parser.asNativeMap(state["markets"])
-        val marketId = isolatedMarginAdjustment?.get("Market")
-        val market = if (marketId != null) parser.asNativeMap(markets?.get(marketId)) else null
+        if (walletState.isAccountConnected &&
+            (adjustIsolatedMargin.amount != null || adjustIsolatedMargin.amountPercent != null || adjustIsolatedMargin.market != null)
+        ) {
+            val type = adjustIsolatedMargin.type ?: IsolatedMarginAdjustmentType.Add
+            val childSubaccountNumber = adjustIsolatedMargin.childSubaccountNumber
 
-        return if (wallet != null && isolatedMarginAdjustment != null && market != null) {
-            val modified = state.mutable()
+            val parentTransferDelta = getModifiedTransferDelta(
+                isolatedMarginAdjustment = adjustIsolatedMargin,
+                isParentSubaccount = true,
+            )
+            val childTransferDelta = getModifiedTransferDelta(
+                isolatedMarginAdjustment = adjustIsolatedMargin,
+                isParentSubaccount = false,
+            )
 
-            val parentTransferDelta = getModifiedTransferDelta(isolatedMarginAdjustment, true)
-            val childTransferDelta = getModifiedTransferDelta(isolatedMarginAdjustment, false)
+            subaccountTransformer.applyIsolatedMarginAdjustmentToWallet(
+                wallet = walletState,
+                subaccountNumber = parentSubaccountNumber,
+                delta = parentTransferDelta,
+                period = CalculationPeriod.post,
+            )
 
-            val walletPostParentSubaccountTransfer =
-                subaccountTransformer.applyIsolatedMarginAdjustmentToWallet(
-                    wallet,
-                    subaccountNumber = parentSubaccountNumber,
-                    parentTransferDelta,
-                    parser,
-                    "postOrder",
-                )
+            subaccountTransformer.applyIsolatedMarginAdjustmentToWallet(
+                wallet = walletState,
+                subaccountNumber = childSubaccountNumber,
+                delta = childTransferDelta,
+                period = CalculationPeriod.post,
+            )
 
-            val walletPostChildSubaccountTransfer =
-                subaccountTransformer.applyIsolatedMarginAdjustmentToWallet(
-                    wallet = walletPostParentSubaccountTransfer,
-                    subaccountNumber = childSubaccountNumber,
-                    childTransferDelta,
-                    parser,
-                    "postOrder",
-                )
+            calculateAmounts(
+                adjustIsolatedMargin = adjustIsolatedMargin,
+                parentSubaccount = walletState.account.subaccounts[parentSubaccountNumber],
+                childSubaccount = walletState.account.subaccounts[childSubaccountNumber],
+                market = market,
+                type = type,
+            )
 
-            val modifiedParentSubaccount = parser.asNativeMap(parser.value(walletPostChildSubaccountTransfer, "account.subaccounts.$parentSubaccountNumber"))
-            val modifiedChildSubaccount = parser.asNativeMap(parser.value(walletPostChildSubaccountTransfer, "account.subaccounts.$childSubaccountNumber"))
-            val updatedIsolatedMarginAdjustment = calculateAmounts(isolatedMarginAdjustment, modifiedParentSubaccount, modifiedChildSubaccount, market, type)
-
-            modified["adjustIsolatedMargin"] = finalize(updatedIsolatedMarginAdjustment, modifiedParentSubaccount, modifiedChildSubaccount, type)
-            modified["wallet"] = walletPostChildSubaccountTransfer
-            modified
-        } else {
-            state
+            adjustIsolatedMargin.options = AdjustIsolatedMarginInputOptions(
+                needsSize = true,
+            )
+            adjustIsolatedMargin.summary = summaryForType(
+                parentSubaccount = walletState.account.subaccounts[parentSubaccountNumber],
+                childSubaccount = walletState.account.subaccounts[childSubaccountNumber],
+            )
         }
+        return adjustIsolatedMargin
     }
 
     private fun calculateAmounts(
-        adjustIsolatedMargin: Map<String, Any>,
-        parentSubaccount: Map<String, Any>?,
-        childSubaccount: Map<String, Any>?,
-        market: Map<String, Any>,
+        adjustIsolatedMargin: InternalAdjustIsolatedMarginInputState,
+        parentSubaccount: InternalSubaccountState?,
+        childSubaccount: InternalSubaccountState?,
+        market: InternalMarketState,
         type: IsolatedMarginAdjustmentType,
-    ): MutableMap<String, Any> {
-        val modified = adjustIsolatedMargin.mutable()
-        val inputType = parser.asString(modified["AmountInput"])?.let {
-            IsolatedMarginInputType.valueOf(it)
-        }
+    ): InternalAdjustIsolatedMarginInputState {
+        val modified = adjustIsolatedMargin
+        val inputType = modified.amountInput
 
         if (inputType != null) {
-            val notionalTotal = parser.asDouble(parser.value(childSubaccount, "notionalTotal.current")) ?: return modified
-            val equity = parser.asDouble(parser.value(childSubaccount, "equity.current"))
-            val availableCollateralToTransfer = parser.asDouble(parser.value(parentSubaccount, "freeCollateral.current"))
+            val notionalTotal = childSubaccount?.calculated?.get(CalculationPeriod.current)?.notionalTotal ?: return modified
+            val equity = childSubaccount.calculated[CalculationPeriod.current]?.equity
+            val availableCollateralToTransfer = parentSubaccount?.calculated?.get(CalculationPeriod.current)?.freeCollateral
 
             val baseAmount = when (type) {
                 IsolatedMarginAdjustmentType.Add -> availableCollateralToTransfer
                 IsolatedMarginAdjustmentType.Remove -> equity
             }
 
-            val amountPercent = parser.asDouble(modified["AmountPercent"])
-            val amountValue = parser.asDouble(modified["Amount"])
+            val amountPercent = modified.amountPercent
+            val amountValue = modified.amount
 
-            val initialMarginFraction =
-                parser.asDouble(parser.value(market, "configs.effectiveInitialMarginFraction"))
-                    ?: return modified
-            val maxMarketLeverage = if (initialMarginFraction <= Numeric.double.ZERO) {
-                return modified
-            } else {
-                Numeric.double.ONE / initialMarginFraction
-            }
+            val maxMarketLeverage = market.perpetualMarket?.configs?.maxMarketLeverage ?: Numeric.Companion.double.ONE
 
             when (inputType) {
                 IsolatedMarginInputType.Amount -> {
-                    if (baseAmount != null && baseAmount > Numeric.double.ZERO && amountValue != null) {
+                    if (baseAmount != null && baseAmount > Numeric.Companion.double.ZERO && amountValue != null) {
                         when (type) {
                             IsolatedMarginAdjustmentType.Add -> {
-                                val percent = amountValue / baseAmount
-                                modified.safeSet("AmountPercent", percent.toString())
+                                modified.amountPercent = amountValue / baseAmount
                             }
                             IsolatedMarginAdjustmentType.Remove -> {
                                 val maxRemovableAmount = baseAmount - notionalTotal / (maxMarketLeverage * MAX_LEVERAGE_BUFFER_PERCENT)
-                                if (maxRemovableAmount > Numeric.double.ZERO) {
-                                    val percent = amountValue / maxRemovableAmount
-                                    modified.safeSet("AmountPercent", percent.toString())
+                                if (maxRemovableAmount > Numeric.Companion.double.ZERO) {
+                                    modified.amountPercent = amountValue / maxRemovableAmount
                                 } else {
-                                    modified.safeSet("AmountPercent", null)
+                                    modified.amountPercent = null
                                 }
                             }
                         }
                     } else {
-                        modified.safeSet("AmountPercent", null)
+                        modified.amountPercent = null
                     }
                 }
                 IsolatedMarginInputType.Percent -> {
-                    if (baseAmount != null && baseAmount >= Numeric.double.ZERO && amountPercent != null) {
+                    if (baseAmount != null && baseAmount >= Numeric.Companion.double.ZERO && amountPercent != null) {
                         when (type) {
                             IsolatedMarginAdjustmentType.Add -> {
                                 // The amount to add is a percentage of all add-able margin (your parent subaccount's free collateral)
                                 val amount = baseAmount * amountPercent
                                 // We leave behind MARGIN_COLLATERALIZATION_CHECK_BUFFER to pass collateralization checks
-                                val cappedAmount = min(max(baseAmount - MARGIN_COLLATERALIZATION_CHECK_BUFFER, 0.0), amount)
-                                modified.safeSet("Amount", cappedAmount.toString())
+                                modified.amount = min(
+                                    max(
+                                        baseAmount - MARGIN_COLLATERALIZATION_CHECK_BUFFER,
+                                        0.0,
+                                    ),
+                                    amount,
+                                )
                             }
                             IsolatedMarginAdjustmentType.Remove -> {
                                 // The amount to remove is a percentage of all remov-able margin (100% puts you at the market's max leveage)
@@ -138,16 +142,15 @@ internal class AdjustIsolatedMarginInputCalculator(val parser: ParserProtocol) {
                                 // marketMaxLeverage = notional total / (currentEquity - amount)
                                 // amount = currentEquity - notionalTotal / marketMaxLeverage
                                 val amountToRemove = baseAmount - notionalTotal / (maxMarketLeverage * MAX_LEVERAGE_BUFFER_PERCENT)
-                                if (amountToRemove >= Numeric.double.ZERO) {
-                                    val amount = amountToRemove * amountPercent
-                                    modified.safeSet("Amount", amount.toString())
+                                if (amountToRemove >= Numeric.Companion.double.ZERO) {
+                                    modified.amount = amountToRemove * amountPercent
                                 } else {
-                                    modified.safeSet("Amount", null)
+                                    modified.amount = null
                                 }
                             }
                         }
                     } else {
-                        modified.safeSet("Amount", null)
+                        modified.amount = null
                     }
                 }
             }
@@ -156,118 +159,50 @@ internal class AdjustIsolatedMarginInputCalculator(val parser: ParserProtocol) {
     }
 
     private fun getModifiedTransferDelta(
-        isolatedMarginAdjustment: Map<String, Any>,
+        isolatedMarginAdjustment: InternalAdjustIsolatedMarginInputState,
         isParentSubaccount: Boolean,
-    ): Map<String, Double> {
-        val type = parser.asString(isolatedMarginAdjustment["Type"])?.let {
-            IsolatedMarginAdjustmentType.valueOf(it)
-        } ?: IsolatedMarginAdjustmentType.Add
-        val amount = parser.asDouble(isolatedMarginAdjustment["Amount"])
+    ): Delta {
+        val type = isolatedMarginAdjustment.type ?: IsolatedMarginAdjustmentType.Add
+        val amount = isolatedMarginAdjustment.amount
 
         when (type) {
             IsolatedMarginAdjustmentType.Add -> {
                 val multiplier =
-                    if (isParentSubaccount) Numeric.double.NEGATIVE else Numeric.double.POSITIVE
-                val usdcSize = (amount ?: Numeric.double.ZERO) * multiplier
+                    if (isParentSubaccount) Numeric.Companion.double.NEGATIVE else Numeric.Companion.double.POSITIVE
+                val usdcSize = (amount ?: Numeric.Companion.double.ZERO) * multiplier
 
-                return mapOf(
-                    "usdcSize" to usdcSize,
-                )
+                return Delta(usdcSize = usdcSize)
             }
 
             IsolatedMarginAdjustmentType.Remove -> {
                 val multiplier =
-                    if (isParentSubaccount) Numeric.double.POSITIVE else Numeric.double.NEGATIVE
-                val usdcSize = (amount ?: Numeric.double.ZERO) * multiplier
+                    if (isParentSubaccount) Numeric.Companion.double.POSITIVE else Numeric.Companion.double.NEGATIVE
+                val usdcSize = (amount ?: Numeric.Companion.double.ZERO) * multiplier
 
-                return mapOf(
-                    "usdcSize" to usdcSize,
-                )
+                return Delta(usdcSize = usdcSize)
             }
         }
     }
 
     private fun summaryForType(
-        parentSubaccount: Map<String, Any>?,
-        childSubaccount: Map<String, Any>?,
-        type: IsolatedMarginAdjustmentType,
-    ): Map<String, Any> {
-        val summary = mutableMapOf<String, Any>()
-        val crossCollateral = parentSubaccount?.get("freeCollateral")
-        val crossMarginUsage = parentSubaccount?.get("marginUsage")
-        val openPositions = parser.asNativeMap(childSubaccount?.get("openPositions"))
+        parentSubaccount: InternalSubaccountState?,
+        childSubaccount: InternalSubaccountState?,
+    ): AdjustIsolatedMarginInputSummary {
+        val openPositions = childSubaccount?.openPositions
         val marketId = openPositions?.keys?.firstOrNull()
-        val positionMargin = parser.value(childSubaccount, "equity")
-        val positionLeverage = parser.value(childSubaccount, "openPositions.$marketId.leverage")
-        val liquidationPrice = parser.value(childSubaccount, "openPositions.$marketId.liquidationPrice")
+        val position = openPositions?.get(marketId)
 
-        when (type) {
-            IsolatedMarginAdjustmentType.Add -> {
-                summary.safeSet("crossFreeCollateral", crossCollateral)
-                summary.safeSet("crossMarginUsage", crossMarginUsage)
-                summary.safeSet("positionMargin", positionMargin)
-                summary.safeSet("positionLeverage", positionLeverage)
-                summary.safeSet("liquidationPrice", liquidationPrice)
-            }
-
-            IsolatedMarginAdjustmentType.Remove -> {
-                summary.safeSet("crossFreeCollateral", crossCollateral)
-                summary.safeSet("crossMarginUsage", crossMarginUsage)
-                summary.safeSet("positionMargin", positionMargin)
-                summary.safeSet("positionLeverage", positionLeverage)
-                summary.safeSet("liquidationPrice", liquidationPrice)
-            }
-        }
-
-        return summary
-    }
-
-    private fun amountField(): Map<String, Any> {
-        return mapOf(
-            "field" to "amount",
-            "type" to "double",
+        return AdjustIsolatedMarginInputSummary(
+            crossFreeCollateral = parentSubaccount?.calculated?.get(CalculationPeriod.current)?.freeCollateral,
+            crossFreeCollateralUpdated = parentSubaccount?.calculated?.get(CalculationPeriod.post)?.freeCollateral,
+            crossMarginUsage = parentSubaccount?.calculated?.get(CalculationPeriod.current)?.marginUsage,
+            crossMarginUsageUpdated = parentSubaccount?.calculated?.get(CalculationPeriod.post)?.marginUsage,
+            positionMargin = position?.calculated?.get(CalculationPeriod.current)?.marginValue,
+            positionMarginUpdated = position?.calculated?.get(CalculationPeriod.post)?.marginValue,
+            positionLeverage = position?.calculated?.get(CalculationPeriod.current)?.leverage,
+            positionLeverageUpdated = position?.calculated?.get(CalculationPeriod.post)?.leverage,
+            liquidationPrice = position?.calculated?.get(CalculationPeriod.current)?.liquidationPrice,
+            liquidationPriceUpdated = position?.calculated?.get(CalculationPeriod.post)?.liquidationPrice,
         )
-    }
-
-    private fun requiredFields(): List<Any> {
-        return listOf(
-            amountField(),
-        )
-    }
-
-    private fun calculatedOptionsFromField(fields: List<Any>?): Map<String, Any>? {
-        fields?.let {
-            val options = mutableMapOf<String, Any>(
-                "needsSize" to false,
-            )
-
-            for (item in fields) {
-                parser.asNativeMap(item)?.let { field ->
-                    when (parser.asString(field["field"])) {
-                        "amount" -> {
-                            options["needsSize"] = true
-                        }
-                    }
-                }
-            }
-
-            return options
-        }
-
-        return null
-    }
-
-    private fun finalize(
-        isolatedMarginAdjustment: Map<String, Any>,
-        parentSubaccount: Map<String, Any>?,
-        childSubaccount: Map<String, Any>?,
-        type: IsolatedMarginAdjustmentType,
-    ): Map<String, Any> {
-        val modified = isolatedMarginAdjustment.mutable()
-        val fields = requiredFields()
-        modified.safeSet("fields", fields)
-        modified.safeSet("options", calculatedOptionsFromField(fields))
-        modified.safeSet("summary", summaryForType(parentSubaccount, childSubaccount, type))
-        return modified
     }
 }

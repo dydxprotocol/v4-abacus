@@ -1,347 +1,288 @@
 package exchange.dydx.abacus.calculator
 
 import abs
-import exchange.dydx.abacus.calculator.SlippageConstants.MAJOR_MARKETS
-import exchange.dydx.abacus.calculator.SlippageConstants.STOP_MARKET_ORDER_SLIPPAGE_BUFFER
-import exchange.dydx.abacus.calculator.SlippageConstants.STOP_MARKET_ORDER_SLIPPAGE_BUFFER_MAJOR_MARKET
-import exchange.dydx.abacus.calculator.SlippageConstants.TAKE_PROFIT_MARKET_ORDER_SLIPPAGE_BUFFER
-import exchange.dydx.abacus.calculator.SlippageConstants.TAKE_PROFIT_MARKET_ORDER_SLIPPAGE_BUFFER_MAJOR_MARKET
+import exchange.dydx.abacus.calculator.tradeinput.SlippageConstants
 import exchange.dydx.abacus.output.input.OrderSide
 import exchange.dydx.abacus.output.input.OrderType
-import exchange.dydx.abacus.protocols.ParserProtocol
+import exchange.dydx.abacus.output.input.TriggerOrderInputSummary
+import exchange.dydx.abacus.output.input.TriggerPrice
+import exchange.dydx.abacus.state.internalstate.InternalAccountState
+import exchange.dydx.abacus.state.internalstate.InternalPerpetualPosition
+import exchange.dydx.abacus.state.internalstate.InternalTriggerOrderState
+import exchange.dydx.abacus.state.internalstate.InternalTriggerOrdersInputState
 import exchange.dydx.abacus.utils.Numeric
-import exchange.dydx.abacus.utils.mutable
-import exchange.dydx.abacus.utils.safeSet
+import indexer.codegen.IndexerPositionSide
 import kotlin.math.max
 
 internal object TriggerOrdersConstants {
     const val TRIGGER_ORDER_DEFAULT_DURATION_DAYS = 90.0
 }
 
-@Suppress("UNCHECKED_CAST")
-internal class TriggerOrdersInputCalculator(val parser: ParserProtocol) {
-    internal fun calculate(
-        state: Map<String, Any>,
-        subaccountNumber: Int?,
-    ): Map<String, Any> {
-        val account = parser.asNativeMap(state["account"])
-        val subaccount = if (subaccountNumber != null) {
-            parser.asMap(parser.value(account, "groupedSubaccounts.$subaccountNumber"))
-                ?: parser.asNativeMap(
-                    parser.value(
-                        account,
-                        "subaccounts.$subaccountNumber",
-                    ),
-                )
-        } else {
-            null
-        }
-        val triggerOrders = parser.asNativeMap(state["triggerOrders"])
-        val marketId = parser.asString(triggerOrders?.get("marketId"))
-        val inputSize = parser.asDouble(triggerOrders?.get("size"))
-        val stopLossOrder = parser.asNativeMap(triggerOrders?.get("stopLossOrder"))
-        val takeProfitOrder = parser.asNativeMap(triggerOrders?.get("takeProfitOrder"))
-        val position = parser.asNativeMap(parser.value(subaccount, "openPositions.$marketId"))
+internal class TriggerOrdersInputCalculator() {
+    fun calculate(
+        triggerOrders: InternalTriggerOrdersInputState,
+        account: InternalAccountState,
+        subaccountNumber: Int,
+    ): InternalTriggerOrdersInputState {
+        val subaccount = account.groupedSubaccounts[subaccountNumber]
+            ?: account.subaccounts[subaccountNumber]
+        val marketId = triggerOrders.marketId
+        val inputSize = triggerOrders.size
+        val stopLossOrder = triggerOrders.stopLossOrder
+        val takeProfitOrder = triggerOrders.takeProfitOrder
+        val position = subaccount?.openPositions?.get(marketId)
 
-        return if (triggerOrders != null && position != null) {
-            val modified = state.mutable()
-            val modifiedStopLossOrder = if (stopLossOrder != null) {
-                calculateTriggerOrderTrade(stopLossOrder, position, inputSize, marketId)
-            } else {
-                stopLossOrder
+        if (position != null) {
+            if (stopLossOrder != null) {
+                triggerOrders.stopLossOrder =
+                    calculateTriggerOrderTrade(stopLossOrder, triggerOrders.marketId, position, inputSize)
             }
-            val modifiedTakeProfitOrder = if (takeProfitOrder != null) {
-                calculateTriggerOrderTrade(takeProfitOrder, position, inputSize, marketId)
-            } else {
-                takeProfitOrder
+            if (takeProfitOrder != null) {
+                triggerOrders.takeProfitOrder =
+                    calculateTriggerOrderTrade(takeProfitOrder, triggerOrders.marketId, position, inputSize)
             }
-            val modifiedTriggerOrders = triggerOrders.mutable()
-            modifiedTriggerOrders.safeSet("stopLossOrder", modifiedStopLossOrder)
-            modifiedTriggerOrders.safeSet("takeProfitOrder", modifiedTakeProfitOrder)
-
-            modified["triggerOrders"] = modifiedTriggerOrders
-            modified
-        } else {
-            state
         }
+
+        return triggerOrders
     }
 
     private fun calculateTriggerOrderTrade(
-        triggerOrder: Map<String, Any>,
-        position: Map<String, Any>,
-        inputSize: Double?,
+        triggerOrder: InternalTriggerOrderState,
         marketId: String?,
-    ): Map<String, Any> {
-        val modified = triggerOrder.mutable()
-        val orderSize = parser.asDouble(triggerOrder["size"])
+        position: InternalPerpetualPosition,
+        inputSize: Double?,
+    ): InternalTriggerOrderState {
+        val orderSize = triggerOrder.size
         val absSize = (inputSize ?: orderSize)?.abs()
-        val triggerPrices = parser.asNativeMap(triggerOrder["price"])?.let { calculateTriggerPrices(it, position, absSize) }
-        modified.safeSet("price", triggerPrices)
+        triggerOrder.price =
+            triggerOrder.price?.let { calculateTriggerPrices(it, position, absSize) }
 
-        return finalizeOrderFromPriceInputs(modified, position, absSize, marketId)
+        return finalizeOrderFromPriceInputs(triggerOrder, marketId, position, absSize)
     }
 
     private fun calculateTriggerPrices(
-        triggerPrices: Map<String, Any>,
-        position: Map<String, Any>,
+        triggerPrices: TriggerPrice,
+        position: InternalPerpetualPosition,
         size: Double?,
-    ): MutableMap<String, Any> {
-        val modified = triggerPrices.mutable()
-        val entryPrice = parser.asDouble(parser.value(position, "entryPrice.current"))
-        val inputType = parser.asString(parser.value(modified, "input"))
-        val positionSide = parser.asString(parser.value(position, "resources.indicator.current"))
-        val positionSize = parser.asDouble(parser.value(position, "size.current"))?.abs() ?: return modified
-        val notionalTotal = parser.asDouble(parser.value(position, "notionalTotal.current")) ?: return modified
-        val leverage = parser.asDouble(parser.value(position, "leverage.current")) ?: return modified
+    ): TriggerPrice {
+        var modified = triggerPrices
 
-        if (size == null || size == Numeric.double.ZERO || notionalTotal == Numeric.double.ZERO || leverage == Numeric.double.ZERO) {
+        val inputType = triggerPrices.input
+        val currentPosition = position.calculated[CalculationPeriod.current]
+        val entryPrice = position.entryPrice
+        val positionSide = position.side
+        val positionSize = currentPosition?.size?.abs() ?: return triggerPrices
+        val notionalTotal = currentPosition.notionalTotal ?: return triggerPrices
+        val leverage = currentPosition.leverage ?: return triggerPrices
+
+        if (size == null || size == Numeric.Companion.double.ZERO || notionalTotal == Numeric.Companion.double.ZERO || leverage == Numeric.Companion.double.ZERO) {
             // A valid position size should never have 0 size, notional value or leverage.
-            return modified;
+            return triggerPrices;
         }
 
         val scaledLeverage = max(leverage.abs(), 1.0)
         val scaledNotionalTotal = size.div(positionSize).times(notionalTotal);
 
         if (entryPrice != null) {
-            val triggerPrice = parser.asDouble(parser.value(modified, "triggerPrice"))
-            val usdcDiff = parser.asDouble(parser.value(modified, "usdcDiff"))
-            val percentDiff = parser.asDouble(parser.value(modified, "percentDiff"))?.let { it / 100.0 }
+            val triggerPrice = triggerPrices.triggerPrice
+            val usdcDiff = triggerPrices.usdcDiff
+            val percentDiff = triggerPrices.percentDiff?.let { it / 100.0 }
 
             when (inputType) {
                 "stopLossOrder.price.triggerPrice" -> {
                     if (triggerPrice != null) {
-                        modified.safeSet(
-                            "usdcDiff",
-                            when (positionSide) {
-                                "long" -> size.times(entryPrice.minus(triggerPrice))
-                                "short" -> size.times(triggerPrice.minus(entryPrice))
-                                else -> null
-                            },
-                        )
-                        modified.safeSet(
-                            "percentDiff",
-                            when (positionSide) {
-                                "long" -> size.times(scaledLeverage.times(entryPrice.minus(triggerPrice))).div(scaledNotionalTotal).times(100)
-                                "short" -> size.times(scaledLeverage.times(triggerPrice.minus(entryPrice))).div(scaledNotionalTotal).times(100)
-                                else -> null
-                            },
-                        )
+                        val usdcDiffValue = when (positionSide) {
+                            IndexerPositionSide.LONG -> size.times(entryPrice.minus(triggerPrice))
+                            IndexerPositionSide.SHORT -> size.times(triggerPrice.minus(entryPrice))
+                            else -> null
+                        }
+                        modified = modified.copy(usdcDiff = usdcDiffValue)
+                        val percentDiffValue = when (positionSide) {
+                            IndexerPositionSide.LONG -> size.times(
+                                scaledLeverage.times(
+                                    entryPrice.minus(
+                                        triggerPrice,
+                                    ),
+                                ),
+                            ).div(scaledNotionalTotal).times(100)
+
+                            IndexerPositionSide.SHORT -> size.times(
+                                scaledLeverage.times(
+                                    triggerPrice.minus(entryPrice),
+                                ),
+                            ).div(scaledNotionalTotal).times(100)
+
+                            else -> null
+                        }
+                        modified = modified.copy(percentDiff = percentDiffValue)
                     } else {
-                        modified.safeSet(
-                            "usdcDiff",
-                            null,
-                        )
-                        modified.safeSet(
-                            "percentDiff",
-                            null,
-                        )
+                        modified = modified.copy(usdcDiff = null)
+                        modified = modified.copy(percentDiff = null)
                     }
                 }
+
                 "takeProfitOrder.price.triggerPrice" -> {
                     if (triggerPrice != null) {
-                        modified.safeSet(
-                            "usdcDiff",
-                            when (positionSide) {
-                                "long" -> size.times(triggerPrice.minus(entryPrice))
-                                "short" -> size.times(entryPrice.minus(triggerPrice))
-                                else -> null
-                            },
-                        )
-                        modified.safeSet(
-                            "percentDiff",
-                            when (positionSide) {
-                                "long" -> size.times(scaledLeverage.times(triggerPrice.minus(entryPrice))).div(scaledNotionalTotal).times(100)
-                                "short" -> size.times(scaledLeverage.times(entryPrice.minus(triggerPrice))).div(scaledNotionalTotal).times(100)
-                                else -> null
-                            },
-                        )
+                        val usdcDiffValue = when (positionSide) {
+                            IndexerPositionSide.LONG -> size.times(triggerPrice.minus(entryPrice))
+                            IndexerPositionSide.SHORT -> size.times(entryPrice.minus(triggerPrice))
+                            else -> null
+                        }
+                        modified = modified.copy(usdcDiff = usdcDiffValue)
+                        val percentDiffValue = when (positionSide) {
+                            IndexerPositionSide.LONG -> size.times(
+                                scaledLeverage.times(
+                                    triggerPrice.minus(
+                                        entryPrice,
+                                    ),
+                                ),
+                            ).div(scaledNotionalTotal).times(100)
+
+                            IndexerPositionSide.SHORT -> size.times(
+                                scaledLeverage.times(
+                                    entryPrice.minus(
+                                        triggerPrice,
+                                    ),
+                                ),
+                            ).div(scaledNotionalTotal).times(100)
+
+                            else -> null
+                        }
+                        modified = modified.copy(percentDiff = percentDiffValue)
                     } else {
-                        modified.safeSet(
-                            "usdcDiff",
-                            null,
-                        )
-                        modified.safeSet(
-                            "percentDiff",
-                            null,
-                        )
+                        modified = modified.copy(usdcDiff = null)
+                        modified = modified.copy(percentDiff = null)
                     }
                 }
+
                 "stopLossOrder.price.usdcDiff" -> {
                     if (usdcDiff != null) {
-                        modified.safeSet(
-                            "triggerPrice",
-                            when (positionSide) {
-                                "long" -> entryPrice.minus(usdcDiff.div(size))
-                                "short" -> entryPrice.plus(usdcDiff.div(size))
-                                else -> null
-                            },
-                        )
-                        modified.safeSet(
-                            "percentDiff",
-                            usdcDiff.div(scaledNotionalTotal).times(scaledLeverage).times(100),
-                        )
+                        val triggerPriceValue = when (positionSide) {
+                            IndexerPositionSide.LONG -> entryPrice.minus(usdcDiff.div(size))
+                            IndexerPositionSide.SHORT -> entryPrice.plus(usdcDiff.div(size))
+                            else -> null
+                        }
+                        modified = modified.copy(triggerPrice = triggerPriceValue)
+                        val percentDiffValue =
+                            usdcDiff.div(scaledNotionalTotal).times(scaledLeverage).times(100)
+                        modified = modified.copy(percentDiff = percentDiffValue)
                     } else {
-                        modified.safeSet(
-                            "triggerPrice",
-                            null,
-                        )
-                        modified.safeSet(
-                            "percentDiff",
-                            null,
-                        )
+                        modified = modified.copy(triggerPrice = null)
+                        modified = modified.copy(percentDiff = null)
                     }
                 }
+
                 "takeProfitOrder.price.usdcDiff" -> {
                     if (usdcDiff != null) {
-                        modified.safeSet(
-                            "triggerPrice",
-                            when (positionSide) {
-                                "long" -> entryPrice.plus(usdcDiff.div(size))
-                                "short" -> entryPrice.minus(usdcDiff.div(size))
-                                else -> null
-                            },
-                        )
-                        modified.safeSet(
-                            "percentDiff",
-                            usdcDiff.div(scaledNotionalTotal).times(scaledLeverage).times(100),
-                        )
+                        val triggerPriceValue = when (positionSide) {
+                            IndexerPositionSide.LONG -> entryPrice.plus(usdcDiff.div(size))
+                            IndexerPositionSide.SHORT -> entryPrice.minus(usdcDiff.div(size))
+                            else -> null
+                        }
+                        modified = modified.copy(triggerPrice = triggerPriceValue)
+                        val percentDiffValue =
+                            usdcDiff.div(scaledNotionalTotal).times(scaledLeverage).times(100)
+                        modified = modified.copy(percentDiff = percentDiffValue)
                     } else {
-                        modified.safeSet(
-                            "triggerPrice",
-                            null,
-                        )
-                        modified.safeSet(
-                            "percentDiff",
-                            null,
-                        )
+                        modified = modified.copy(triggerPrice = null)
+                        modified = modified.copy(percentDiff = null)
                     }
                 }
+
                 "stopLossOrder.price.percentDiff" -> {
                     if (percentDiff != null) {
-                        modified.safeSet(
-                            "triggerPrice",
-                            when (positionSide) {
-                                "long" -> entryPrice.minus(percentDiff.times(scaledNotionalTotal).div(scaledLeverage.times(size)))
-                                "short" -> entryPrice.plus(percentDiff.times(scaledNotionalTotal).div(scaledLeverage.times(size)))
-                                else -> null
-                            },
-                        )
-                        modified.safeSet(
-                            "usdcDiff",
-                            percentDiff.times(scaledNotionalTotal).div(scaledLeverage),
-                        )
+                        val triggerPriceValue = when (positionSide) {
+                            IndexerPositionSide.LONG -> entryPrice.minus(
+                                percentDiff.times(
+                                    scaledNotionalTotal,
+                                ).div(scaledLeverage.times(size)),
+                            )
+
+                            IndexerPositionSide.SHORT -> entryPrice.plus(
+                                percentDiff.times(
+                                    scaledNotionalTotal,
+                                ).div(scaledLeverage.times(size)),
+                            )
+
+                            else -> null
+                        }
+                        modified = modified.copy(triggerPrice = triggerPriceValue)
+                        val usdcDiffValue =
+                            percentDiff.times(scaledNotionalTotal).div(scaledLeverage)
+                        modified = modified.copy(usdcDiff = usdcDiffValue)
                     } else {
-                        modified.safeSet(
-                            "triggerPrice",
-                            null,
-                        )
-                        modified.safeSet(
-                            "usdcDiff",
-                            null,
-                        )
+                        modified = modified.copy(triggerPrice = null)
+                        modified = modified.copy(usdcDiff = null)
                     }
                 }
+
                 "takeProfitOrder.price.percentDiff" -> {
                     if (percentDiff != null) {
-                        modified.safeSet(
-                            "triggerPrice",
-                            when (positionSide) {
-                                "long" -> entryPrice.plus(percentDiff.times(scaledNotionalTotal).div(scaledLeverage.times(size)))
-                                "short" -> entryPrice.minus(percentDiff.times(scaledNotionalTotal).div(scaledLeverage.times(size)))
-                                else -> null
-                            },
-                        )
-                        modified.safeSet(
-                            "usdcDiff",
-                            percentDiff.times(scaledNotionalTotal).div(scaledLeverage),
-                        )
+                        val triggerPriceValue = when (positionSide) {
+                            IndexerPositionSide.LONG -> entryPrice.plus(
+                                percentDiff.times(
+                                    scaledNotionalTotal,
+                                ).div(scaledLeverage.times(size)),
+                            )
+
+                            IndexerPositionSide.SHORT -> entryPrice.minus(
+                                percentDiff.times(
+                                    scaledNotionalTotal,
+                                ).div(scaledLeverage.times(size)),
+                            )
+
+                            else -> null
+                        }
+                        modified = modified.copy(triggerPrice = triggerPriceValue)
+                        val usdcDiffValue =
+                            percentDiff.times(scaledNotionalTotal).div(scaledLeverage)
+                        modified = modified.copy(usdcDiff = usdcDiffValue)
                     } else {
-                        modified.safeSet(
-                            "triggerPrice",
-                            null,
-                        )
-                        modified.safeSet(
-                            "usdcDiff",
-                            null,
-                        )
+                        modified = modified.copy(triggerPrice = null)
+                        modified = modified.copy(usdcDiff = null)
                     }
                 }
+
                 else -> {}
             }
         }
+
         return modified
     }
 
     private fun finalizeOrderFromPriceInputs(
-        triggerOrder: Map<String, Any>,
-        position: Map<String, Any>,
+        triggerOrder: InternalTriggerOrderState,
+        marketId: String?,
+        position: InternalPerpetualPosition,
         size: Double?,
-        marketId: String?
-    ): MutableMap<String, Any> {
-        val modified = triggerOrder.mutable()
+    ): InternalTriggerOrderState {
+        triggerOrder.side = getOrderSide(position)
+        triggerOrder.type = getOrderType(triggerOrder)
 
-        val side = getOrderSide(position)
-        modified.safeSet("side", side?.rawValue)
+        val price: Double? = getPrice(triggerOrder, marketId)
+        triggerOrder.summary = TriggerOrderInputSummary(size = size, price = price)
 
-        val type = getOrderType(triggerOrder)
-        modified.safeSet("type", type?.rawValue)
-
-        when (type) {
-            OrderType.TakeProfitMarket, OrderType.StopMarket -> {
-                val triggerPrice =
-                    parser.asDouble(parser.value(triggerOrder, "price.triggerPrice"))
-                val majorMarket = MAJOR_MARKETS.contains(marketId)
-                val slippagePercentage = if (majorMarket) {
-                    if (type == OrderType.StopMarket) {
-                        STOP_MARKET_ORDER_SLIPPAGE_BUFFER_MAJOR_MARKET
-                    } else {
-                        TAKE_PROFIT_MARKET_ORDER_SLIPPAGE_BUFFER_MAJOR_MARKET
-                    }
-                } else {
-                    if (type == OrderType.StopMarket) {
-                        STOP_MARKET_ORDER_SLIPPAGE_BUFFER
-                    } else {
-                        TAKE_PROFIT_MARKET_ORDER_SLIPPAGE_BUFFER
-                    }
-                }
-                val calculatedLimitPrice = if (triggerPrice != null) {
-                    if (parser.asString(triggerOrder["side"]) == "BUY") {
-                        triggerPrice * (Numeric.double.ONE + slippagePercentage)
-                    } else {
-                        triggerPrice * (Numeric.double.ONE - slippagePercentage)
-                    }
-                } else {
-                    null
-                }
-                modified.safeSet("summary.price", calculatedLimitPrice)
-            }
-            OrderType.TakeProfitLimit, OrderType.StopLimit -> {
-                modified.safeSet("summary.price", parser.asDouble(parser.value(triggerOrder, "price.limitPrice")))
-            }
-            else -> {}
-        }
-
-        modified.safeSet("summary.size", size)
-        return modified
+        return triggerOrder
     }
 
     private fun getOrderSide(
-        position: Map<String, Any>,
+        position: InternalPerpetualPosition,
     ): OrderSide? {
-        val positionSide = parser.asString(parser.value(position, "resources.indicator.current"))
+        val positionSide = position.side
 
         return when (positionSide) {
-            "short" -> OrderSide.Buy
-            "long" -> OrderSide.Sell
+            IndexerPositionSide.SHORT -> OrderSide.Buy
+            IndexerPositionSide.LONG -> OrderSide.Sell
             else -> null
         }
     }
 
-    private fun getOrderType(triggerOrder: Map<String, Any>): OrderType? {
-        val limitPrice = parser.asDouble(parser.value(triggerOrder, "price.limitPrice"))
-        val type = parser.asString(triggerOrder["type"])?.let {
-            OrderType.invoke(it)
-        }
+    private fun getOrderType(
+        triggerOrder: InternalTriggerOrderState
+    ): OrderType? {
+        val limitPrice = triggerOrder.price?.limitPrice
+        val type = triggerOrder.type
+
         if (limitPrice != null) {
             return when (type) {
                 OrderType.TakeProfitMarket, OrderType.TakeProfitLimit -> OrderType.TakeProfitLimit
@@ -353,6 +294,47 @@ internal class TriggerOrdersInputCalculator(val parser: ParserProtocol) {
                 OrderType.TakeProfitMarket, OrderType.TakeProfitLimit -> OrderType.TakeProfitMarket
                 OrderType.StopMarket, OrderType.StopLimit -> OrderType.StopMarket
                 else -> null
+            }
+        }
+    }
+
+    private fun getPrice(
+        triggerOrder: InternalTriggerOrderState,
+        marketId: String?
+    ): Double? {
+        when (triggerOrder.type) {
+            OrderType.TakeProfitMarket, OrderType.StopMarket -> {
+                val triggerPrice = triggerOrder.price?.triggerPrice
+                val majorMarket = SlippageConstants.MAJOR_MARKETS.contains(marketId)
+                val slippagePercentage = if (majorMarket) {
+                    if (triggerOrder.type == OrderType.StopMarket) {
+                        SlippageConstants.STOP_MARKET_ORDER_SLIPPAGE_BUFFER_MAJOR_MARKET
+                    } else {
+                        SlippageConstants.TAKE_PROFIT_MARKET_ORDER_SLIPPAGE_BUFFER_MAJOR_MARKET
+                    }
+                } else {
+                    if (triggerOrder.type == OrderType.StopMarket) {
+                        SlippageConstants.STOP_MARKET_ORDER_SLIPPAGE_BUFFER
+                    } else {
+                        SlippageConstants.TAKE_PROFIT_MARKET_ORDER_SLIPPAGE_BUFFER
+                    }
+                }
+                val calculatedLimitPrice = if (triggerPrice != null) {
+                    if (triggerOrder.side == OrderSide.Buy) {
+                        triggerPrice * (Numeric.Companion.double.ONE + slippagePercentage)
+                    } else {
+                        triggerPrice * (Numeric.Companion.double.ONE - slippagePercentage)
+                    }
+                } else {
+                    null
+                }
+                return calculatedLimitPrice
+            }
+            OrderType.TakeProfitLimit, OrderType.StopLimit -> {
+                return triggerOrder.price?.limitPrice
+            }
+            else -> {
+                return null
             }
         }
     }

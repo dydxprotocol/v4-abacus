@@ -1,5 +1,6 @@
 package exchange.dydx.abacus.calculator.v2
 
+import exchange.dydx.abacus.calculator.SubaccountCalculator
 import exchange.dydx.abacus.output.account.PositionSide
 import exchange.dydx.abacus.state.internalstate.InternalAssetPositionState
 import exchange.dydx.abacus.utils.Parser
@@ -7,7 +8,7 @@ import kotlin.test.Test
 import kotlin.test.assertEquals
 
 class SubaccountCalculatorV2Tests {
-    private val calculator = SubaccountCalculatorV2(
+    private val calculator = SubaccountCalculator(
         parser = Parser(),
     )
 

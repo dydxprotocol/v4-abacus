@@ -24,6 +24,7 @@ import exchange.dydx.abacus.state.manager.HumanReadableSubaccountTransferPayload
 import exchange.dydx.abacus.state.manager.HumanReadableTriggerOrdersPayload
 import exchange.dydx.abacus.state.manager.HumanReadableWithdrawPayload
 import exchange.dydx.abacus.state.manager.TransactionQueue
+import exchange.dydx.abacus.state.manager.configs.V4StateManagerConfigs.Companion.configs
 import exchange.dydx.abacus.state.manager.notification.NotificationsProvider
 import exchange.dydx.abacus.state.model.AdjustIsolatedMarginInputField
 import exchange.dydx.abacus.state.model.ClosePositionInputField
@@ -46,7 +47,6 @@ import exchange.dydx.abacus.utils.IList
 import exchange.dydx.abacus.utils.IMap
 import exchange.dydx.abacus.utils.IMutableList
 import exchange.dydx.abacus.utils.iMapOf
-import exchange.dydx.abacus.utils.mutable
 import exchange.dydx.abacus.utils.values
 import kollections.iMutableListOf
 import kollections.iMutableMapOf
@@ -206,12 +206,15 @@ internal class SubaccountSupervisor(
     }
 
     internal fun retrieveHistoricalPnls(previousUrl: String? = null) {
-        val url = helper.configs.privateApiUrl(if (configs.useParentSubaccount) "parent-historical-pnl" else "historical-pnl") ?: return
-        val params = if (configs.useParentSubaccount) parentSubaccountParams() else subaccountParams()
+        val url =
+            helper.configs.privateApiUrl(if (configs.useParentSubaccount) "parent-historical-pnl" else "historical-pnl")
+                ?: return
+        val params =
+            if (configs.useParentSubaccount) parentSubaccountParams() else subaccountParams()
 
-        if (stateMachine.staticTyping) {
-            val historicalPNLs = stateMachine.internalState.wallet.account.subaccounts[subaccountNumber]?.historicalPNLs
-            // TODO: remove last if calculated
+        val historicalPNLs =
+            stateMachine.internalState.wallet.account.subaccounts[subaccountNumber]?.historicalPNLs
+        // TODO: remove last if calculated
 //              if (historicalPNLs != null) {
 //                val last = historicalPNLs.lastOrNull()
 //                if (last != null && last.calculated) {
@@ -219,71 +222,30 @@ internal class SubaccountSupervisor(
 //                }
 //            }
 
-            helper.retrieveTimed(
-                url = url,
-                items = historicalPNLs,
-                timeField = { item ->
-                    item?.createdAtMilliseconds?.toLong()?.let {
-                        Instant.fromEpochMilliseconds(it)
-                    }
-                },
-                sampleDuration = 1.days,
-                maxDuration = 90.days,
-                beforeParam = "createdBeforeOrAt",
-                afterParam = "createdOnOrAfter",
-                additionalParams = params,
-                previousUrl = previousUrl,
-            ) { url, response, httpCode, _ ->
-                val oldState = stateMachine.state
-                if (helper.success(httpCode) && !response.isNullOrEmpty()) {
-                    val changes = stateMachine.historicalPnl(
-                        payload = response,
-                        subaccountNumber = subaccountNumber,
-                    )
-                    update(changes, oldState)
-                    if (changes.changes.contains(Changes.historicalPnl)) {
-                        retrieveHistoricalPnls(url)
-                    }
+        helper.retrieveTimed(
+            url = url,
+            items = historicalPNLs,
+            timeField = { item ->
+                item?.createdAtMilliseconds?.toLong()?.let {
+                    Instant.fromEpochMilliseconds(it)
                 }
-            }
-        } else {
-            val historicalPnl = helper.parser.asNativeList(
-                helper.parser.value(
-                    stateMachine.data,
-                    "wallet.account.subaccounts.$subaccountNumber.historicalPnl",
-                ),
-            )?.mutable()
-
-            if (historicalPnl != null) {
-                val last = helper.parser.asMap(historicalPnl.lastOrNull())
-                if (helper.parser.asBool(last?.get("calculated")) == true) {
-                    historicalPnl.removeLast()
-                }
-            }
-
-            helper.retrieveTimed(
-                url = url,
-                items = historicalPnl,
-                timeField = { item ->
-                    helper.parser.asDatetime(helper.parser.asMap(item)?.get("createdAt"))
-                },
-                sampleDuration = 1.days,
-                maxDuration = 90.days,
-                beforeParam = "createdBeforeOrAt",
-                afterParam = "createdOnOrAfter",
-                additionalParams = params,
-                previousUrl = previousUrl,
-            ) { url, response, httpCode, _ ->
-                val oldState = stateMachine.state
-                if (helper.success(httpCode) && !response.isNullOrEmpty()) {
-                    val changes = stateMachine.historicalPnl(
-                        payload = response,
-                        subaccountNumber = subaccountNumber,
-                    )
-                    update(changes, oldState)
-                    if (changes.changes.contains(Changes.historicalPnl)) {
-                        retrieveHistoricalPnls(url)
-                    }
+            },
+            sampleDuration = 1.days,
+            maxDuration = 90.days,
+            beforeParam = "createdBeforeOrAt",
+            afterParam = "createdOnOrAfter",
+            additionalParams = params,
+            previousUrl = previousUrl,
+        ) { url, response, httpCode, _ ->
+            val oldState = stateMachine.state
+            if (helper.success(httpCode) && !response.isNullOrEmpty()) {
+                val changes = stateMachine.historicalPnl(
+                    payload = response,
+                    subaccountNumber = subaccountNumber,
+                )
+                update(changes, oldState)
+                if (changes.changes.contains(Changes.historicalPnl)) {
+                    retrieveHistoricalPnls(url)
                 }
             }
         }
@@ -359,16 +321,9 @@ internal class SubaccountSupervisor(
         type: ClosePositionInputField,
     ) {
         helper.ioImplementations.threading?.async(ThreadingType.abacus) {
-            val currentMarket = if (stateMachine.staticTyping) {
+            val currentMarket =
                 stateMachine.internalState.input.closePosition.marketId
-            } else {
-                helper.parser.asString(
-                    helper.parser.value(
-                        stateMachine.input,
-                        "closePosition.marketId",
-                    ),
-                )
-            }
+
             var stateResponse = stateMachine.closePosition(data, type, subaccountNumber)
             if (type == ClosePositionInputField.market && currentMarket != data) {
                 val nextResponse = stateMachine.closePosition(

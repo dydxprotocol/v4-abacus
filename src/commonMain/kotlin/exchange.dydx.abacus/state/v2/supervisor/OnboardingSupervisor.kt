@@ -41,7 +41,6 @@ import exchange.dydx.abacus.utils.AnalyticsUtils
 import exchange.dydx.abacus.utils.IMap
 import exchange.dydx.abacus.utils.Logger
 import exchange.dydx.abacus.utils.Numeric
-import exchange.dydx.abacus.utils.Numeric.Companion.decimal
 import exchange.dydx.abacus.utils.SLIPPAGE_PERCENT
 import exchange.dydx.abacus.utils.filterNotNull
 import exchange.dydx.abacus.utils.iMapOf

@@ -3,8 +3,8 @@ package exchange.dydx.abacus.processor.input
 import abs
 import exchange.dydx.abacus.calculator.CalculationPeriod
 import exchange.dydx.abacus.calculator.MarginCalculator
-import exchange.dydx.abacus.calculator.TradeCalculation
-import exchange.dydx.abacus.calculator.v2.tradeinput.TradeInputCalculatorV2
+import exchange.dydx.abacus.calculator.tradeinput.TradeCalculation
+import exchange.dydx.abacus.calculator.tradeinput.TradeInputCalculator
 import exchange.dydx.abacus.output.PerpetualMarketType
 import exchange.dydx.abacus.output.input.InputType
 import exchange.dydx.abacus.output.input.MarginMode
@@ -58,7 +58,7 @@ internal interface TradeInputProcessorProtocol {
 
 internal class TradeInputProcessor(
     private val parser: ParserProtocol,
-    private val calculator: TradeInputCalculatorV2 = TradeInputCalculatorV2(parser, TradeCalculation.trade)
+    private val calculator: TradeInputCalculator = TradeInputCalculator(parser, TradeCalculation.trade)
 ) : TradeInputProcessorProtocol {
     override fun tradeInMarket(
         inputState: InternalInputState,

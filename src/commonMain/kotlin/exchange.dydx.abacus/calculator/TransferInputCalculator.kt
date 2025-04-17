@@ -1,254 +1,152 @@
 package exchange.dydx.abacus.calculator
 
+import exchange.dydx.abacus.output.input.TransferInputSummary
+import exchange.dydx.abacus.output.input.TransferType
 import exchange.dydx.abacus.protocols.ParserProtocol
-import exchange.dydx.abacus.utils.mutable
-import exchange.dydx.abacus.utils.safeSet
+import exchange.dydx.abacus.state.internalstate.InternalTransferInputState
+import exchange.dydx.abacus.state.internalstate.InternalWalletState
 
-@Suppress("UNCHECKED_CAST")
-internal class TransferInputCalculator(val parser: ParserProtocol) {
-    private val subaccountTransformer = SubaccountTransformer()
-    internal fun calculate(
-        state: Map<String, Any>,
-        subaccountNumber: Int?
-    ): Map<String, Any> {
-        val wallet = parser.asNativeMap(state["wallet"])
-        val transfer = parser.asNativeMap(state["transfer"])
-        val type = parser.asString(transfer?.get("type"))
-        return if (wallet != null && transfer != null && type != null) {
-            val modifiedTransfer = finalize(transfer, type)
-            val modified = state.mutable()
-            modified["transfer"] = modifiedTransfer
+internal class TransferInputCalculator(
+    private val parser: ParserProtocol,
+    private val subaccountTransformer: SubaccountTransformer = SubaccountTransformer(parser),
+) {
+    fun calculate(
+        transfer: InternalTransferInputState,
+        wallet: InternalWalletState,
+        subaccountNumber: Int?,
+    ): InternalTransferInputState {
+        if (wallet.isAccountConnected && transfer.type != null) {
+            finalize(transfer)
 
-            val modifiedWallet = subaccountTransformer.applyTransferToWallet(
-                wallet,
-                subaccountNumber,
-                modifiedTransfer,
-                parser,
-                "postOrder",
+            subaccountTransformer.applyTransferToWallet(
+                wallet = wallet,
+                subaccountNumber = subaccountNumber,
+                transfer = transfer,
+                parser = parser,
+                period = CalculationPeriod.post,
             )
-            modified["wallet"] = modifiedWallet
-            modified
-        } else {
-            state
         }
+        return transfer
     }
 
     private fun finalize(
-        transfer: Map<String, Any>,
-        type: String
-    ): Map<String, Any> {
-        val modified = transfer.mutable()
-        val fields = requiredFields(type)
-        modified.safeSet("fields", fields)
-        modified.safeSet("options", calculatedOptionsFromFields(fields))
-        modified.safeSet("summary", summaryForType(transfer, type))
-        return modified
-    }
-
-    private fun requiredFields(type: String): List<Any>? {
-        return when (type) {
-            "DEPOSIT" -> {
-                listOf(
-                    sizeField(),
-                    gaslessField(),
-                )
-            }
-
-            "WITHDRAWAL" -> {
-                listOf(
-                    sizeField(),
-                    speedField(),
-                )
-            }
-
-            "TRANSFER_OUT" -> {
-                listOf(
-                    sizeField(),
-                    addressField(),
-                )
-            }
-
-            else -> null
+        transfer: InternalTransferInputState,
+    ): InternalTransferInputState {
+        transfer.summary = summaryForType(transfer)
+        if (transfer.type == TransferType.deposit) {
+            transfer.goFastSummary = depositSummary(transfer, transfer.goFastRoute)
         }
+        return transfer
     }
 
-    private fun sizeField(): Map<String, Any> {
-        return mapOf(
-            "field" to "size.usdcSize",
-            "type" to "double",
-        )
-    }
+    private fun depositSummary(
+        transfer: InternalTransferInputState,
+        route: Map<String, Any>?,
+    ): TransferInputSummary {
+        val size = parser.asDouble(transfer.size?.size)
+        var usdcSize = parser.asDouble(transfer.size?.usdcSize)
+        val fee = parser.asDouble(transfer.fee)
 
-    private fun gaslessField(): Map<String, Any> {
-        return mapOf(
-            "field" to "gasless",
-            "type" to "bool",
-        )
-    }
+        val slippage = parser.asDouble(parser.value(route, "slippage"))
+        val exchangeRate = parser.asDouble(parser.value(route, "exchangeRate"))
+        val estimatedRouteDurationSeconds = parser.asDouble(parser.value(route, "estimatedRouteDurationSeconds"))
+        val bridgeFee = parser.asDouble(parser.value(route, "bridgeFee"))
+        val gasFee = parser.asDouble(parser.value(route, "gasFee"))
+        val toAmount = parser.asDouble(parser.value(route, "toAmount"))
+        val toAmountMin = parser.asDouble(parser.value(route, "toAmountMin"))
+        val toAmountUSDC = parser.asDouble(parser.value(route, "toAmountUSDC"))
+        val toAmountUSD = parser.asDouble(parser.value(route, "toAmountUSD"))
+        var aggregatePriceImpact = parser.asDouble(parser.value(route, "aggregatePriceImpact"))
+        aggregatePriceImpact = if (aggregatePriceImpact != null) aggregatePriceImpact / 100.0 else null
 
-    private fun speedField(): Map<String, Any> {
-        return mapOf(
-            "field" to "fastSpeed",
-            "type" to "bool",
-            "default" to true,
-        )
-    }
-
-    private fun addressField(): Map<String, Any> {
-        return mapOf(
-            "field" to "address",
-            "type" to "string",
-        )
-    }
-
-    private fun calculatedOptionsFromFields(fields: List<Any>?): Map<String, Any>? {
-        fields?.let { fields ->
-            val options = mutableMapOf<String, Any>(
-                "needsSize" to false,
-                "needsGasless" to false,
-                "needsFastSpeed" to false,
-                "needsAddress" to false,
-            )
-            for (item in fields) {
-                parser.asNativeMap(item)?.let { field ->
-                    when (parser.asString(field["field"])) {
-                        "size.usdcSize" -> options["needsSize"] = true
-                        "gasless" -> options["needsGasless"] = true
-                        "fastSpeed" -> options["needsFastSpeed"] = true
-                        "address" -> options["needsAddress"] = true
-                    }
-                }
-            }
-            return options
+        usdcSize = if (usdcSize != null) {
+            usdcSize
+        } else if (size != null && exchangeRate != null) {
+            exchangeRate * size
+        } else {
+            null
         }
-        return null
-    }
 
-    private fun calculatedOptions(type: String): Map<String, Any>? {
-        val fields = requiredFields(type)
-        return calculatedOptionsFromFields(fields)
+        return TransferInputSummary(
+            filled = true,
+            fee = fee,
+            slippage = slippage,
+            exchangeRate = exchangeRate,
+            estimatedRouteDurationSeconds = estimatedRouteDurationSeconds,
+            usdcSize = usdcSize,
+            bridgeFee = bridgeFee,
+            gasFee = gasFee,
+            toAmount = toAmount,
+            toAmountMin = toAmountMin,
+            toAmountUSDC = toAmountUSDC,
+            toAmountUSD = toAmountUSD,
+            aggregatePriceImpact = aggregatePriceImpact,
+        )
     }
 
     private fun summaryForType(
-        transfer: Map<String, Any>,
-        type: String
-    ): Map<String, Any> {
-        val summary = mutableMapOf<String, Any>()
+        transfer: InternalTransferInputState,
+    ): TransferInputSummary? {
+        val type = transfer.type ?: return null
         when (type) {
-            "DEPOSIT" -> {
-                val size = parser.asDouble(parser.value(transfer, "size.size"))
-                val usdcSize = parser.asDouble(parser.value(transfer, "size.usdcSize"))
+            TransferType.deposit -> {
+                return depositSummary(transfer, transfer.route)
+            }
 
-                summary.safeSet("size", size)
-                summary.safeSet("filled", true)
+            TransferType.withdrawal -> {
+                val usdcSize = parser.asDouble(transfer.size?.usdcSize)
+                val fee = parser.asDouble(transfer.fee)
 
-                val fee = parser.asDouble(parser.value(transfer, "fee"))
-                summary.safeSet("fee", fee)
+                val route = transfer.route
 
-                val slippage = parser.asDouble(parser.value(transfer, "route.slippage"))
-                summary.safeSet("slippage", slippage)
+                val slippage = parser.asDouble(parser.value(route, "slippage"))
+                val exchangeRate = parser.asDouble(parser.value(route, "exchangeRate"))
+                val estimatedRouteDurationSeconds = parser.asDouble(parser.value(route, "estimatedRouteDurationSeconds"))
+                val bridgeFee = parser.asDouble(parser.value(route, "bridgeFee"))
+                val gasFee = parser.asDouble(parser.value(route, "gasFee"))
+                val toAmount = parser.asDouble(parser.value(route, "toAmount"))
+                val toAmountMin = parser.asDouble(parser.value(route, "toAmountMin"))
+                val toAmountUSDC = parser.asDouble(parser.value(route, "toAmountUSDC"))
+                val toAmountUSD = parser.asDouble(parser.value(route, "toAmountUSD"))
+                var aggregatePriceImpact = parser.asDouble(parser.value(route, "aggregatePriceImpact"))
+                aggregatePriceImpact = if (aggregatePriceImpact != null) aggregatePriceImpact / 100.0 else null
 
-                val exchangeRate = parser.asDouble(parser.value(transfer, "route.exchangeRate"))
-                summary.safeSet("exchangeRate", exchangeRate)
-
-                val estimatedRouteDurationSeconds =
-                    parser.asDouble(parser.value(transfer, "route.estimatedRouteDurationSeconds"))
-                summary.safeSet("estimatedRouteDurationSeconds", estimatedRouteDurationSeconds)
-
-                if (usdcSize != null) {
-                    summary.safeSet("usdcSize", usdcSize)
-                } else if (size != null && exchangeRate != null) {
-                    summary.safeSet("usdcSize", exchangeRate * size)
-                } else {
-                    summary.safeSet("usdcSize", null)
-                }
-
-                val bridgeFee = parser.asDouble(parser.value(transfer, "route.bridgeFee"))
-                summary.safeSet("bridgeFee", bridgeFee)
-
-                val gasFee = parser.asDouble(parser.value(transfer, "route.gasFee"))
-                summary.safeSet("gasFee", gasFee)
-
-                val toAmount = parser.asDouble(parser.value(transfer, "route.toAmount"))
-                summary.safeSet("toAmount", toAmount)
-
-                val toAmountMin = parser.asDouble(parser.value(transfer, "route.toAmountMin"))
-                summary.safeSet("toAmountMin", toAmountMin)
-
-                val toAmountUSDC = parser.asDouble(parser.value(transfer, "route.toAmountUSDC"))
-                summary.safeSet("toAmountUSDC", toAmountUSDC ?: toAmountMin)
-
-                val aggregatePriceImpact =
-                    parser.asDouble(parser.value(transfer, "route.aggregatePriceImpact"))
-                summary.safeSet(
-                    "aggregatePriceImpact",
-                    if (aggregatePriceImpact != null) aggregatePriceImpact / 100.0 else null,
+                return TransferInputSummary(
+                    filled = true,
+                    fee = fee,
+                    slippage = slippage,
+                    exchangeRate = exchangeRate,
+                    estimatedRouteDurationSeconds = estimatedRouteDurationSeconds,
+                    usdcSize = usdcSize,
+                    bridgeFee = bridgeFee,
+                    gasFee = gasFee,
+                    toAmount = toAmount,
+                    toAmountMin = toAmountMin,
+                    toAmountUSDC = toAmountUSDC,
+                    toAmountUSD = toAmountUSD,
+                    aggregatePriceImpact = aggregatePriceImpact,
                 )
             }
 
-            "WITHDRAWAL" -> {
-                val size = parser.asDouble(parser.value(transfer, "size.size"))
-                val usdcSize = parser.asDouble(parser.value(transfer, "size.usdcSize"))
-                val fastSpeed = parser.asBool(parser.value(transfer, "fastSpeed")) ?: false
-                summary.safeSet("size", size)
-                summary.safeSet("usdcSize", usdcSize)
-                summary.safeSet("fastSpeed", fastSpeed)
-                summary.safeSet("filled", true)
+            TransferType.transferOut -> {
+                val usdcSize = parser.asDouble(transfer.size?.usdcSize)
 
-                val fee = parser.asDouble(parser.value(transfer, "fee"))
-                summary.safeSet("fee", fee)
-
-                val slippage = parser.asDouble(parser.value(transfer, "route.slippage"))
-                summary.safeSet("slippage", slippage)
-
-                val exchangeRate = parser.asDouble(parser.value(transfer, "route.exchangeRate"))
-                summary.safeSet("exchangeRate", exchangeRate)
-
-                val estimatedRouteDurationSeconds =
-                    parser.asDouble(parser.value(transfer, "route.estimatedRouteDurationSeconds"))
-                summary.safeSet("estimatedRouteDurationSeconds", estimatedRouteDurationSeconds)
-
-                val bridgeFee = parser.asDouble(parser.value(transfer, "route.bridgeFee"))
-                summary.safeSet("bridgeFee", bridgeFee)
-
-                val gasFee = parser.asDouble(parser.value(transfer, "route.gasFee"))
-                summary.safeSet("gasFee", gasFee)
-
-                val toAmountMin = parser.asDouble(parser.value(transfer, "route.toAmountMin"))
-                summary.safeSet("toAmountMin", toAmountMin)
-
-                val toAmount = parser.asDouble(parser.value(transfer, "route.toAmount"))
-                summary.safeSet("toAmount", toAmount)
-
-                val toAmountUSDC = parser.asDouble(parser.value(transfer, "route.toAmountUSDC"))
-                summary.safeSet("toAmountUSDC", toAmountUSDC)
-
-                val toAmountUSD = parser.asDouble(parser.value(transfer, "route.toAmountUSD"))
-                summary.safeSet("toAmountUSD", toAmountUSD)
-
-                val aggregatePriceImpact =
-                    parser.asDouble(parser.value(transfer, "route.aggregatePriceImpact"))
-                summary.safeSet(
-                    "aggregatePriceImpact",
-                    if (aggregatePriceImpact != null) aggregatePriceImpact / 100.0 else null,
+                return TransferInputSummary(
+                    filled = true,
+                    gasFee = transfer.fee,
+                    usdcSize = usdcSize,
+                    fee = null,
+                    slippage = null,
+                    exchangeRate = null,
+                    estimatedRouteDurationSeconds = null,
+                    bridgeFee = null,
+                    toAmount = null,
+                    toAmountMin = null,
+                    toAmountUSDC = null,
+                    toAmountUSD = null,
+                    aggregatePriceImpact = null,
                 )
             }
-
-            "TRANSFER_OUT" -> {
-                val address = parser.asString(parser.value(transfer, "address"))
-                val size = parser.asDouble(parser.value(transfer, "size.size"))
-                val usdcSize = parser.asDouble(parser.value(transfer, "size.usdcSize"))
-
-                summary.safeSet("address", address)
-                summary.safeSet("size", size)
-                summary.safeSet("usdcSize", usdcSize)
-                summary.safeSet("filled", true)
-                val fee = parser.asDouble(parser.value(transfer, "fee"))
-                summary.safeSet("gasFee", fee)
-            }
-
-            else -> {}
         }
-        return summary
     }
 }

@@ -1,4 +1,4 @@
-package exchange.dydx.abacus.calculator.v2.tradeinput
+package exchange.dydx.abacus.calculator.tradeinput
 
 import exchange.dydx.abacus.calculator.CalculationPeriod
 import exchange.dydx.abacus.calculator.MarginCalculator

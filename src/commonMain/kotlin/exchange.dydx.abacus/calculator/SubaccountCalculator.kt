@@ -1,10 +1,20 @@
 package exchange.dydx.abacus.calculator
 
 import abs
+import exchange.dydx.abacus.output.MarketConfigs
+import exchange.dydx.abacus.output.account.PositionSide
+import exchange.dydx.abacus.output.input.MarginMode
 import exchange.dydx.abacus.protocols.ParserProtocol
+import exchange.dydx.abacus.state.internalstate.InternalAssetPositionState
+import exchange.dydx.abacus.state.internalstate.InternalMarketState
+import exchange.dydx.abacus.state.internalstate.InternalMarketSummaryState
+import exchange.dydx.abacus.state.internalstate.InternalPerpetualPosition
+import exchange.dydx.abacus.state.internalstate.InternalPositionCalculated
+import exchange.dydx.abacus.state.internalstate.InternalSubaccountCalculated
+import exchange.dydx.abacus.state.internalstate.InternalSubaccountState
 import exchange.dydx.abacus.utils.Numeric
-import exchange.dydx.abacus.utils.mutable
-import exchange.dydx.abacus.utils.safeSet
+import indexer.codegen.IndexerPerpetualPositionStatus
+import kotlin.collections.iterator
 import kotlin.math.max
 
 internal enum class CalculationPeriod(val rawValue: String) {
@@ -14,351 +24,215 @@ internal enum class CalculationPeriod(val rawValue: String) {
 
     companion object {
         operator fun invoke(rawValue: String) =
-            CalculationPeriod.values().firstOrNull { it.rawValue == rawValue }
+            CalculationPeriod.entries.firstOrNull { it.rawValue == rawValue }
     }
 }
 
-internal class SubaccountCalculator(val parser: ParserProtocol) {
-    internal fun calculate(
-        subaccount: Map<String, Any>?,
-        configs: Map<String, Any>?,
-        markets: Map<String, Any>?,
-        price: Map<String, Any>?,
+internal class SubaccountCalculator(
+    val parser: ParserProtocol
+) {
+    fun calculate(
+        subaccount: InternalSubaccountState?,
+        configs: MarketConfigs?,
+        marketsSummary: InternalMarketSummaryState,
+        price: Map<String, Double>?,
         periods: Set<CalculationPeriod>,
-    ): Map<String, Any>? {
-        if (subaccount != null) {
-            val modified = subaccount.mutable()
-            val positions = calculatePositionsValues(
-                positions = parser.asNativeMap(subaccount["openPositions"]),
-                markets = markets,
-                subaccount = subaccount,
-                price = price,
-                periods = periods,
-            )
-            positions?.let {
-                modified.safeSet("openPositions", it)
-            }
+    ): InternalSubaccountState? {
+        if (subaccount == null) return null
 
-            calculateSubaccountEquity(modified, positions, periods)
-            calculatePositionsLeverages(positions, markets, modified, periods)
-            calculateSubaccountBuyingPower(modified, configs, periods)
-
-            return modified
-        } else {
-            return subaccount
-        }
+        calculatePositionsValues(
+            subaccount = subaccount,
+            markets = marketsSummary.markets,
+            price = price,
+            periods = periods,
+        )
+        calculateSubaccountEquity(
+            subaccount = subaccount,
+            positions = subaccount.openPositions,
+            periods = periods,
+        )
+        calculatePositionsLeverages(
+            positions = subaccount.openPositions,
+            markets = marketsSummary.markets,
+            subaccount = subaccount,
+            periods = periods,
+        )
+        calculateSubaccountBuyingPower(
+            subaccount = subaccount,
+            configs = configs,
+            periods = periods,
+        )
+        return subaccount
     }
 
-    private fun calculatePositionsValues(
-        positions: Map<String, Any>?,
-        markets: Map<String, Any>?,
-        subaccount: Map<String, Any>,
-        price: Map<String, Any>?,
-        periods: Set<CalculationPeriod>,
-    ): MutableMap<String, MutableMap<String, Any>>? {
-        return if (positions != null) {
-            val modified = mutableMapOf<String, MutableMap<String, Any>>()
-            for ((key, position) in positions) {
-                parser.asNativeMap(position)?.let { position ->
-                    parser.asNativeMap(markets?.get(key))?.let { market ->
-                        modified[key] = calculatePositionValues(
-                            position = position,
-                            market = market,
-                            subaccount = subaccount,
-                            price = parser.asDouble(price?.get(key)),
-                            periods = periods,
-                        )
-                    }
-                }
+    fun calculateQuoteBalance(
+        assetPositions: Map<String, InternalAssetPositionState>? = null,
+    ): Double? {
+        val usdc = assetPositions?.get("USDC")
+        return if (usdc != null) {
+            val size = usdc.size
+            if (size != null) {
+                val side = usdc.side
+                if (side == PositionSide.LONG) size else size * -1.0
+            } else {
+                null
             }
-            modified
         } else {
             null
         }
     }
 
-    private fun oraclePrice(market: Map<*, *>?): Double? {
-        return parser.asDouble(market?.get("oraclePrice"))
-    }
-
-    private fun calculatePositionValues(
-        position: Map<String, Any>,
-        market: Map<String, Any>?,
-        subaccount: Map<String, Any>,
-        price: Double?,
-        periods: Set<CalculationPeriod>,
-    ): MutableMap<String, Any> {
-        val modified = position.mutable()
-        for (period in periods) {
-            val size = parser.asDouble(value(position, "size", period))
-            val entryPrice = parser.asDouble(value(position, "entryPrice", period))
-            val status = parser.asString(value(position, "status", period))
-
-            if (size != null && status != null) {
-                val realizedPnl = parser.asDouble(value(position, "realizedPnl", period))
-                if (realizedPnl != null) {
-                    when (status) {
-                        "CLOSED", "LIQUIDATED" -> {
-                            set(null, modified, "realizedPnlPercent", period)
-                        }
-
-                        else -> {
-                            if (entryPrice != null) {
-                                val positionEntryValue = (size * entryPrice).abs()
-                                set(
-                                    if (positionEntryValue > Numeric.double.ZERO) realizedPnl / positionEntryValue else null,
-                                    modified,
-                                    "realizedPnlPercent",
-                                    period,
-                                )
-                            }
-                        }
-                    }
-                } else {
-                    set(null, modified, "realizedPnlPercent", period)
-                }
-
-                val marketOraclePrice = parser.asDouble(oraclePrice(market))
-                val oraclePrice =
-                    if (period == CalculationPeriod.current) {
-                        marketOraclePrice
-                    } else {
-                        price ?: marketOraclePrice
-                    }
-
-                if (oraclePrice != null) {
-                    when (status) {
-                        "CLOSED", "LIQUIDATED" -> {
-                            set(null, modified, "valueTotal", period)
-                            set(null, modified, "notionalTotal", period)
-                            set(null, modified, "adjustedImf", period)
-                            set(null, modified, "adjustedMmf", period)
-                            set(null, modified, "initialRiskTotal", period)
-                            set(null, modified, "maxLeverage", period)
-                            set(null, modified, "unrealizedPnl", period)
-                            set(null, modified, "unrealizedPnlPercent", period)
-                            set(null, modified, "marginValue", period)
-                        }
-
-                        else -> {
-                            val configs = parser.asNativeMap(market?.get("configs"))
-                            val valueTotal = size * oraclePrice
-                            set(valueTotal, modified, "valueTotal", period)
-                            val notional = valueTotal.abs()
-                            set(notional, modified, "notionalTotal", period)
-                            val adjustedImf = calculatedAdjustedImf(configs)
-                            val adjustedMmf = calculatedAdjustedMmf(
-                                configs,
-                                notional,
-                            )
-                            val maxLeverage =
-                                if (adjustedImf != Numeric.double.ZERO) Numeric.double.ONE / adjustedImf else null
-                            set(adjustedImf, modified, "adjustedImf", period)
-                            set(adjustedMmf, modified, "adjustedMmf", period)
-                            set(adjustedImf * notional, modified, "initialRiskTotal", period)
-                            set(maxLeverage, modified, "maxLeverage", period)
-
-                            if (entryPrice != null) {
-                                val leverage = parser.asDouble(value(position, "leverage", period))
-                                val scaledLeverage = max(leverage?.abs() ?: 1.0, 1.0)
-                                val entryValue = size * entryPrice
-                                val currentValue = size * oraclePrice
-                                val unrealizedPnl = currentValue - entryValue
-                                val scaledUnrealizedPnlPercent =
-                                    if (entryValue != Numeric.double.ZERO) unrealizedPnl / entryValue.abs() * scaledLeverage else null
-                                set(unrealizedPnl, modified, "unrealizedPnl", period)
-                                set(scaledUnrealizedPnlPercent, modified, "unrealizedPnlPercent", period)
-                            }
-
-                            val marginMode = parser.asString(parser.value(position, "marginMode"))
-                            when (marginMode) {
-                                "ISOLATED" -> {
-                                    val equity = parser.asDouble(value(subaccount, "equity", period))
-                                    set(equity, modified, "marginValue", period)
-                                }
-                                "CROSS" -> {
-                                    val maintenanceMarginFraction =
-                                        parser.asDouble(configs?.get("maintenanceMarginFraction")) ?: Numeric.double.ZERO
-                                    set(maintenanceMarginFraction * notional, modified, "marginValue", period)
-                                }
-                                else -> {
-                                    set(null, modified, "marginValue", period)
-                                }
-                            }
-                        }
-                    }
-                } else {
-                    set(null, modified, "valueTotal", period)
-                    set(null, modified, "notionalTotal", period)
-                    set(null, modified, "adjustedImf", period)
-                    set(null, modified, "adjustedMmf", period)
-                    set(null, modified, "initialRiskTotal", period)
-                    set(null, modified, "maxLeverage", period)
-                    set(null, modified, "unrealizedPnl", period)
-                    set(null, modified, "unrealizedPnlPercent", period)
-                    set(null, modified, "marginValue", period)
-                }
-            } else {
-                set(null, modified, "realizedPnlPercent", period)
-                set(null, modified, "unrealizedPnl", period)
-                set(null, modified, "unrealizedPnlPercent", period)
-                set(null, modified, "valueTotal", period)
-                set(null, modified, "notionalTotal", period)
-                set(null, modified, "adjustedImf", period)
-                set(null, modified, "adjustedMmf", period)
-                set(null, modified, "initialRiskTotal", period)
-                set(null, modified, "maxLeverage", period)
-                set(null, modified, "marginValue", period)
-            }
-        }
-        return modified
-    }
-
-    private fun calculatedAdjustedImf(
-        configs: Map<String, Any>?,
-    ): Double {
-        return parser.asDouble(configs?.get("effectiveInitialMarginFraction")) ?: Numeric.double.ZERO
-    }
-
-    private fun calculatedAdjustedMmf(
-        configs: Map<String, Any>?,
-        notional: Double?,
-    ): Double {
-        val maintenanceMarginFraction =
-            parser.asDouble(configs?.get("maintenanceMarginFraction")) ?: Numeric.double.ZERO
-        val notionalValue: Double = parser.asDouble(notional) ?: Numeric.double.ZERO
-        return calculateV4MarginFraction(configs, maintenanceMarginFraction, notionalValue)
-    }
-
-    private fun calculateV4MarginFraction(
-        configs: Map<String, Any>?,
-        initialMarginFraction: Double,
-        notional: Double,
-    ): Double {
-        return initialMarginFraction
-    }
-
     private fun calculateSubaccountEquity(
-        subaccount: MutableMap<String, Any>,
-        positions: Map<String, Map<String, Any>>?,
+        subaccount: InternalSubaccountState,
+        positions: Map<String, InternalPerpetualPosition>?,
         periods: Set<CalculationPeriod>,
     ) {
         for (period in periods) {
-            val quoteBalance = parser.asDouble(value(subaccount, "quoteBalance", period))
+            val calculated = subaccount.calculated[period] ?: InternalSubaccountCalculated()
+            subaccount.calculated[period] = calculated
 
             var hasPositionCalculated = false
-            positions?.let {
-                for ((key, position) in positions) {
-                    val valueTotal = parser.asDouble(value(position, "valueTotal", period))
-                    if (valueTotal != null) {
-                        hasPositionCalculated = true
-                        break
-                    }
+            for (position in positions?.values ?: emptyList()) {
+                if (position.calculated[period] != null) {
+                    hasPositionCalculated = true
                 }
             }
             val positionsReady = positions.isNullOrEmpty() || hasPositionCalculated
 
+            val quoteBalance = calculated.quoteBalance
             if (quoteBalance != null && positionsReady) {
                 var notionalTotal = Numeric.double.ZERO
                 var valueTotal = Numeric.double.ZERO
                 var initialRiskTotal = Numeric.double.ZERO
-                positions?.let {
-                    for ((key, position) in positions) {
-                        notionalTotal += parser.asDouble(
-                            value(
-                                position,
-                                "notionalTotal",
-                                period,
-                            ),
-                        ) ?: Numeric.double.ZERO
 
-                        valueTotal += parser.asDouble(
-                            value(
-                                position,
-                                "valueTotal",
-                                period,
-                            ),
-                        ) ?: Numeric.double.ZERO
-
-                        initialRiskTotal += parser.asDouble(
-                            value(
-                                position,
-                                "initialRiskTotal",
-                                period,
-                            ),
-                        ) ?: Numeric.double.ZERO
-                    }
+                for (position in positions?.values ?: emptyList()) {
+                    val positionCalculated = position.calculated[period]
+                    notionalTotal += positionCalculated?.notionalTotal ?: Numeric.double.ZERO
+                    valueTotal += positionCalculated?.valueTotal ?: Numeric.double.ZERO
+                    initialRiskTotal += positionCalculated?.initialRiskTotal ?: Numeric.double.ZERO
                 }
 
-                val notionalTotalDouble = parser.asDouble(notionalTotal)!!
-                set(notionalTotalDouble, subaccount, "notionalTotal", period)
-                set(parser.asDouble(valueTotal)!!, subaccount, "valueTotal", period)
-                set(parser.asDouble(initialRiskTotal)!!, subaccount, "initialRiskTotal", period)
+                calculated.notionalTotal = notionalTotal
+                calculated.valueTotal = valueTotal
+                calculated.initialRiskTotal = initialRiskTotal
 
                 val equity = valueTotal + quoteBalance
                 val freeCollateral = equity - initialRiskTotal
 
-                val equityDouble = parser.asDouble(equity)!!
-                val freeCollateralDouble = parser.asDouble(freeCollateral)!!
-                set(equityDouble, subaccount, "equity", period)
-                set(freeCollateralDouble, subaccount, "freeCollateral", period)
+                calculated.equity = equity
+                calculated.freeCollateral = freeCollateral
 
-                if (equityDouble > Numeric.double.ZERO) {
-                    val leverage = notionalTotalDouble / equityDouble
-                    val marginUsage = Numeric.double.ONE - freeCollateralDouble / equityDouble
-
-                    set(parser.asDouble(leverage), subaccount, "leverage", period)
-                    set(parser.asDouble(marginUsage), subaccount, "marginUsage", period)
+                if (equity > Numeric.double.ZERO) {
+                    calculated.leverage = notionalTotal / equity
+                    calculated.marginUsage = Numeric.double.ONE - freeCollateral / equity
                 } else {
-                    set(null, subaccount, "leverage", period)
-                    set(null, subaccount, "marginUsage", period)
+                    calculated.leverage = null
+                    calculated.marginUsage = null
                 }
             } else {
-                set(null, subaccount, "notionalTotal", period)
-                set(null, subaccount, "valueTotal", period)
-                set(null, subaccount, "initialRiskTotal", period)
-                set(null, subaccount, "equity", period)
-                set(null, subaccount, "freeCollateral", period)
-                set(null, subaccount, "leverage", period)
-                set(null, subaccount, "marginUsage", period)
+                calculated.notionalTotal = null
+                calculated.valueTotal = null
+                calculated.initialRiskTotal = null
+                calculated.equity = null
+                calculated.freeCollateral = null
+                calculated.leverage = null
+                calculated.marginUsage = null
             }
         }
     }
 
     private fun calculatePositionsLeverages(
-        positions: MutableMap<String, MutableMap<String, Any>>?,
-        markets: Map<String, Any>?,
-        subaccount: MutableMap<String, Any>,
+        positions: Map<String, InternalPerpetualPosition>?,
+        markets: Map<String, InternalMarketState>?,
+        subaccount: InternalSubaccountState?,
         periods: Set<CalculationPeriod>,
     ) {
-        positions?.let {
-            for (period in periods) {
-                val initialRiskTotal =
-                    parser.asDouble(value(subaccount, "initialRiskTotal", period))
-                val equity = parser.asDouble(value(subaccount, "equity", period))
-                for ((key, position) in positions) {
-                    val leverage = calculatePositionLeverage(
-                        equity = equity,
-                        notionalValue = parser.asDouble(value(position, "valueTotal", period)),
-                    )
-                    set(leverage, position, "leverage", period)
-                    val liquidationPrice = calculatePositionLiquidationPrice(
-                        equity = equity ?: Numeric.double.ZERO,
-                        marketId = key,
-                        positions = positions,
-                        markets = markets,
-                        period = period,
-                    )
-                    set(liquidationPrice, position, "liquidationPrice", period)
-                    val buyingPower = calculatePositionBuyingPower(
-                        equity = equity,
-                        initialRiskTotal = initialRiskTotal,
-                        imf = parser.asDouble(value(position, "adjustedImf", period)),
-                    )
-                    set(buyingPower, position, "buyingPower", period)
-                }
+        if (positions.isNullOrEmpty()) {
+            return
+        }
+
+        for (period in periods) {
+            val subaccountCalculated = subaccount?.calculated?.get(period)
+            val initialRiskTotal = subaccountCalculated?.initialRiskTotal
+            val equity = subaccountCalculated?.equity
+            for ((key, position) in positions) {
+                val positionCalculated = position.calculated[period]
+
+                positionCalculated?.leverage = calculatePositionLeverage(
+                    equity = equity,
+                    notionalValue = positionCalculated?.valueTotal,
+                )
+
+                positionCalculated?.liquidationPrice = calculatePositionLiquidationPrice(
+                    equity = equity ?: Numeric.double.ZERO,
+                    marketId = key,
+                    positions = positions,
+                    markets = markets,
+                    period = period,
+                )
+
+                positionCalculated?.buyingPower = calculatePositionBuyingPower(
+                    equity = equity,
+                    initialRiskTotal = initialRiskTotal,
+                    imf = positionCalculated?.adjustedImf,
+                )
             }
         }
+    }
+
+    private fun calculateSubaccountBuyingPower(
+        subaccount: InternalSubaccountState?,
+        configs: MarketConfigs?,
+        periods: Set<CalculationPeriod>,
+    ) {
+        for (period in periods) {
+            val calculated = subaccount?.calculated?.get(period)
+            val quoteBalance = calculated?.quoteBalance
+            val equity = calculated?.equity
+            val initialRiskTotal = calculated?.initialRiskTotal
+            if (quoteBalance != null && equity != null && initialRiskTotal != null) {
+                val imf = configs?.initialMarginFraction ?: 0.02
+
+                calculated.buyingPower = calculateBuyingPower(
+                    equity = equity,
+                    initialRiskTotal = initialRiskTotal,
+                    imf = imf,
+                )
+            } else {
+                calculated?.buyingPower = null
+            }
+        }
+    }
+
+    private fun calculatePositionBuyingPower(
+        equity: Double?,
+        initialRiskTotal: Double?,
+        imf: Double?,
+    ): Double? {
+        return if (equity != null && initialRiskTotal != null && imf != null) {
+            calculateBuyingPower(
+                equity = equity,
+                initialRiskTotal = initialRiskTotal,
+                imf = imf,
+            )
+        } else {
+            null
+        }
+    }
+
+    private fun calculateBuyingPower(
+        equity: Double,
+        initialRiskTotal: Double,
+        imf: Double,
+    ): Double {
+        val buyingPowerFreeCollateral = equity - initialRiskTotal
+        return buyingPowerFreeCollateral / (
+            if (imf > Numeric.double.ZERO) {
+                imf
+            } else {
+                0.05
+            }
+            )
     }
 
     private fun calculatePositionLeverage(
@@ -375,18 +249,24 @@ internal class SubaccountCalculator(val parser: ParserProtocol) {
     private fun calculatePositionLiquidationPrice(
         equity: Double,
         marketId: String,
-        positions: Map<String, MutableMap<String, Any>>?,
-        markets: Map<String, Any>?,
+        positions: Map<String, InternalPerpetualPosition>?,
+        markets: Map<String, InternalMarketState>?,
         period: CalculationPeriod,
     ): Double? {
         val otherPositionsRisk =
-            calculationOtherPositionsRisk(positions, markets, except = marketId, period)
+            calculationOtherPositionsRisk(
+                positions = positions,
+                markets = markets,
+                except = marketId,
+                period = period,
+            )
 
         val position = positions?.get(marketId) ?: return null
-        val market = parser.asNativeMap(markets?.get(marketId)) ?: return null
-        val maintenanceMarginFraction = parser.asDouble(value(position, "adjustedMmf", period)) ?: return null
-        val oraclePrice = parser.asDouble(oraclePrice(market)) ?: return null
-        val size = parser.asDouble(value(position, "size", period)) ?: return null
+        val market = markets?.get(marketId) ?: return null
+        val calculated = position.calculated[period]
+        val maintenanceMarginFraction = calculated?.adjustedMmf ?: return null
+        val oraclePrice = market.perpetualMarket?.oraclePrice ?: return null
+        val size = calculated.size ?: return null
 
         /*
           const liquidationPrice =
@@ -413,133 +293,206 @@ internal class SubaccountCalculator(val parser: ParserProtocol) {
     }
 
     private fun calculationOtherPositionsRisk(
-        positions: Map<String, Map<String, Any>>?,
-        markets: Map<String, Any>?,
+        positions: Map<String, InternalPerpetualPosition>?,
+        markets: Map<String, InternalMarketState>?,
         except: String,
         period: CalculationPeriod,
     ): Double {
-        positions?.let {
-            var risk = Numeric.double.ZERO
-            for ((key, position) in positions) {
-                if (key != except) {
-                    risk += calculatePositionRisk(
-                        position,
-                        parser.asNativeMap(markets?.get(key)),
-                        period,
-                    )
-                }
+        var risk = Numeric.double.ZERO
+        for ((key, position) in positions ?: emptyMap()) {
+            if (key != except) {
+                risk += calculatePositionRisk(
+                    position = position,
+                    market = markets?.get(key),
+                    period = period,
+                )
             }
-            return risk
         }
-        return Numeric.double.ZERO
+        return risk
     }
 
     private fun calculatePositionRisk(
-        position: Map<String, Any>,
-        market: Map<String, Any>?,
+        position: InternalPerpetualPosition?,
+        market: InternalMarketState?,
         period: CalculationPeriod,
     ): Double {
-        market?.let {
-            parser.asNativeMap(market["configs"])?.let { configs ->
-                parser.asDouble(value(position, "adjustedMmf", period))
-                    ?.let { maintenanceMarginFraction ->
-                        parser.asDouble(oraclePrice(market))?.let { oraclePrice ->
-                            parser.asDouble(value(position, "size", period))?.let { size ->
-                                return size.abs() * oraclePrice * maintenanceMarginFraction
+        val maintenanceMarginFraction = position?.calculated?.get(period)?.adjustedMmf
+        val oraclePrice = market?.perpetualMarket?.oraclePrice
+        val size = position?.calculated?.get(period)?.size
+
+        return if (maintenanceMarginFraction != null && oraclePrice != null && size != null) {
+            size.abs() * oraclePrice * maintenanceMarginFraction
+        } else {
+            Numeric.double.ZERO
+        }
+    }
+
+    private fun calculatePositionsValues(
+        subaccount: InternalSubaccountState,
+        markets: Map<String, InternalMarketState>?,
+        price: Map<String, Double>?,
+        periods: Set<CalculationPeriod>,
+    ): InternalSubaccountState {
+        for ((key, position) in subaccount.openPositions ?: emptyMap()) {
+            val market = markets?.get(key)
+            if (market != null) {
+                calculatePositionValues(
+                    position = position,
+                    market = market,
+                    subaccount = subaccount,
+                    price = parser.asDouble(price?.get(key)),
+                    periods = periods,
+                )
+            }
+        }
+        return subaccount
+    }
+
+    private fun calculatePositionValues(
+        position: InternalPerpetualPosition,
+        market: InternalMarketState,
+        subaccount: InternalSubaccountState,
+        price: Double?,
+        periods: Set<CalculationPeriod>,
+    ): InternalPerpetualPosition {
+        for (period in periods) {
+            val calculated = position.calculated[period] ?: InternalPositionCalculated()
+            position.calculated[period] = calculated
+
+            if (period == CalculationPeriod.current) {
+                calculated.size = position.size
+            }
+            val size = calculated.size
+            val entryPrice = position.entryPrice
+            val status = position.status
+
+            if (size != null && status != null) {
+                val realizedPnl = position.realizedPnl
+                if (realizedPnl != null) {
+                    when (status) {
+                        IndexerPerpetualPositionStatus.CLOSED, IndexerPerpetualPositionStatus.LIQUIDATED -> {
+                            calculated.realizedPnlPercent = null
+                        }
+                        else -> {
+                            if (entryPrice != null) {
+                                val positionEntryValue = (size * entryPrice).abs()
+                                calculated.realizedPnlPercent = if (positionEntryValue > Numeric.double.ZERO) realizedPnl / positionEntryValue else null
                             }
                         }
                     }
-            }
-        }
-        return Numeric.double.ZERO
-    }
+                } else {
+                    calculated.realizedPnlPercent = null
+                }
 
-    private fun calculatePositionBuyingPower(
-        equity: Double?,
-        initialRiskTotal: Double?,
-        imf: Double?,
-    ): Double? {
-        return if (equity != null && initialRiskTotal != null && imf != null) {
-            calculateBuyingPower(
-                equity,
-                initialRiskTotal,
-                imf,
-            )
-        } else {
-            null
-        }
-    }
+                val marketOraclePrice = market.perpetualMarket?.oraclePrice
+                val oraclePrice =
+                    if (period == CalculationPeriod.current) {
+                        marketOraclePrice
+                    } else {
+                        price ?: marketOraclePrice
+                    }
 
-    private fun calculateSubaccountBuyingPower(
-        subaccount: MutableMap<String, Any>,
-        configs: Map<String, Any>?,
-        periods: Set<CalculationPeriod>,
-    ) {
-        for (period in periods) {
-            val quoteBalance = parser.asDouble(value(subaccount, "quoteBalance", period))
-            val equity = parser.asDouble(value(subaccount, "equity", period))
-            val initialRiskTotal = parser.asDouble(value(subaccount, "initialRiskTotal", period))
-            if (quoteBalance != null && equity != null && initialRiskTotal != null) {
-                val imf =
-                    parser.asDouble(configs?.get("initialMarginFraction"))
-                        ?: parser.asDouble(0.05)!!
-                set(
-                    calculateBuyingPower(equity, initialRiskTotal, imf),
-                    subaccount,
-                    "buyingPower",
-                    period,
-                )
+                if (oraclePrice != null) {
+                    when (status) {
+                        IndexerPerpetualPositionStatus.CLOSED, IndexerPerpetualPositionStatus.LIQUIDATED -> {
+                            resetCalculated(calculated)
+                        }
+                        else -> {
+                            val configs = market.perpetualMarket?.configs
+                            val valueTotal = size * oraclePrice
+                            calculated.valueTotal = valueTotal
+                            val notional = valueTotal.abs()
+                            calculated.notionalTotal = notional
+                            val adjustedImf = calculatedAdjustedImf(configs)
+                            val adjustedMmf = calculatedAdjustedMmf(
+                                configs = configs,
+                                notional = notional,
+                            )
+                            val maxLeverage =
+                                if (adjustedImf != Numeric.double.ZERO) Numeric.double.ONE / adjustedImf else null
+                            calculated.adjustedImf = adjustedImf
+                            calculated.adjustedMmf = adjustedMmf
+                            calculated.initialRiskTotal = adjustedImf * notional
+                            calculated.maxLeverage = maxLeverage
+
+                            if (entryPrice != null) {
+                                val leverage = position.calculated[period]?.leverage
+                                val scaledLeverage = max(leverage?.abs() ?: 1.0, 1.0)
+                                val entryValue = size * entryPrice
+                                val currentValue = size * oraclePrice
+                                val unrealizedPnl = currentValue - entryValue
+                                val scaledUnrealizedPnlPercent =
+                                    if (entryValue != Numeric.double.ZERO) unrealizedPnl / entryValue.abs() * scaledLeverage else null
+                                calculated.unrealizedPnl = unrealizedPnl
+                                calculated.unrealizedPnlPercent = scaledUnrealizedPnlPercent
+                            }
+
+                            val marginMode = position.marginMode
+                            when (marginMode) {
+                                MarginMode.Isolated -> {
+                                    val equity = subaccount.calculated[period]?.equity
+                                    calculated.marginValue = equity
+                                }
+
+                                MarginMode.Cross -> {
+                                    val maintenanceMarginFraction =
+                                        configs?.maintenanceMarginFraction ?: Numeric.double.ZERO
+                                    calculated.marginValue = maintenanceMarginFraction * notional
+                                }
+
+                                else -> {
+                                    calculated.marginValue = null
+                                }
+                            }
+                        }
+                    }
+                } else {
+                    resetCalculated(calculated)
+                }
             } else {
-                set(
-                    null,
-                    subaccount,
-                    "buyingPower",
-                    period,
-                )
+                resetCalculated(calculated)
             }
         }
+        return position
     }
 
-    private fun calculateBuyingPower(
-        equity: Double,
-        initialRiskTotal: Double,
-        imf: Double,
+    private fun calculatedAdjustedImf(
+        configs: MarketConfigs?
     ): Double {
-        val buyingPowerFreeCollateral = equity - initialRiskTotal
-        return buyingPowerFreeCollateral / (
-            if (imf > Numeric.double.ZERO) {
-                imf
-            } else {
-                parser.asDouble(
-                    0.05,
-                )!!
-            }
-            )
+        return configs?.effectiveInitialMarginFraction ?: Numeric.double.ZERO
     }
 
-    private fun key(period: CalculationPeriod): String {
-        return period.rawValue
+    private fun calculatedAdjustedMmf(
+        configs: MarketConfigs?,
+        notional: Double?,
+    ): Double {
+        val maintenanceMarginFraction = configs?.maintenanceMarginFraction ?: Numeric.double.ZERO
+        val notionalValue = notional ?: Numeric.double.ZERO
+        return calculateV4MarginFraction(configs, maintenanceMarginFraction, notionalValue)
     }
 
-    private fun value(data: Map<*, *>, key: String, period: CalculationPeriod): Any? {
-        val value = data[key]
-        val map = parser.asNativeMap(value)
-        return if (map != null) {
-            map[key(period)]
-        } else {
-            value
-        }
+    private fun calculateV4MarginFraction(
+        configs: MarketConfigs?,
+        initialMarginFraction: Double,
+        notional: Double,
+    ): Double {
+        return initialMarginFraction
     }
 
-    private fun set(
-        value: Any?,
-        data: MutableMap<String, Any>,
-        key: String,
-        period: CalculationPeriod,
-    ) {
-        val map: MutableMap<String, Any> =
-            parser.asNativeMap(data[key])?.mutable() ?: mutableMapOf<String, Any>()
-        map.safeSet(key(period), value)
-        data[key] = map
+    private fun resetCalculated(calculated: InternalPositionCalculated) {
+        calculated.valueTotal = null
+        calculated.notionalTotal = null
+        calculated.adjustedImf = null
+        calculated.adjustedMmf = null
+        calculated.initialRiskTotal = null
+        calculated.maxLeverage = null
+        calculated.unrealizedPnl = null
+        calculated.unrealizedPnlPercent = null
+        calculated.marginValue = null
+        calculated.realizedPnlPercent = null
+        calculated.leverage = null
+        calculated.size = null
+        calculated.liquidationPrice = null
+        calculated.buyingPower = null
     }
 }
