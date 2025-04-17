@@ -1,9 +1,6 @@
 package exchange.dydx.abacus.output.input
 
-import exchange.dydx.abacus.protocols.ParserProtocol
-import exchange.dydx.abacus.utils.IList
 import kollections.JsExport
-import kollections.toIList
 import kotlinx.serialization.Serializable
 
 @JsExport
@@ -33,15 +30,5 @@ enum class ReceiptLine(val rawValue: String) {
     companion object {
         operator fun invoke(rawValue: String) =
             entries.firstOrNull { it.rawValue == rawValue }
-
-        internal fun create(
-            parser: ParserProtocol,
-            data: List<Any>?,
-        ): IList<ReceiptLine>? {
-            return data?.mapNotNull {
-                val string = parser.asString(it)
-                if (string != null) invoke(string) else null
-            }?.toIList()
-        }
     }
 }

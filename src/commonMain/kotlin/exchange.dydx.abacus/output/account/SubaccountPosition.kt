@@ -8,7 +8,6 @@ import exchange.dydx.abacus.processor.utils.MarketId
 import exchange.dydx.abacus.protocols.LocalizerProtocol
 import exchange.dydx.abacus.protocols.ParserProtocol
 import exchange.dydx.abacus.state.internalstate.InternalPerpetualPosition
-import exchange.dydx.abacus.state.internalstate.InternalSubaccountState
 import exchange.dydx.abacus.utils.IMap
 import exchange.dydx.abacus.utils.Logger
 import kollections.JsExport
@@ -52,387 +51,235 @@ data class SubaccountPosition(
     companion object {
         internal fun create(
             existing: SubaccountPosition?,
-            parser: ParserProtocol,
-            data: Map<String, Any>?,
             positionId: String?, // e.g., "ETH-USD"
             position: InternalPerpetualPosition?,
-            subaccount: InternalSubaccountState?,
         ): SubaccountPosition? {
             Logger.d { "creating Account Position\n" }
-            data?.let {
-                val id = positionId ?: parser.asString(data["id"]) ?: error("id not found")
-                val displayId = if (positionId != null) MarketId.getDisplayId(id) else parser.asString(data["displayId"])
-                val assetId = if (positionId != null) MarketId.getAssetId(id) else parser.asString(data["assetId"])
-                val resources = position?.resources ?: parser.asMap(data["resources"])?.let {
-                    SubaccountPositionResources.create(existing?.resources, parser, it)
-                }
 
-                if (displayId !== null && assetId != null && resources !== null) {
-                    val childSubaccountNumber = position?.subaccountNumber
-                        ?: parser.asInt(data["childSubaccountNumber"])
+            val id = positionId ?: error("id not found")
+            val displayId = MarketId.getDisplayId(id)
+            val assetId = MarketId.getAssetId(id)
+            val resources = position?.resources
 
-                    val marginMode = position?.marginMode
-                        ?: parser.asString(data["marginMode"])?.let { MarginMode.invoke(it) }
+            if (assetId != null && resources !== null) {
+                val childSubaccountNumber = position?.subaccountNumber
 
-                    val entryPrice = if (position != null) {
-                        TradeStatesWithDoubleValues(
-                            current = position.entryPrice,
-                            postOrder = null,
-                            postAllOrders = null,
-                        )
-                    } else {
-                        TradeStatesWithDoubleValues.create(
-                            existing = existing?.entryPrice,
-                            parser = parser,
-                            data = parser.asMap(data["entryPrice"]),
-                        )
-                    }
+                val marginMode = position?.marginMode
 
-                    val exitPrice = position?.exitPrice
-                        ?: parser.asDouble(data["exitPrice"])
-                    val createdAtMilliseconds =
-                        position?.createdAt?.toEpochMilliseconds()?.toDouble()
-                            ?: parser.asDatetime(data["createdAt"])?.toEpochMilliseconds()
-                                ?.toDouble()
-                    val closedAtMilliseconds = position?.closedAt?.toEpochMilliseconds()?.toDouble()
-                        ?: parser.asDatetime(data["closedAt"])?.toEpochMilliseconds()?.toDouble()
-                    val netFunding = position?.netFunding ?: parser.asDouble(data["netFunding"])
+                val entryPrice =
+                    TradeStatesWithDoubleValues(
+                        current = position.entryPrice,
+                        postOrder = null,
+                        postAllOrders = null,
+                    )
 
-                    val realizedPnl = if (position != null) {
-                        TradeStatesWithDoubleValues(
-                            current = position.realizedPnl,
-                            postOrder = null,
-                            postAllOrders = null,
-                        )
-                    } else {
-                        TradeStatesWithDoubleValues.create(
-                            existing = existing?.realizedPnl,
-                            parser = parser,
-                            data = parser.asMap(data["realizedPnl"]),
-                        )
-                    }
+                val exitPrice = position?.exitPrice
 
-                    val realizedPnlPercent =
-                        if (position != null) {
-                            TradeStatesWithDoubleValues(
-                                current = position.calculated[CalculationPeriod.current]?.realizedPnlPercent,
-                                postOrder = position.calculated[CalculationPeriod.post]?.realizedPnlPercent,
-                                postAllOrders = position.calculated[CalculationPeriod.settled]?.realizedPnlPercent,
-                            )
-                        } else {
-                            TradeStatesWithDoubleValues.create(
-                                existing = existing?.realizedPnlPercent,
-                                parser = parser,
-                                data = parser.asMap(data["realizedPnlPercent"]),
-                            )
-                        }
+                val createdAtMilliseconds =
+                    position?.createdAt?.toEpochMilliseconds()?.toDouble()
+                val closedAtMilliseconds = position?.closedAt?.toEpochMilliseconds()?.toDouble()
+                val netFunding = position?.netFunding
 
-                    val unrealizedPnl = if (position != null) {
-                        TradeStatesWithDoubleValues(
-                            current = position.calculated[CalculationPeriod.current]?.unrealizedPnl,
-                            postOrder = position.calculated[CalculationPeriod.post]?.unrealizedPnl,
-                            postAllOrders = position.calculated[CalculationPeriod.settled]?.unrealizedPnl,
-                        )
-                    } else {
-                        TradeStatesWithDoubleValues.create(
-                            existing = existing?.unrealizedPnl,
-                            parser = parser,
-                            data = parser.asMap(data["unrealizedPnl"]),
-                        )
-                    }
+                val realizedPnl =
+                    TradeStatesWithDoubleValues(
+                        current = position.realizedPnl,
+                        postOrder = null,
+                        postAllOrders = null,
+                    )
 
-                    val unrealizedPnlPercent = if (position != null) {
-                        TradeStatesWithDoubleValues(
-                            current = position.calculated[CalculationPeriod.current]?.unrealizedPnlPercent,
-                            postOrder = position.calculated[CalculationPeriod.post]?.unrealizedPnlPercent,
-                            postAllOrders = position.calculated[CalculationPeriod.settled]?.unrealizedPnlPercent,
-                        )
-                    } else {
-                        TradeStatesWithDoubleValues.create(
-                            existing = existing?.unrealizedPnlPercent,
-                            parser = parser,
-                            data = parser.asMap(data["unrealizedPnlPercent"]),
-                        )
-                    }
+                val realizedPnlPercent =
+                    TradeStatesWithDoubleValues(
+                        current = position.calculated[CalculationPeriod.current]?.realizedPnlPercent,
+                        postOrder = position.calculated[CalculationPeriod.post]?.realizedPnlPercent,
+                        postAllOrders = position.calculated[CalculationPeriod.settled]?.realizedPnlPercent,
+                    )
 
-                    val size = if (position != null) {
-                        TradeStatesWithDoubleValues(
-                            current = position.calculated[CalculationPeriod.current]?.size,
-                            postOrder = position.calculated[CalculationPeriod.post]?.size,
-                            postAllOrders = position.calculated[CalculationPeriod.settled]?.size,
-                        )
-                    } else {
-                        TradeStatesWithDoubleValues.create(
-                            existing = existing?.size,
-                            parser = parser,
-                            data = parser.asMap(data["size"]),
-                        )
-                    }
+                val unrealizedPnl =
+                    TradeStatesWithDoubleValues(
+                        current = position.calculated[CalculationPeriod.current]?.unrealizedPnl,
+                        postOrder = position.calculated[CalculationPeriod.post]?.unrealizedPnl,
+                        postAllOrders = position.calculated[CalculationPeriod.settled]?.unrealizedPnl,
+                    )
 
-                    val notionalTotal = if (position != null) {
-                        TradeStatesWithDoubleValues(
-                            current = position.calculated[CalculationPeriod.current]?.notionalTotal,
-                            postOrder = position.calculated[CalculationPeriod.post]?.notionalTotal,
-                            postAllOrders = position.calculated[CalculationPeriod.settled]?.notionalTotal,
-                        )
-                    } else {
-                        TradeStatesWithDoubleValues.create(
-                            existing = existing?.notionalTotal,
-                            parser = parser,
-                            data = parser.asMap(data["notionalTotal"]),
-                        )
-                    }
+                val unrealizedPnlPercent =
+                    TradeStatesWithDoubleValues(
+                        current = position.calculated[CalculationPeriod.current]?.unrealizedPnlPercent,
+                        postOrder = position.calculated[CalculationPeriod.post]?.unrealizedPnlPercent,
+                        postAllOrders = position.calculated[CalculationPeriod.settled]?.unrealizedPnlPercent,
+                    )
 
-                    val valueTotal = if (position != null) {
-                        TradeStatesWithDoubleValues(
-                            current = position.calculated[CalculationPeriod.current]?.valueTotal,
-                            postOrder = position.calculated[CalculationPeriod.post]?.valueTotal,
-                            postAllOrders = position.calculated[CalculationPeriod.settled]?.valueTotal,
-                        )
-                    } else {
-                        TradeStatesWithDoubleValues.create(
-                            existing = existing?.valueTotal,
-                            parser = parser,
-                            data = parser.asMap(data["valueTotal"]),
-                        )
-                    }
+                val size =
+                    TradeStatesWithDoubleValues(
+                        current = position.calculated[CalculationPeriod.current]?.size,
+                        postOrder = position.calculated[CalculationPeriod.post]?.size,
+                        postAllOrders = position.calculated[CalculationPeriod.settled]?.size,
+                    )
 
-                    val initialRiskTotal = if (position != null) {
-                        TradeStatesWithDoubleValues(
-                            current = position.calculated[CalculationPeriod.current]?.initialRiskTotal,
-                            postOrder = position.calculated[CalculationPeriod.post]?.initialRiskTotal,
-                            postAllOrders = position.calculated[CalculationPeriod.settled]?.initialRiskTotal,
-                        )
-                    } else {
-                        TradeStatesWithDoubleValues.create(
-                            existing = existing?.initialRiskTotal,
-                            parser = parser,
-                            data = parser.asMap(data["initialRiskTotal"]),
-                        )
-                    }
+                val notionalTotal =
+                    TradeStatesWithDoubleValues(
+                        current = position.calculated[CalculationPeriod.current]?.notionalTotal,
+                        postOrder = position.calculated[CalculationPeriod.post]?.notionalTotal,
+                        postAllOrders = position.calculated[CalculationPeriod.settled]?.notionalTotal,
+                    )
 
-                    val adjustedImf = if (position != null) {
-                        TradeStatesWithDoubleValues(
-                            current = position.calculated[CalculationPeriod.current]?.adjustedImf,
-                            postOrder = position.calculated[CalculationPeriod.post]?.adjustedImf,
-                            postAllOrders = position.calculated[CalculationPeriod.settled]?.adjustedImf,
-                        )
-                    } else {
-                        TradeStatesWithDoubleValues.create(
-                            existing = existing?.adjustedImf,
-                            parser = parser,
-                            data = parser.asMap(data["adjustedImf"]),
-                        )
-                    }
+                val valueTotal =
+                    TradeStatesWithDoubleValues(
+                        current = position.calculated[CalculationPeriod.current]?.valueTotal,
+                        postOrder = position.calculated[CalculationPeriod.post]?.valueTotal,
+                        postAllOrders = position.calculated[CalculationPeriod.settled]?.valueTotal,
+                    )
 
-                    val adjustedMmf = if (position != null) {
-                        TradeStatesWithDoubleValues(
-                            current = position.calculated[CalculationPeriod.current]?.adjustedMmf,
-                            postOrder = position.calculated[CalculationPeriod.post]?.adjustedMmf,
-                            postAllOrders = position.calculated[CalculationPeriod.settled]?.adjustedMmf,
-                        )
-                    } else {
-                        TradeStatesWithDoubleValues.create(
-                            existing = existing?.adjustedMmf,
-                            parser = parser,
-                            data = parser.asMap(data["adjustedMmf"]),
-                        )
-                    }
+                val initialRiskTotal =
+                    TradeStatesWithDoubleValues(
+                        current = position.calculated[CalculationPeriod.current]?.initialRiskTotal,
+                        postOrder = position.calculated[CalculationPeriod.post]?.initialRiskTotal,
+                        postAllOrders = position.calculated[CalculationPeriod.settled]?.initialRiskTotal,
+                    )
 
-                    val leverage = if (position != null) {
-                        TradeStatesWithDoubleValues(
-                            current = position.calculated[CalculationPeriod.current]?.leverage,
-                            postOrder = position.calculated[CalculationPeriod.post]?.leverage,
-                            postAllOrders = position.calculated[CalculationPeriod.settled]?.leverage,
-                        )
-                    } else {
-                        TradeStatesWithDoubleValues.create(
-                            existing = existing?.leverage,
-                            parser = parser,
-                            data = parser.asMap(data["leverage"]),
-                        )
-                    }
+                val adjustedImf =
+                    TradeStatesWithDoubleValues(
+                        current = position.calculated[CalculationPeriod.current]?.adjustedImf,
+                        postOrder = position.calculated[CalculationPeriod.post]?.adjustedImf,
+                        postAllOrders = position.calculated[CalculationPeriod.settled]?.adjustedImf,
+                    )
 
-                    val maxLeverage = if (position != null) {
-                        TradeStatesWithDoubleValues(
-                            current = position.calculated[CalculationPeriod.current]?.maxLeverage,
-                            postOrder = position.calculated[CalculationPeriod.post]?.maxLeverage,
-                            postAllOrders = position.calculated[CalculationPeriod.settled]?.maxLeverage,
-                        )
-                    } else {
-                        TradeStatesWithDoubleValues.create(
-                            existing = existing?.leverage,
-                            parser = parser,
-                            data = parser.asMap(data["maxLeverage"]),
-                        )
-                    }
+                val adjustedMmf =
+                    TradeStatesWithDoubleValues(
+                        current = position.calculated[CalculationPeriod.current]?.adjustedMmf,
+                        postOrder = position.calculated[CalculationPeriod.post]?.adjustedMmf,
+                        postAllOrders = position.calculated[CalculationPeriod.settled]?.adjustedMmf,
+                    )
 
-                    val buyingPower = if (position != null) {
-                        TradeStatesWithDoubleValues(
-                            current = position.calculated[CalculationPeriod.current]?.buyingPower,
-                            postOrder = position.calculated[CalculationPeriod.post]?.buyingPower,
-                            postAllOrders = position.calculated[CalculationPeriod.settled]?.buyingPower,
-                        )
-                    } else {
-                        TradeStatesWithDoubleValues.create(
-                            existing = existing?.leverage,
-                            parser = parser,
-                            data = parser.asMap(data["buyingPower"]),
-                        )
-                    }
+                val leverage =
+                    TradeStatesWithDoubleValues(
+                        current = position.calculated[CalculationPeriod.current]?.leverage,
+                        postOrder = position.calculated[CalculationPeriod.post]?.leverage,
+                        postAllOrders = position.calculated[CalculationPeriod.settled]?.leverage,
+                    )
 
-                    val liquidationPrice = if (position != null) {
-                        TradeStatesWithDoubleValues(
-                            current = position.calculated[CalculationPeriod.current]?.liquidationPrice,
-                            postOrder = position.calculated[CalculationPeriod.post]?.liquidationPrice,
-                            postAllOrders = position.calculated[CalculationPeriod.settled]?.liquidationPrice,
-                        )
-                    } else {
-                        TradeStatesWithDoubleValues.create(
-                            existing = existing?.liquidationPrice,
-                            parser = parser,
-                            data = parser.asMap(data["liquidationPrice"]),
-                        )
-                    }
+                val maxLeverage =
+                    TradeStatesWithDoubleValues(
+                        current = position.calculated[CalculationPeriod.current]?.maxLeverage,
+                        postOrder = position.calculated[CalculationPeriod.post]?.maxLeverage,
+                        postAllOrders = position.calculated[CalculationPeriod.settled]?.maxLeverage,
+                    )
 
-                    val freeCollateral = if (position != null) {
-                        TradeStatesWithDoubleValues(
-                            current = position.calculated[CalculationPeriod.current]?.freeCollateral,
-                            postOrder = position.calculated[CalculationPeriod.post]?.freeCollateral,
-                            postAllOrders = position.calculated[CalculationPeriod.settled]?.freeCollateral,
-                        )
-                    } else {
-                        TradeStatesWithDoubleValues.create(
-                            existing = null,
-                            parser = parser,
-                            data = parser.asMap(data["freeCollateral"]),
-                        )
-                    }
+                val buyingPower =
+                    TradeStatesWithDoubleValues(
+                        current = position.calculated[CalculationPeriod.current]?.buyingPower,
+                        postOrder = position.calculated[CalculationPeriod.post]?.buyingPower,
+                        postAllOrders = position.calculated[CalculationPeriod.settled]?.buyingPower,
+                    )
 
-                    val marginUsage = if (position != null) {
-                        TradeStatesWithDoubleValues(
-                            current = position.calculated[CalculationPeriod.current]?.marginUsage,
-                            postOrder = position.calculated[CalculationPeriod.post]?.marginUsage,
-                            postAllOrders = position.calculated[CalculationPeriod.settled]?.marginUsage,
-                        )
-                    } else {
-                        TradeStatesWithDoubleValues.create(
-                            existing = null,
-                            parser = parser,
-                            data = parser.asMap(data["marginUsage"]),
-                        )
-                    }
+                val liquidationPrice =
+                    TradeStatesWithDoubleValues(
+                        current = position.calculated[CalculationPeriod.current]?.liquidationPrice,
+                        postOrder = position.calculated[CalculationPeriod.post]?.liquidationPrice,
+                        postAllOrders = position.calculated[CalculationPeriod.settled]?.liquidationPrice,
+                    )
 
-                    val quoteBalance = if (position != null) {
-                        TradeStatesWithDoubleValues(
-                            current = position.calculated[CalculationPeriod.current]?.quoteBalance,
-                            postOrder = position.calculated[CalculationPeriod.post]?.quoteBalance,
-                            postAllOrders = position.calculated[CalculationPeriod.settled]?.quoteBalance,
-                        )
-                    } else {
-                        TradeStatesWithDoubleValues.create(
-                            existing = null,
-                            parser = parser,
-                            data = parser.asMap(data["quoteBalance"]),
-                        )
-                    }
+                val freeCollateral =
+                    TradeStatesWithDoubleValues(
+                        current = position.calculated[CalculationPeriod.current]?.freeCollateral,
+                        postOrder = position.calculated[CalculationPeriod.post]?.freeCollateral,
+                        postAllOrders = position.calculated[CalculationPeriod.settled]?.freeCollateral,
+                    )
 
-                    val equity = if (position != null) {
-                        TradeStatesWithDoubleValues(
-                            current = position.calculated[CalculationPeriod.current]?.equity,
-                            postOrder = position.calculated[CalculationPeriod.post]?.equity,
-                            postAllOrders = position.calculated[CalculationPeriod.settled]?.equity,
-                        )
-                    } else {
-                        TradeStatesWithDoubleValues.create(
-                            existing = null,
-                            parser = parser,
-                            data = parser.asMap(data["equity"]),
-                        )
-                    }
+                val marginUsage =
+                    TradeStatesWithDoubleValues(
+                        current = position.calculated[CalculationPeriod.current]?.marginUsage,
+                        postOrder = position.calculated[CalculationPeriod.post]?.marginUsage,
+                        postAllOrders = position.calculated[CalculationPeriod.settled]?.marginUsage,
+                    )
 
-                    val marginValue = if (position != null) {
-                        TradeStatesWithDoubleValues(
-                            current = position.calculated[CalculationPeriod.current]?.marginValue,
-                            postOrder = position.calculated[CalculationPeriod.post]?.marginValue,
-                            postAllOrders = position.calculated[CalculationPeriod.settled]?.marginValue,
-                        )
-                    } else {
-                        TradeStatesWithDoubleValues.create(
-                            existing = null,
-                            parser = parser,
-                            data = parser.asMap(data["marginValue"]),
-                        )
-                    }
+                val quoteBalance =
+                    TradeStatesWithDoubleValues(
+                        current = position.calculated[CalculationPeriod.current]?.quoteBalance,
+                        postOrder = position.calculated[CalculationPeriod.post]?.quoteBalance,
+                        postAllOrders = position.calculated[CalculationPeriod.settled]?.quoteBalance,
+                    )
 
-                    return if (existing?.id != id ||
-                        existing.assetId != assetId ||
-                        existing.displayId != displayId ||
-                        existing.entryPrice !== entryPrice ||
-                        existing.exitPrice != exitPrice ||
-                        existing.createdAtMilliseconds != createdAtMilliseconds ||
-                        existing.closedAtMilliseconds != closedAtMilliseconds ||
-                        existing.netFunding != netFunding ||
-                        existing.realizedPnl !== realizedPnl ||
-                        existing.realizedPnlPercent !== realizedPnlPercent ||
-                        existing.unrealizedPnl !== unrealizedPnl ||
-                        existing.unrealizedPnlPercent !== unrealizedPnlPercent ||
-                        existing.size !== size ||
-                        existing.notionalTotal !== notionalTotal ||
-                        existing.valueTotal !== valueTotal ||
-                        existing.initialRiskTotal !== initialRiskTotal ||
-                        existing.adjustedImf !== adjustedImf ||
-                        existing.adjustedMmf !== adjustedMmf ||
-                        existing.leverage !== leverage ||
-                        existing.maxLeverage !== maxLeverage ||
-                        existing.buyingPower !== buyingPower ||
-                        existing.liquidationPrice !== liquidationPrice ||
-                        existing.resources !== resources ||
-                        existing.childSubaccountNumber != childSubaccountNumber ||
-                        existing.freeCollateral !== freeCollateral ||
-                        existing.marginUsage !== marginUsage ||
-                        existing.quoteBalance !== quoteBalance ||
-                        existing.equity !== equity ||
-                        existing.marginMode != marginMode ||
-                        existing.marginValue !== marginValue
-                    ) {
-                        val side = positionSide(size)
-                        SubaccountPosition(
-                            id = id,
-                            assetId = assetId,
-                            displayId = displayId,
-                            side = side,
-                            entryPrice = entryPrice,
-                            exitPrice = exitPrice,
-                            createdAtMilliseconds = createdAtMilliseconds,
-                            closedAtMilliseconds = closedAtMilliseconds,
-                            netFunding = netFunding,
-                            realizedPnl = realizedPnl,
-                            realizedPnlPercent = realizedPnlPercent,
-                            unrealizedPnl = unrealizedPnl,
-                            unrealizedPnlPercent = unrealizedPnlPercent,
-                            size = size,
-                            notionalTotal = notionalTotal,
-                            valueTotal = valueTotal,
-                            initialRiskTotal = initialRiskTotal,
-                            adjustedImf = adjustedImf,
-                            adjustedMmf = adjustedMmf,
-                            leverage = leverage,
-                            maxLeverage = maxLeverage,
-                            buyingPower = buyingPower,
-                            liquidationPrice = liquidationPrice,
-                            resources = resources,
-                            childSubaccountNumber = childSubaccountNumber,
-                            freeCollateral = freeCollateral,
-                            marginUsage = marginUsage,
-                            quoteBalance = quoteBalance,
-                            equity = equity,
-                            marginMode = marginMode,
-                            marginValue = marginValue,
-                        )
-                    } else {
-                        existing
-                    }
+                val equity =
+                    TradeStatesWithDoubleValues(
+                        current = position.calculated[CalculationPeriod.current]?.equity,
+                        postOrder = position.calculated[CalculationPeriod.post]?.equity,
+                        postAllOrders = position.calculated[CalculationPeriod.settled]?.equity,
+                    )
+
+                val marginValue =
+                    TradeStatesWithDoubleValues(
+                        current = position.calculated[CalculationPeriod.current]?.marginValue,
+                        postOrder = position.calculated[CalculationPeriod.post]?.marginValue,
+                        postAllOrders = position.calculated[CalculationPeriod.settled]?.marginValue,
+                    )
+
+                return if (existing?.id != id ||
+                    existing.assetId != assetId ||
+                    existing.displayId != displayId ||
+                    existing.entryPrice !== entryPrice ||
+                    existing.exitPrice != exitPrice ||
+                    existing.createdAtMilliseconds != createdAtMilliseconds ||
+                    existing.closedAtMilliseconds != closedAtMilliseconds ||
+                    existing.netFunding != netFunding ||
+                    existing.realizedPnl !== realizedPnl ||
+                    existing.realizedPnlPercent !== realizedPnlPercent ||
+                    existing.unrealizedPnl !== unrealizedPnl ||
+                    existing.unrealizedPnlPercent !== unrealizedPnlPercent ||
+                    existing.size !== size ||
+                    existing.notionalTotal !== notionalTotal ||
+                    existing.valueTotal !== valueTotal ||
+                    existing.initialRiskTotal !== initialRiskTotal ||
+                    existing.adjustedImf !== adjustedImf ||
+                    existing.adjustedMmf !== adjustedMmf ||
+                    existing.leverage !== leverage ||
+                    existing.maxLeverage !== maxLeverage ||
+                    existing.buyingPower !== buyingPower ||
+                    existing.liquidationPrice !== liquidationPrice ||
+                    existing.resources !== resources ||
+                    existing.childSubaccountNumber != childSubaccountNumber ||
+                    existing.freeCollateral !== freeCollateral ||
+                    existing.marginUsage !== marginUsage ||
+                    existing.quoteBalance !== quoteBalance ||
+                    existing.equity !== equity ||
+                    existing.marginMode != marginMode ||
+                    existing.marginValue !== marginValue
+                ) {
+                    val side = positionSide(size)
+                    SubaccountPosition(
+                        id = id,
+                        assetId = assetId,
+                        displayId = displayId,
+                        side = side,
+                        entryPrice = entryPrice,
+                        exitPrice = exitPrice,
+                        createdAtMilliseconds = createdAtMilliseconds,
+                        closedAtMilliseconds = closedAtMilliseconds,
+                        netFunding = netFunding,
+                        realizedPnl = realizedPnl,
+                        realizedPnlPercent = realizedPnlPercent,
+                        unrealizedPnl = unrealizedPnl,
+                        unrealizedPnlPercent = unrealizedPnlPercent,
+                        size = size,
+                        notionalTotal = notionalTotal,
+                        valueTotal = valueTotal,
+                        initialRiskTotal = initialRiskTotal,
+                        adjustedImf = adjustedImf,
+                        adjustedMmf = adjustedMmf,
+                        leverage = leverage,
+                        maxLeverage = maxLeverage,
+                        buyingPower = buyingPower,
+                        liquidationPrice = liquidationPrice,
+                        resources = resources,
+                        childSubaccountNumber = childSubaccountNumber,
+                        freeCollateral = freeCollateral,
+                        marginUsage = marginUsage,
+                        quoteBalance = quoteBalance,
+                        equity = equity,
+                        marginMode = marginMode,
+                        marginValue = marginValue,
+                    )
+                } else {
+                    existing
                 }
             }
             Logger.d { "Account Position not valid" }

@@ -114,7 +114,6 @@ open class TradingStateMachine(
     internal val routerProcessor = SkipProcessor(
         parser = parser,
         internalState = internalState.input.transfer,
-        staticTyping = staticTyping,
     )
     internal val rewardsProcessor = RewardsParamsProcessor(parser)
     internal val launchIncentiveProcessor = LaunchIncentiveProcessor(parser)
@@ -474,22 +473,6 @@ open class TradingStateMachine(
         return parser.asList(subaccount(subaccountNumber)?.get(name))
     }
 
-    private fun groupedSubaccount(subaccountNumber: Int): Map<String, Any>? {
-        return parser.asNativeMap(parser.value(account, "groupedSubaccounts.$subaccountNumber"))
-    }
-
-    private fun subaccountHistoricalPnl(subaccountNumber: Int): IList<Any>? {
-        return subaccountList(subaccountNumber, "historicalPnl")
-    }
-
-    private fun subaccountFills(subaccountNumber: Int): IList<Any>? {
-        return subaccountList(subaccountNumber, "fills")
-    }
-
-    private fun subaccountTransfers(subaccountNumber: Int): IList<Any>? {
-        return subaccountList(subaccountNumber, "transfers")
-    }
-
     private fun subaccountFundingPayments(subaccountNumber: Int): IList<Any>? {
         return subaccountList(subaccountNumber, "fundingPayments")
     }
@@ -622,13 +605,7 @@ open class TradingStateMachine(
         if (changes.changes.contains(Changes.markets)) {
             marketsSummary =
                 PerpetualMarketSummary.apply(
-                    existing = marketsSummary,
-                    parser = parser,
-                    data = emptyMap(),
-                    assets = null,
-                    staticTyping = staticTyping,
                     internalState = internalState,
-                    changes = changes,
                 )
         }
         if (changes.changes.contains(Changes.orderbook)) {
@@ -713,17 +690,13 @@ open class TradingStateMachine(
             wallet = Wallet.create(internalState.wallet)
         }
         val subaccountNumbers = changes.subaccountNumbers ?: allSubaccountNumbers()
-        val accountData = this.account
 
         if (changes.changes.contains(Changes.subaccount)) {
             account = if (account == null) {
                 Account.create(
                     existing = null,
                     parser = parser,
-                    data = accountData ?: emptyMap(),
                     tokensInfo = tokensInfo,
-                    localizer = localizer,
-                    staticTyping = staticTyping,
                     internalState = internalState.wallet.account,
                 )
             } else {
@@ -731,10 +704,6 @@ open class TradingStateMachine(
                 for (subaccountNumber in subaccountNumbers) {
                     val subaccount = Subaccount.create(
                         existing = account.subaccounts?.get("$subaccountNumber"),
-                        parser = parser,
-                        data = subaccount(subaccountNumber),
-                        localizer = localizer,
-                        staticTyping = staticTyping,
                         internalState = internalState.wallet.account.subaccounts[subaccountNumber],
                     )
                     subaccounts.typedSafeSet("$subaccountNumber", subaccount)
@@ -745,10 +714,6 @@ open class TradingStateMachine(
                     if (subaccountNumber < NUM_PARENT_SUBACCOUNTS) {
                         val subaccount = Subaccount.create(
                             existing = account.groupedSubaccounts?.get("$subaccountNumber"),
-                            parser = parser,
-                            data = groupedSubaccount(subaccountNumber),
-                            localizer = localizer,
-                            staticTyping = staticTyping,
                             internalState = internalState.wallet.account.groupedSubaccounts[subaccountNumber],
                         )
                         groupedSubaccounts.typedSafeSet("$subaccountNumber", subaccount)
@@ -774,10 +739,7 @@ open class TradingStateMachine(
             account = Account.create(
                 existing = account,
                 parser = parser,
-                data = accountData ?: emptyMap(),
                 tokensInfo = tokensInfo,
-                localizer = localizer,
-                staticTyping = staticTyping,
                 internalState = internalState.wallet.account,
             )
         }
@@ -856,10 +818,7 @@ open class TradingStateMachine(
                 input = Input.create(
                     existing = input,
                     parser = parser,
-                    data = this.input,
-                    environment = environment,
                     internalState = internalState,
-                    staticTyping = staticTyping,
                 )
             }
         }

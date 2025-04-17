@@ -105,51 +105,6 @@ data class TriggerOrder(
                 null
             }
         }
-
-        internal fun create(
-            existing: TriggerOrder?,
-            parser: ParserProtocol,
-            data: Map<*, *>?,
-        ): TriggerOrder? {
-            Logger.d { "creating Trigger Order\n" }
-
-            data?.let {
-                val orderId = parser.asString(data["orderId"])
-                val size = parser.asDouble(data["size"])
-
-                val type = parser.asString(data["type"])?.let {
-                    OrderType.invoke(it)
-                }
-                val side = parser.asString(data["side"])?.let {
-                    OrderSide.invoke(it)
-                }
-                val price = TriggerPrice.create(
-                    existing?.price,
-                    parser,
-                    parser.asMap(data["price"]),
-                )
-                val summary = TriggerOrderInputSummary.create(
-                    existing?.summary,
-                    parser,
-                    parser.asMap(data["summary"]),
-                )
-
-                return if (
-                    existing?.orderId != orderId ||
-                    existing?.size != size ||
-                    existing?.type != type ||
-                    existing?.side != side ||
-                    existing?.price != price ||
-                    existing?.summary != summary
-                ) {
-                    TriggerOrder(orderId, size, type, side, price, summary)
-                } else {
-                    existing
-                }
-            }
-            Logger.d { "Trigger Order not valid\n" }
-            return null
-        }
     }
 }
 
@@ -175,45 +130,6 @@ data class TriggerOrdersInput(
             } else {
                 null
             }
-        }
-
-        internal fun create(
-            existing: TriggerOrdersInput?,
-            parser: ParserProtocol,
-            data: Map<*, *>?,
-        ): TriggerOrdersInput? {
-            Logger.d { "creating Trigger Orders Input\n" }
-
-            data?.let {
-                val marketId = parser.asString(data["marketId"])
-                val size = parser.asDouble(data["size"])
-
-                val stopLossOrder =
-                    TriggerOrder.create(
-                        existing?.stopLossOrder,
-                        parser,
-                        parser.asMap(data["stopLossOrder"]),
-                    )
-                val takeProfitOrder =
-                    TriggerOrder.create(
-                        existing?.takeProfitOrder,
-                        parser,
-                        parser.asMap(data["takeProfitOrder"]),
-                    )
-
-                return if (
-                    existing?.marketId != marketId ||
-                    existing?.size != size ||
-                    existing?.stopLossOrder != stopLossOrder ||
-                    existing?.takeProfitOrder != takeProfitOrder
-                ) {
-                    TriggerOrdersInput(marketId, size, stopLossOrder, takeProfitOrder)
-                } else {
-                    existing
-                }
-            }
-            Logger.d { "Trigger Orders Input not valid\n" }
-            return null
         }
     }
 }

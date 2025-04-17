@@ -17,14 +17,13 @@ data class AccountBalance(
         internal fun create(
             existing: AccountBalance?,
             parser: ParserProtocol,
-            data: Map<String, Any>,
             decimals: Int,
             internalState: InternalAccountBalanceState?
         ): AccountBalance? {
             Logger.d { "creating Account Balance\n" }
 
-            val denom = internalState?.denom ?: parser.asString(data["denom"])
-            val amount = internalState?.amount ?: parser.asDecimal(data["amount"])
+            val denom = internalState?.denom
+            val amount = internalState?.amount
             if (denom != null && amount != null) {
                 val decimalAmount = amount * Numeric.decimal.TEN.pow(-1 * decimals)
                 val decimalAmountString = parser.asString(decimalAmount)!!

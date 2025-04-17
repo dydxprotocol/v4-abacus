@@ -32,7 +32,7 @@ internal fun TradingStateMachine.routerTokens(payload: String): StateChanges? {
 internal fun TradingStateMachine.evmSwapVenues(payload: String) {
     val json = parser.decodeJsonObject(payload)
     if (json != null) {
-        routerProcessor.receivedEvmSwapVenues(input, json)
+        routerProcessor.receivedEvmSwapVenues(json)
     }
 }
 
