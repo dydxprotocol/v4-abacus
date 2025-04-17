@@ -22,7 +22,6 @@ private const val UNISWAP_SUFFIX = "uniswap"
 internal class SkipProcessor(
     parser: ParserProtocol,
     private val internalState: InternalTransferInputState,
-    private val staticTyping: Boolean,
 ) : BaseProcessor(parser) {
     var chains: List<Any>? = null
 

@@ -114,7 +114,6 @@ open class TradingStateMachine(
     internal val routerProcessor = SkipProcessor(
         parser = parser,
         internalState = internalState.input.transfer,
-        staticTyping = true,
     )
     internal val rewardsProcessor = RewardsParamsProcessor(parser)
     internal val launchIncentiveProcessor = LaunchIncentiveProcessor(parser)
@@ -472,22 +471,6 @@ open class TradingStateMachine(
 
     private fun subaccountList(subaccountNumber: Int, name: String): IList<Any>? {
         return parser.asList(subaccount(subaccountNumber)?.get(name))
-    }
-
-    private fun groupedSubaccount(subaccountNumber: Int): Map<String, Any>? {
-        return parser.asNativeMap(parser.value(account, "groupedSubaccounts.$subaccountNumber"))
-    }
-
-    private fun subaccountHistoricalPnl(subaccountNumber: Int): IList<Any>? {
-        return subaccountList(subaccountNumber, "historicalPnl")
-    }
-
-    private fun subaccountFills(subaccountNumber: Int): IList<Any>? {
-        return subaccountList(subaccountNumber, "fills")
-    }
-
-    private fun subaccountTransfers(subaccountNumber: Int): IList<Any>? {
-        return subaccountList(subaccountNumber, "transfers")
     }
 
     private fun subaccountFundingPayments(subaccountNumber: Int): IList<Any>? {

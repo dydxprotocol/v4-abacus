@@ -26,7 +26,7 @@ class SkipProcessorTests {
 
     internal val internalState = InternalTransferInputState()
     internal val parser = Parser()
-    internal val skipProcessor = SkipProcessor(parser = parser, internalState = internalState, staticTyping = false)
+    internal val skipProcessor = SkipProcessor(parser = parser, internalState = internalState)
     internal val skipChainsMock = SkipChainsMock()
     internal val skipTokensMock = SkipTokensMock()
     internal val skipRouteMock = SkipRouteMock()
