@@ -40,322 +40,107 @@ class TransferRequiredInputTests : V4BaseTests() {
     override fun reset() {
         super.reset()
 
-        if (perp.staticTyping) {
-            perp.transfer(null, null, environment = mock.v4Environment)
+        perp.transfer(null, null, environment = mock.v4Environment)
 
-            assertEquals(InputType.TRANSFER, perp.internalState.input.currentType)
+        assertEquals(InputType.TRANSFER, perp.internalState.input.currentType)
 
-            val transfer = perp.internalState.input.transfer
-            assertEquals(TransferType.deposit, transfer.type)
-        } else {
-            test({
-                perp.transfer(null, null, environment = mock.v4Environment)
-            }, null)
-        }
+        val transfer = perp.internalState.input.transfer
+        assertEquals(TransferType.deposit, transfer.type)
     }
 
     private fun testTransferInputDeposit() {
-        if (perp.staticTyping) {
-            perp.transfer("DEPOSIT", TransferInputField.type, environment = mock.v4Environment)
+        perp.transfer("DEPOSIT", TransferInputField.type, environment = mock.v4Environment)
 
-            val transfer = perp.internalState.input.transfer
-            assertEquals(TransferType.deposit, transfer.type)
+        var transfer = perp.internalState.input.transfer
+        assertEquals(TransferType.deposit, transfer.type)
 
-            val error = perp.internalState.input.errors?.firstOrNull()
-            assertEquals("REQUIRED_SIZE", error?.code)
-            assertEquals(ErrorType.required, error?.type)
-            assertEquals("size.usdcSize", error?.fields?.first())
-            assertEquals("APP.TRADE.ENTER_AMOUNT", error?.resources?.action?.stringKey)
-        } else {
-            test(
-                {
-                    perp.transfer("DEPOSIT", TransferInputField.type, environment = mock.v4Environment)
-                },
-                """
-                {
-                    "input": {
-                        "current": "transfer",
-                        "transfer": {
-                            "type": "DEPOSIT"
-                        },
-                        "errors": [
-                            {
-                                "code": "REQUIRED_SIZE",
-                                "type": "REQUIRED",
-                                "fields": [
-                                    "size.usdcSize"
-                                ],
-                                "resources": {
-                                    "action": {
-                                        "stringKey": "APP.TRADE.ENTER_AMOUNT"
-                                    }
-                                }
-                            }
-                        ]
-                    }
-                }
-                """.trimIndent(),
-            )
-        }
+        var error = perp.internalState.input.errors?.firstOrNull()
+        assertEquals("REQUIRED_SIZE", error?.code)
+        assertEquals(ErrorType.required, error?.type)
+        assertEquals("size.usdcSize", error?.fields?.first())
+        assertEquals("APP.TRADE.ENTER_AMOUNT", error?.resources?.action?.stringKey)
 
-        if (perp.staticTyping) {
-            perp.transfer("1.0", TransferInputField.usdcSize, environment = mock.v4Environment)
+        perp.transfer("1.0", TransferInputField.usdcSize, environment = mock.v4Environment)
 
-            val transfer = perp.internalState.input.transfer
-            assertEquals(TransferType.deposit, transfer.type)
+        transfer = perp.internalState.input.transfer
+        assertEquals(TransferType.deposit, transfer.type)
 
-            val error = perp.internalState.input.errors?.firstOrNull()
-            assertEquals(null, error)
-        } else {
-            test(
-                {
-                    perp.transfer("1.0", TransferInputField.usdcSize, environment = mock.v4Environment)
-                },
-                """
-                {
-                    "input": {
-                        "current": "transfer",
-                        "transfer": {
-                            "type": "DEPOSIT"
-                        },
-                        "errors": null
-                    }
-                }
-                """.trimIndent(),
-            )
-        }
+        error = perp.internalState.input.errors?.firstOrNull()
+        assertEquals(null, error)
     }
 
     private fun testTransferInputWithdraw() {
-        if (perp.staticTyping) {
-            perp.transfer("WITHDRAWAL", TransferInputField.type, environment = mock.v4Environment)
+        perp.transfer("WITHDRAWAL", TransferInputField.type, environment = mock.v4Environment)
 
-            val transfer = perp.internalState.input.transfer
-            assertEquals(TransferType.withdrawal, transfer.type)
+        var transfer = perp.internalState.input.transfer
+        assertEquals(TransferType.withdrawal, transfer.type)
 
-            val error = perp.internalState.input.errors?.firstOrNull()
-            assertEquals("REQUIRED_SIZE", error?.code)
-            assertEquals(ErrorType.required, error?.type)
-            assertEquals("size.usdcSize", error?.fields?.first())
-            assertEquals("APP.TRADE.ENTER_AMOUNT", error?.resources?.action?.stringKey)
-        } else {
-            test(
-                {
-                    perp.transfer(
-                        "WITHDRAWAL",
-                        TransferInputField.type,
-                        environment = mock.v4Environment,
-                    )
-                },
-                """
-                {
-                    "input": {
-                        "current": "transfer",
-                        "transfer": {
-                            "type": "WITHDRAWAL"
-                        },
-                        "errors": [
-                            {
-                                "code": "REQUIRED_SIZE",
-                                "type": "REQUIRED",
-                                "fields": [
-                                    "size.usdcSize"
-                                ],
-                                "resources": {
-                                    "action": {
-                                        "stringKey": "APP.TRADE.ENTER_AMOUNT"
-                                    }
-                                }
-                            }
-                        ]
-                    }
-                }
-                """.trimIndent(),
-            )
-        }
+        var error = perp.internalState.input.errors?.firstOrNull()
+        assertEquals("REQUIRED_SIZE", error?.code)
+        assertEquals(ErrorType.required, error?.type)
+        assertEquals("size.usdcSize", error?.fields?.first())
+        assertEquals("APP.TRADE.ENTER_AMOUNT", error?.resources?.action?.stringKey)
 
-        if (perp.staticTyping) {
-            perp.transfer("1.0", TransferInputField.usdcSize, environment = mock.v4Environment)
+        perp.transfer("1.0", TransferInputField.usdcSize, environment = mock.v4Environment)
 
-            val transfer = perp.internalState.input.transfer
-            assertEquals(TransferType.withdrawal, transfer.type)
+        transfer = perp.internalState.input.transfer
+        assertEquals(TransferType.withdrawal, transfer.type)
 
-            val error = perp.internalState.input.errors?.firstOrNull()
-            assertEquals("REQUIRED_ADDRESS", error?.code)
-            assertEquals(ErrorType.required, error?.type)
+        error = perp.internalState.input.errors?.firstOrNull()
+        assertEquals("REQUIRED_ADDRESS", error?.code)
+        assertEquals(ErrorType.required, error?.type)
 
-            perp.transfer("dydx16zfx8g4jg9vels3rsvcym490tkn5la304c57e9", TransferInputField.address, environment = mock.v4Environment)
-            assertNull(perp.internalState.input.errors?.firstOrNull())
-        } else {
-            test(
-                {
-                    perp.transfer("1.0", TransferInputField.usdcSize, environment = mock.v4Environment)
-                },
-                """
-                {
-                    "input": {
-                        "current": "transfer",
-                        "transfer": {
-                            "type": "WITHDRAWAL"
-                        },
-                        "errors": null
-                    }
-                }
-                """.trimIndent(),
-            )
-        }
+        perp.transfer(
+            "dydx16zfx8g4jg9vels3rsvcym490tkn5la304c57e9",
+            TransferInputField.address,
+            environment = mock.v4Environment,
+        )
+        assertNull(perp.internalState.input.errors?.firstOrNull())
     }
 
     private fun testTransferInputTransferOut() {
-        if (perp.staticTyping) {
-            perp.transfer("TRANSFER_OUT", TransferInputField.type, environment = mock.v4Environment)
+        perp.transfer("TRANSFER_OUT", TransferInputField.type, environment = mock.v4Environment)
 
-            val transfer = perp.internalState.input.transfer
-            assertEquals(TransferType.transferOut, transfer.type)
+        var transfer = perp.internalState.input.transfer
+        assertEquals(TransferType.transferOut, transfer.type)
 
-            val error = perp.internalState.input.errors?.firstOrNull()
-            assertEquals("REQUIRED_ADDRESS", error?.code)
-            assertEquals(ErrorType.required, error?.type)
-            assertEquals("address", error?.fields?.first())
-            assertEquals("APP.DIRECT_TRANSFER_MODAL.ENTER_ETH_ADDRESS", error?.resources?.action?.stringKey)
-        } else {
-            test(
-                {
-                    perp.transfer("TRANSFER_OUT", TransferInputField.type, environment = mock.v4Environment)
-                },
-                """
-                {
-                    "input": {
-                        "current": "transfer",
-                        "transfer": {
-                            "type": "TRANSFER_OUT"
-                        },
-                        "errors": [
-                            {
-                                "code": "REQUIRED_ADDRESS",
-                                "type": "REQUIRED",
-                                "fields": [
-                                    "address"
-                                ],
-                                "resources": {
-                                    "action": {
-                                        "stringKey": "APP.DIRECT_TRANSFER_MODAL.ENTER_ETH_ADDRESS"
-                                    }
-                                }
-                            }
-                        ]
-                    }
-                }
-                """.trimIndent(),
-            )
-        }
+        var error = perp.internalState.input.errors?.firstOrNull()
+        assertEquals("REQUIRED_ADDRESS", error?.code)
+        assertEquals(ErrorType.required, error?.type)
+        assertEquals("address", error?.fields?.first())
+        assertEquals(
+            "APP.DIRECT_TRANSFER_MODAL.ENTER_ETH_ADDRESS",
+            error?.resources?.action?.stringKey,
+        )
 
-        if (perp.staticTyping) {
-            perp.transfer("1.0", TransferInputField.usdcSize, environment = mock.v4Environment)
+        perp.transfer("1.0", TransferInputField.usdcSize, environment = mock.v4Environment)
 
-            val transfer = perp.internalState.input.transfer
-            assertEquals(TransferType.transferOut, transfer.type)
+        transfer = perp.internalState.input.transfer
+        assertEquals(TransferType.transferOut, transfer.type)
 
-            val error = perp.internalState.input.errors?.firstOrNull()
-            assertEquals("REQUIRED_ADDRESS", error?.code)
-        } else {
-            test(
-                {
-                    perp.transfer("1.0", TransferInputField.usdcSize, environment = mock.v4Environment)
-                },
-                """
-                {
-                    "input": {
-                        "current": "transfer",
-                        "transfer": {
-                            "type": "TRANSFER_OUT"
-                        },
-                        "errors": [
-                            {
-                                "code": "REQUIRED_ADDRESS",
-                                "type": "REQUIRED",
-                                "fields": [
-                                    "address"
-                                ],
-                                "resources": {
-                                    "action": {
-                                        "stringKey": "APP.DIRECT_TRANSFER_MODAL.ENTER_ETH_ADDRESS"
-                                    }
-                                }
-                            }
-                        ]
-                    }
-                }
-                """.trimIndent(),
-            )
-        }
+        error = perp.internalState.input.errors?.firstOrNull()
+        assertEquals("REQUIRED_ADDRESS", error?.code)
 
-        if (perp.staticTyping) {
-            perp.transfer("dydx1111111", TransferInputField.address, environment = mock.v4Environment)
+        perp.transfer("dydx1111111", TransferInputField.address, environment = mock.v4Environment)
 
-            val transfer = perp.internalState.input.transfer
-            assertEquals(TransferType.transferOut, transfer.type)
+        transfer = perp.internalState.input.transfer
+        assertEquals(TransferType.transferOut, transfer.type)
 
-            val error = perp.internalState.input.errors?.firstOrNull()
-            assertEquals("INVALID_ADDRESS", error?.code)
-            assertEquals(ErrorType.error, error?.type)
-            assertEquals("address", error?.fields?.first())
-            assertEquals("APP.DIRECT_TRANSFER_MODAL.ADDRESS_FIELD", error?.resources?.action?.stringKey)
-        } else {
-            test(
-                {
-                    perp.transfer("dydx1111111", TransferInputField.address, environment = mock.v4Environment)
-                },
-                """
-                {
-                    "input": {
-                        "current": "transfer",
-                        "transfer": {
-                            "type": "TRANSFER_OUT"
-                        },
-                        "errors": [ {
-                                "code": "INVALID_ADDRESS",
-                                "type": "ERROR",
-                                "fields": [
-                                    "address"
-                                ],
-                                "resources": {
-                                    "action": {
-                                        "stringKey": "APP.DIRECT_TRANSFER_MODAL.ADDRESS_FIELD"
-                                    }
-                                }
-                            }
-                        ]
-                    }
-                }
-                """.trimIndent(),
-            )
-        }
+        error = perp.internalState.input.errors?.firstOrNull()
+        assertEquals("INVALID_ADDRESS", error?.code)
+        assertEquals(ErrorType.error, error?.type)
+        assertEquals("address", error?.fields?.first())
+        assertEquals("APP.DIRECT_TRANSFER_MODAL.ADDRESS_FIELD", error?.resources?.action?.stringKey)
 
-        if (perp.staticTyping) {
-            perp.transfer("dydx16zfx8g4jg9vels3rsvcym490tkn5la304c57e9", TransferInputField.address, environment = mock.v4Environment)
+        perp.transfer(
+            "dydx16zfx8g4jg9vels3rsvcym490tkn5la304c57e9",
+            TransferInputField.address,
+            environment = mock.v4Environment,
+        )
 
-            val transfer = perp.internalState.input.transfer
-            assertEquals(TransferType.transferOut, transfer.type)
+        transfer = perp.internalState.input.transfer
+        assertEquals(TransferType.transferOut, transfer.type)
 
-            assertNull(perp.internalState.input.errors?.firstOrNull())
-        } else {
-            test(
-                {
-                    perp.transfer("dydx16zfx8g4jg9vels3rsvcym490tkn5la304c57e9", TransferInputField.address, environment = mock.v4Environment)
-                },
-                """
-                {
-                    "input": {
-                        "current": "transfer",
-                        "transfer": {
-                            "type": "TRANSFER_OUT"
-                        },
-                        "errors": null
-                    }
-                }
-                """.trimIndent(),
-            )
-        }
+        assertNull(perp.internalState.input.errors?.firstOrNull())
     }
 }

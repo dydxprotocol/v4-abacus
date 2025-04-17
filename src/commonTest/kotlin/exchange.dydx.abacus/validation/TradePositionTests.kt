@@ -58,56 +58,21 @@ class TradePositionTests : ValidationsTests() {
         /*
         This test would throw an Flip Position error when reduceOnly is supported
          */
-        if (perp.staticTyping) {
-            perp.trade("110.0", TradeInputField.size, 0)
+        perp.trade("110.0", TradeInputField.size, 0)
 
-            val trade = perp.internalState.input.trade
-            assertEquals(trade.type, OrderType.Limit)
-            assertEquals(trade.side, OrderSide.Sell)
-            assertEquals(trade.marketId, "ETH-USD")
-            assertEquals(trade.timeInForce, "IOC")
-            val errors = perp.internalState.input.errors
-            val error = errors?.get(0)
-            assertEquals(error?.type, ErrorType.error)
-            assertEquals(error?.code, "ORDER_WOULD_FLIP_POSITION")
-            assertEquals(error?.resources?.title?.stringKey, "ERRORS.TRADE_BOX_TITLE.ORDER_WOULD_FLIP_POSITION")
-        } else {
-            test(
-                {
-                    perp.trade("110.0", TradeInputField.size, 0)
-                },
-                """
-                {
-                    "input": {
-                        "current": "trade",
-                        "trade": {
-                            "type": "LIMIT",
-                            "side": "SELL",
-                            "marketId": "ETH-USD",
-                            "timeInForce": "IOC"
-                        },
-                        "errors": [
-                            {
-                                "type": "ERROR",
-                                "code": "ORDER_WOULD_FLIP_POSITION",
-                                "fields":[
-                                    "size.size"
-                                ],
-                                "resources": {
-                                    "title": {
-                                        "stringKey":"ERRORS.TRADE_BOX_TITLE.ORDER_WOULD_FLIP_POSITION"
-                                    },
-                                    "text":{
-                                    }
-                                }
-                            }
-                        ]
-                    }
-                }
-            """
-                    .trimIndent(),
-            )
-        }
+        var trade = perp.internalState.input.trade
+        assertEquals(trade.type, OrderType.Limit)
+        assertEquals(trade.side, OrderSide.Sell)
+        assertEquals(trade.marketId, "ETH-USD")
+        assertEquals(trade.timeInForce, "IOC")
+        var errors = perp.internalState.input.errors
+        var error = errors?.get(0)
+        assertEquals(error?.type, ErrorType.error)
+        assertEquals(error?.code, "ORDER_WOULD_FLIP_POSITION")
+        assertEquals(
+            error?.resources?.title?.stringKey,
+            "ERRORS.TRADE_BOX_TITLE.ORDER_WOULD_FLIP_POSITION",
+        )
 
         test({
             perp.trade("BUY", TradeInputField.side, 0)
@@ -117,136 +82,46 @@ class TradePositionTests : ValidationsTests() {
             perp.trade("999.0", TradeInputField.limitPrice, 0)
         }, null)
 
-        if (perp.staticTyping) {
-            perp.trade("210.0", TradeInputField.size, 0)
+        perp.trade("210.0", TradeInputField.size, 0)
 
-            val trade = perp.internalState.input.trade
-            assertEquals(trade.type, OrderType.Limit)
-            assertEquals(trade.side, OrderSide.Buy)
-            assertEquals(trade.marketId, "ETH-USD")
-            assertEquals(trade.timeInForce, "IOC")
-            val errors = perp.internalState.input.errors
-            val error = errors?.get(0)
-            assertEquals(error?.type, ErrorType.error)
-            assertEquals(error?.code, "ORDER_WOULD_FLIP_POSITION")
-            assertEquals(error?.resources?.title?.stringKey, "ERRORS.TRADE_BOX_TITLE.ORDER_WOULD_FLIP_POSITION")
-        } else {
-            test(
-                {
-                    perp.trade("210.0", TradeInputField.size, 0)
-                },
-                """
-                {
-                    "input": {
-                        "current": "trade",
-                        "trade": {
-                            "type": "LIMIT",
-                            "side": "BUY",
-                            "marketId": "ETH-USD",
-                            "timeInForce": "IOC"
-                        },
-                        "errors": [
-                            {
-                                "type": "ERROR",
-                                "code": "ORDER_WOULD_FLIP_POSITION",
-                                "fields":[
-                                    "size.size"
-                                ],
-                                "resources": {
-                                    "title": {
-                                        "stringKey":"ERRORS.TRADE_BOX_TITLE.ORDER_WOULD_FLIP_POSITION"
-                                    }, 
-                                    "text":{
-                                    }
-                                }
-                            }
-                        ]
-                    }
-                }
-                """.trimIndent(),
-            )
-        }
+        trade = perp.internalState.input.trade
+        assertEquals(trade.type, OrderType.Limit)
+        assertEquals(trade.side, OrderSide.Buy)
+        assertEquals(trade.marketId, "ETH-USD")
+        assertEquals(trade.timeInForce, "IOC")
+        errors = perp.internalState.input.errors
+        error = errors?.get(0)
+        assertEquals(error?.type, ErrorType.error)
+        assertEquals(error?.code, "ORDER_WOULD_FLIP_POSITION")
+        assertEquals(
+            error?.resources?.title?.stringKey,
+            "ERRORS.TRADE_BOX_TITLE.ORDER_WOULD_FLIP_POSITION",
+        )
 
-        if (perp.staticTyping) {
-            perp.trade("SELL", TradeInputField.side, 0)
+        perp.trade("SELL", TradeInputField.side, 0)
 
-            val trade = perp.internalState.input.trade
-            assertEquals(trade.type, OrderType.Limit)
-            assertEquals(trade.side, OrderSide.Sell)
-            assertEquals(trade.marketId, "ETH-USD")
-            assertEquals(trade.timeInForce, "IOC")
-            val errors = perp.internalState.input.errors
-            val error = errors?.get(0)
-            assertEquals(error?.type, ErrorType.error)
-            assertEquals(error?.code, "ORDER_WOULD_FLIP_POSITION")
-            assertEquals(error?.resources?.title?.stringKey, "ERRORS.TRADE_BOX_TITLE.ORDER_WOULD_FLIP_POSITION")
-        } else {
-            test(
-                {
-                    perp.trade("SELL", TradeInputField.side, 0)
-                },
-                """
-                {
-                    "input": {
-                        "current": "trade",
-                        "trade": {
-                            "type": "LIMIT",
-                            "side": "SELL",
-                            "marketId": "ETH-USD",
-                            "timeInForce": "IOC"
-                        },
-                        "errors": [
-                            {
-                                "type": "ERROR",
-                                "code": "ORDER_WOULD_FLIP_POSITION",
-                                "fields":[
-                                    "size.size"
-                                ],
-                                "resources": {
-                                    "title": {
-                                        "stringKey":"ERRORS.TRADE_BOX_TITLE.ORDER_WOULD_FLIP_POSITION"
-                                    }, 
-                                    "text":{
-                                    }
-                                }
-                            }
-                        ]
-                    }
-                }
-                """.trimIndent(),
-            )
-        }
+        trade = perp.internalState.input.trade
+        assertEquals(trade.type, OrderType.Limit)
+        assertEquals(trade.side, OrderSide.Sell)
+        assertEquals(trade.marketId, "ETH-USD")
+        assertEquals(trade.timeInForce, "IOC")
+        errors = perp.internalState.input.errors
+        error = errors?.get(0)
+        assertEquals(error?.type, ErrorType.error)
+        assertEquals(error?.code, "ORDER_WOULD_FLIP_POSITION")
+        assertEquals(
+            error?.resources?.title?.stringKey,
+            "ERRORS.TRADE_BOX_TITLE.ORDER_WOULD_FLIP_POSITION",
+        )
 
-        if (perp.staticTyping) {
-            perp.trade("10", TradeInputField.size, 0)
+        perp.trade("10", TradeInputField.size, 0)
 
-            val trade = perp.internalState.input.trade
-            assertEquals(trade.type, OrderType.Limit)
-            assertEquals(trade.side, OrderSide.Sell)
-            assertEquals(trade.marketId, "ETH-USD")
-            assertEquals(trade.timeInForce, "IOC")
-            val errors = perp.internalState.input.errors
-            assertTrue { errors.isNullOrEmpty() }
-        } else {
-            test(
-                {
-                    perp.trade("10", TradeInputField.size, 0)
-                },
-                """
-                {
-                    "input": {
-                        "current": "trade",
-                        "trade": {
-                            "type": "LIMIT",
-                            "side": "SELL",
-                            "marketId": "ETH-USD",
-                            "timeInForce": "IOC"
-                        },
-                        "errors": null
-                    }
-                }
-                """.trimIndent(),
-            )
-        }
+        trade = perp.internalState.input.trade
+        assertEquals(trade.type, OrderType.Limit)
+        assertEquals(trade.side, OrderSide.Sell)
+        assertEquals(trade.marketId, "ETH-USD")
+        assertEquals(trade.timeInForce, "IOC")
+        errors = perp.internalState.input.errors
+        assertTrue { errors.isNullOrEmpty() }
     }
 }

@@ -443,19 +443,6 @@ internal class SubaccountSupervisor(
         return payloadProvider.adjustIsolatedMarginPayload()
     }
 
-    private fun faucetBody(amount: Double): String? {
-        return if (accountAddress != null) {
-            val params = iMapOf(
-                "address" to accountAddress,
-                "subaccountNumber" to subaccountNumber,
-                "amount" to amount,
-            )
-            helper.jsonEncoder.encode(params)
-        } else {
-            null
-        }
-    }
-
     internal fun faucet(amount: Double, callback: TransactionCallback) {
         val payload = faucetPayload(subaccountNumber, amount)
         val string = Json.encodeToString(payload)

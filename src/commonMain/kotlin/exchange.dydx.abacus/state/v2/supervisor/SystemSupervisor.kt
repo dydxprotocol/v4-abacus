@@ -110,7 +110,7 @@ internal class SystemSupervisor(
                 val pricesResponse = deferredPrices.await()
 
                 if (infoResponse.response != null && pricesResponse.response != null) {
-                    val stateChange = stateMachine.configurations(infoResponse.response, pricesResponse.response, null, helper.deploymentUri)
+                    val stateChange = stateMachine.configurations(infoResponse.response, pricesResponse.response, null)
                     update(
                         changes = stateChange,
                         oldState = oldState,
@@ -147,12 +147,9 @@ internal class SystemSupervisor(
             val oldState = stateMachine.state
             update(stateMachine.onChainRewardsParams(rewardsParams), oldState)
 
-            val marketId = if (stateMachine.staticTyping) {
+            val marketId =
                 stateMachine.internalState.rewardsParams?.marketId
-            } else {
-                val json = helper.parser.decodeJsonObject(rewardsParams)
-                helper.parser.asString(helper.parser.value(json, "params.marketId"))
-            }
+
             val params = iMapOf("marketId" to marketId)
             val paramsInJson = helper.jsonEncoder.encode(params)
 

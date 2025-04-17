@@ -31,93 +31,34 @@ class V4AccountOrdersSortingTest : V4BaseTests() {
     }
 
     private fun testSubaccountsReceived() {
-        if (perp.staticTyping) {
-            perp.loadv4SubaccountsWithPositions(mock, "$testRestUrl/v4/addresses/cosmo")
+        perp.loadv4SubaccountsWithPositions(mock, "$testRestUrl/v4/addresses/cosmo")
 
-            val subaccounts = perp.internalState?.wallet?.account?.subaccounts
-            val subaccount = subaccounts?.get(0)
-            val calculated = subaccount?.calculated?.get(CalculationPeriod.current)
-            assertEquals(108116.7318528828, calculated?.equity)
-            assertEquals(106640.3767269893, calculated?.freeCollateral)
-            assertEquals(99872.368956, calculated?.quoteBalance)
-        } else {
-            test(
-                {
-                    perp.loadv4SubaccountsWithPositions(mock, "$testRestUrl/v4/addresses/cosmo")
-                },
-                """
-            {
-                "wallet": {
-                    "account": {
-                        "subaccounts": {
-                            "0": {
-                                "equity": {
-                                    "current": 108116.7318528828
-                                },
-                                "freeCollateral": {
-                                    "current": 106640.3767269893
-                                },
-                                "quoteBalance": {
-                                    "current": 99872.368956
-                                }
-                            }
-                        }
-                    }
-                }
-            }
-                """.trimIndent(),
-            )
-        }
+        val subaccounts = perp.internalState?.wallet?.account?.subaccounts
+        val subaccount = subaccounts?.get(0)
+        val calculated = subaccount?.calculated?.get(CalculationPeriod.current)
+        assertEquals(108116.7318528828, calculated?.equity)
+        assertEquals(106640.3767269893, calculated?.freeCollateral)
+        assertEquals(99872.368956, calculated?.quoteBalance)
     }
 
     private fun testSubaccountSubscribed() {
-        if (perp.staticTyping) {
-            perp.socket(
-                url = testWsUrl,
-                jsonString = mock.accountsChannel.v4_subscribed_for_orders_sorting,
-                subaccountNumber = 0,
-                height = null,
-            )
+        perp.socket(
+            url = testWsUrl,
+            jsonString = mock.accountsChannel.v4_subscribed_for_orders_sorting,
+            subaccountNumber = 0,
+            height = null,
+        )
 
-            val subaccount = perp.state?.subaccount(0)
-            val orders = subaccount?.orders
+        val subaccount = perp.state?.subaccount(0)
+        val orders = subaccount?.orders
 
-            assertNotNull(orders)
-            val sortedOrders = orders.sortedBy {
-                it.createdAtHeight
-                    ?: (if (it.goodTilBlock != null) it.goodTilBlock!! - SHORT_TERM_ORDER_DURATION else 0)
-            }.reversed()
-            for (i in 0 until orders.size) {
-                assertEquals(orders[i].id, sortedOrders[i].id)
-            }
-        } else {
-            test(
-                {
-                    perp.socket(
-                        testWsUrl,
-                        mock.accountsChannel.v4_subscribed_for_orders_sorting,
-                        0,
-                        null,
-                    )
-                },
-                """
-            {
-            }
-                """.trimIndent(),
-                { it ->
-                    val subaccount = it.state?.subaccount(0)
-                    val orders = subaccount?.orders
-
-                    assertNotNull(orders)
-                    val sortedOrders = orders.sortedBy {
-                        it.createdAtHeight
-                            ?: (if (it.goodTilBlock != null) it.goodTilBlock!! - SHORT_TERM_ORDER_DURATION else 0)
-                    }.reversed()
-                    for (i in 0 until orders.size) {
-                        assertEquals(orders[i].id, sortedOrders[i].id)
-                    }
-                },
-            )
+        assertNotNull(orders)
+        val sortedOrders = orders.sortedBy {
+            it.createdAtHeight
+                ?: (if (it.goodTilBlock != null) it.goodTilBlock!! - SHORT_TERM_ORDER_DURATION else 0)
+        }.reversed()
+        for (i in 0 until orders.size) {
+            assertEquals(orders[i].id, sortedOrders[i].id)
         }
     }
 }

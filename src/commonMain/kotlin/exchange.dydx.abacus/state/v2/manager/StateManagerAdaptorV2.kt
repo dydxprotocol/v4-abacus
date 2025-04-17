@@ -120,7 +120,6 @@ internal class StateManagerAdaptorV2(
         formatter = Formatter(uiImplementations.formatter),
         maxSubaccountNumber = 127,
         useParentSubaccount = appConfigs.accountConfigs.subaccountConfigs.useParentSubaccount,
-        staticTyping = appConfigs.staticTyping,
         skipGoFast = appConfigs.skipGoFast,
         trackingProtocol = ioImplementations.tracking,
     )

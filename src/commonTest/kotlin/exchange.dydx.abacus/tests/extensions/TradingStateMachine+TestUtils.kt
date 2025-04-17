@@ -614,7 +614,6 @@ fun TradingStateMachine.rest(
                     infoPayload = payload,
                     pricesPayload = "",
                     subaccountNumber = subaccountNumber,
-                    deploymentUri = deploymentUri,
                 )
             }
         }

@@ -89,7 +89,6 @@ open class TradingStateMachine(
     private val formatter: Formatter?,
     private val maxSubaccountNumber: Int,
     private val useParentSubaccount: Boolean,
-    val staticTyping: Boolean = false,
     val skipGoFast: Boolean = false,
     private val trackingProtocol: TrackingProtocol?,
 ) {
@@ -301,7 +300,6 @@ open class TradingStateMachine(
         infoPayload: String,
         pricesPayload: String,
         subaccountNumber: Int?,
-        deploymentUri: String
     ): StateChanges {
         val json = parser.decodeJsonObject(infoPayload)
         val infoPayload = parser.asTypedStringMap<ConfigsAssetMetadata>(json)
@@ -910,8 +908,6 @@ open class TradingStateMachine(
     fun setHistoricalPnlDays(days: Int, subaccountNumber: Int): StateResponse {
         return if (historicalPnlDays != days) {
             historicalPnlDays = days
-            val now = ServerTime.now()
-            val startTime = now - days.days
             val historicalPnls = state?.historicalPnl?.get("$subaccountNumber") ?: return noChange()
             val first = historicalPnls.firstOrNull() ?: return noChange()
             val changes = StateChanges(iListOf(Changes.historicalPnl))

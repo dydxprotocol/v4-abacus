@@ -11,7 +11,6 @@ class PerpTradingStateMachine(
     formatter: Formatter?,
     maxSubaccountNumber: Int,
     useParentSubaccount: Boolean,
-    staticTyping: Boolean = false,
     skipGoFast: Boolean = false,
     trackingProtocol: TrackingProtocol?,
 ) :
@@ -21,7 +20,6 @@ class PerpTradingStateMachine(
         formatter = formatter,
         maxSubaccountNumber = maxSubaccountNumber,
         useParentSubaccount = useParentSubaccount,
-        staticTyping = staticTyping,
         skipGoFast = skipGoFast,
         trackingProtocol = trackingProtocol,
     ) {

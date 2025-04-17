@@ -448,21 +448,6 @@ internal object MarginCalculator {
     /**
      * @description Determine if collateral should be transferred into child subaccount for an isolated margin trade
      */
-    internal fun getShouldTransferInCollateralDeprecated(
-        parser: ParserProtocol,
-        subaccount: Map<String, Any>?,
-        tradeInput: Map<String, Any>?,
-    ): Boolean {
-        val isIncreasingPositionSize = getIsIncreasingPositionSizeDeprecated(parser, subaccount, tradeInput)
-        val isIsolatedMarginOrder = parser.asString(tradeInput?.get("marginMode")) == "ISOLATED"
-        val isReduceOnly = parser.asBool(tradeInput?.get("reduceOnly")) ?: false
-
-        return isIncreasingPositionSize && isIsolatedMarginOrder && !isReduceOnly
-    }
-
-    /**
-     * @description Determine if collateral should be transferred into child subaccount for an isolated margin trade
-     */
     private fun getShouldTransferInCollateral(
         trade: TradeInput,
         subaccount: Subaccount,
@@ -484,23 +469,6 @@ internal object MarginCalculator {
         val isIsolatedMarginOrder = tradeInput?.marginMode == MarginMode.Isolated
         val hasOpenOrder = tradeInput?.marketId?.let { marketId ->
             hasExistingOrder(subaccount, marketId)
-        } ?: false
-
-        return isPositionFullyClosed && isIsolatedMarginOrder && !hasOpenOrder
-    }
-
-    /**
-     * @description Determine if collateral should be transferred out of child subaccount for an isolated margin trade
-     */
-    internal fun getShouldTransferOutRemainingCollateralDeprecated(
-        parser: ParserProtocol,
-        subaccount: Map<String, Any>?,
-        tradeInput: Map<String, Any>?,
-    ): Boolean {
-        val isPositionFullyClosed = getIsPositionFullyClosedDeprecated(parser, subaccount, tradeInput)
-        val isIsolatedMarginOrder = parser.asString(tradeInput?.get("marginMode")) == "ISOLATED"
-        val hasOpenOrder = parser.asString(tradeInput?.get("marketId"))?.let { marketId ->
-            hasExistingOrderDeprecated(parser, subaccount, marketId)
         } ?: false
 
         return isPositionFullyClosed && isIsolatedMarginOrder && !hasOpenOrder

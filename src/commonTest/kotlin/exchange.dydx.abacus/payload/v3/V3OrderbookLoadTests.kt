@@ -11,40 +11,15 @@ class V3OrderbookLoadTests : V3BaseTests() {
         loadMarkets()
         loadMarketsConfigurations()
 
-        if (perp.staticTyping) {
-            perp.socket(
-                url = mock.socketUrl,
-                jsonString = mock.orderbookChannel.load_test_2_subscribed,
-                subaccountNumber = 0,
-                height = null,
-            )
+        perp.socket(
+            url = mock.socketUrl,
+            jsonString = mock.orderbookChannel.load_test_2_subscribed,
+            subaccountNumber = 0,
+            height = null,
+        )
 
-            val orderbook = perp.internalState.marketsSummary.markets["ETH-USD"]?.groupedOrderbook
-            assertNotNull(orderbook)
-        } else {
-            test(
-                {
-                    perp.socket(
-                        mock.socketUrl,
-                        mock.orderbookChannel.load_test_2_subscribed,
-                        0,
-                        null,
-                    )
-                },
-                """
-            {
-                "markets": {
-                    "markets": {
-                        "ETH-USD": {
-                            "orderbook": {
-                            }
-                        }
-                    }
-                }
-            }
-                """.trimIndent(),
-            )
-        }
+        val orderbook = perp.internalState.marketsSummary.markets["ETH-USD"]?.groupedOrderbook
+        assertNotNull(orderbook)
 
         for (i in 0 until mock.orderbookChannel.load_test_2_channel_batch_data_list.count()) {
             testChannelBatchData(mock.orderbookChannel.load_test_2_channel_batch_data_list[i], i)
@@ -52,50 +27,19 @@ class V3OrderbookLoadTests : V3BaseTests() {
     }
 
     fun testChannelBatchData(text: String, index: Int) {
-        if (perp.staticTyping) {
-            perp.socket(mock.socketUrl, text, 0, null)
+        perp.socket(mock.socketUrl, text, 0, null)
 
-            val orderbookState = perp.internalState.marketsSummary.markets["ETH-USD"]?.groupedOrderbook
-            assertNotNull(orderbookState)
+        val orderbookState = perp.internalState.marketsSummary.markets["ETH-USD"]?.groupedOrderbook
+        assertNotNull(orderbookState)
 
-            val orderbook = perp.state?.marketOrderbook("ETH-USD")
-            assertNotNull(orderbook)
-            val asks = orderbook.asks
-            assertNotNull(asks)
-            val bids = orderbook.bids
-            assertNotNull(bids)
-            val asksCount = asks.count()
-            val bidsCount = bids.count()
-            Logger.d { "Asks: $asksCount, Bids: $bidsCount" }
-        } else {
-            test(
-                {
-                    perp.socket(mock.socketUrl, text, 0, null)
-                },
-                """
-            {
-                "markets": {
-                    "markets": {
-                        "ETH-USD": {
-                            "orderbook": {
-                            }
-                        }
-                    }
-                }
-            }
-                """.trimIndent(),
-                { stateResponse ->
-                    val orderbook = stateResponse.state?.marketOrderbook("ETH-USD")
-                    assertNotNull(orderbook)
-                    val asks = orderbook.asks
-                    assertNotNull(asks)
-                    val bids = orderbook.bids
-                    assertNotNull(bids)
-                    val asksCount = asks.count()
-                    val bidsCount = bids.count()
-                    Logger.d { "Asks: $asksCount, Bids: $bidsCount" }
-                },
-            )
-        }
+        val orderbook = perp.state?.marketOrderbook("ETH-USD")
+        assertNotNull(orderbook)
+        val asks = orderbook.asks
+        assertNotNull(asks)
+        val bids = orderbook.bids
+        assertNotNull(bids)
+        val asksCount = asks.count()
+        val bidsCount = bids.count()
+        Logger.d { "Asks: $asksCount, Bids: $bidsCount" }
     }
 }

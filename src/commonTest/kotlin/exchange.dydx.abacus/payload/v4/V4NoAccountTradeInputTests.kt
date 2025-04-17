@@ -32,25 +32,8 @@ class V4NoAccountTradeInputTests : V4BaseTests() {
     }
 
     private fun testOnce() {
-        if (perp.staticTyping) {
-            perp.tradeInMarket("ETH-USD", 0)
-            assertEquals(perp.internalState.input.trade.marketId, "ETH-USD")
-        } else {
-            test(
-                {
-                    perp.tradeInMarket("ETH-USD", 0)
-                },
-                """
-            {
-                "input": {
-                    "trade": {
-                        "marketId": "ETH-USD"
-                    }
-                }
-            }
-                """.trimIndent(),
-            )
-        }
+        perp.tradeInMarket("ETH-USD", 0)
+        assertEquals(perp.internalState.input.trade.marketId, "ETH-USD")
 
         test({
             perp.trade("LIMIT", TradeInputField.type, 0)
@@ -68,47 +51,21 @@ class V4NoAccountTradeInputTests : V4BaseTests() {
             perp.trade("1500", TradeInputField.limitPrice, 0)
         }, null)
 
-        if (perp.staticTyping) {
-            perp.trade("1", TradeInputField.limitPrice, 0)
+        perp.trade("1", TradeInputField.limitPrice, 0)
 
-            val errors = perp.internalState.input.errors
-            val error = errors?.get(0)
-            assertEquals(error?.type, ErrorType.error)
-            assertEquals(error?.code, "REQUIRED_WALLET")
-            assertEquals(error?.action?.rawValue, "/onboard")
-            assertEquals(error?.resources?.title?.stringKey, "ERRORS.TRADE_BOX_TITLE.CONNECT_WALLET_TO_TRADE")
-            assertEquals(error?.resources?.text?.stringKey, "ERRORS.TRADE_BOX.CONNECT_WALLET_TO_TRADE")
-            assertEquals(error?.resources?.action?.stringKey, "ERRORS.TRADE_BOX_TITLE.CONNECT_WALLET_TO_TRADE")
-        } else {
-            test(
-                {
-                    perp.trade("1", TradeInputField.limitPrice, 0)
-                },
-                """
-            {
-                "input": {
-                    "errors": [
-                        {
-                            "type": "ERROR",
-                            "code": "REQUIRED_WALLET",
-                            "action": "/onboard",
-                            "resources": {
-                                "title": {
-                                    "stringKey": "ERRORS.TRADE_BOX_TITLE.CONNECT_WALLET_TO_TRADE"
-                                },
-                                "text": {
-                                    "stringKey": "ERRORS.TRADE_BOX.CONNECT_WALLET_TO_TRADE"
-                                },
-                                "action": {
-                                    "stringKey": "ERRORS.TRADE_BOX_TITLE.CONNECT_WALLET_TO_TRADE"
-                                }
-                            }
-                        }
-                    ]
-                }
-            }
-                """.trimIndent(),
-            )
-        }
+        val errors = perp.internalState.input.errors
+        val error = errors?.get(0)
+        assertEquals(error?.type, ErrorType.error)
+        assertEquals(error?.code, "REQUIRED_WALLET")
+        assertEquals(error?.action?.rawValue, "/onboard")
+        assertEquals(
+            error?.resources?.title?.stringKey,
+            "ERRORS.TRADE_BOX_TITLE.CONNECT_WALLET_TO_TRADE",
+        )
+        assertEquals(error?.resources?.text?.stringKey, "ERRORS.TRADE_BOX.CONNECT_WALLET_TO_TRADE")
+        assertEquals(
+            error?.resources?.action?.stringKey,
+            "ERRORS.TRADE_BOX_TITLE.CONNECT_WALLET_TO_TRADE",
+        )
     }
 }

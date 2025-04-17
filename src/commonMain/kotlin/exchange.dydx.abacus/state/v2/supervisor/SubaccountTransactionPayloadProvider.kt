@@ -287,16 +287,9 @@ internal class SubaccountTransactionPayloadProvider(
     }
 
     private fun subaccountNumberForPosition(marketId: String): Int {
-        return if (stateMachine.staticTyping) {
-            stateMachine.internalState.wallet.account.groupedSubaccounts[subaccountNumber]?.openPositions?.get(marketId)?.childSubaccountNumber ?: subaccountNumber
-        } else {
-            helper.parser.asInt(
-                helper.parser.value(
-                    stateMachine.data,
-                    "wallet.account.groupedSubaccounts.$subaccountNumber.openPositions.$marketId.childSubaccountNumber",
-                ),
-            ) ?: subaccountNumber
-        }
+        return stateMachine.internalState.wallet.account.groupedSubaccounts[subaccountNumber]?.openPositions?.get(
+            marketId,
+        )?.childSubaccountNumber ?: subaccountNumber
     }
 
     @Throws(Exception::class)

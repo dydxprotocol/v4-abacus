@@ -798,124 +798,28 @@ open class TRCL2998Tests : V4BaseTests() {
         // Due to the JIT compiler nature for JVM (and Kotlin) and JS, Android/web would ran slow the first round. Second round give more accurate result
         setup()
 
-        if (perp.staticTyping) {
-            perp.socket(mock.socketUrl, subaccountMock, 0, null)
+        perp.socket(mock.socketUrl, subaccountMock, 0, null)
 
-            val subaccount = perp.internalState.wallet.account.subaccounts[0]!!
-            val btcPosition = subaccount.positions?.get("BTC-USD")!!
-            assertEquals(null, btcPosition.calculated[CalculationPeriod.post]?.liquidationPrice)
-            val ethPosition = subaccount.positions?.get("ETH-USD")!!
-            assertEquals(null, ethPosition.calculated[CalculationPeriod.post]?.liquidationPrice)
-        } else {
-            test(
-                {
-                    perp.socket(mock.socketUrl, subaccountMock, 0, null)
-                },
-                """
-            {
-                "wallet": {
-                    "account": {
-                        "subaccounts": {
-                            "0": {
-                                "positions": {
-                                    "BTC-USD": {
-                                        "liquidationPrice": {
-                                            "postOrder": null
-                                        }
-                                    },
-                                    "ETH-USD": {
-                                        "liquidationPrice": {
-                                            "postOrder": null
-                                        }
-                                    }
-                                }
-                            }
-                        }
-                    }
-                }
-            }
-                """.trimIndent(),
-            )
-        }
+        var subaccount = perp.internalState.wallet.account.subaccounts[0]!!
+        var btcPosition = subaccount.positions?.get("BTC-USD")!!
+        assertEquals(null, btcPosition.calculated[CalculationPeriod.post]?.liquidationPrice)
+        var ethPosition = subaccount.positions?.get("ETH-USD")!!
+        assertEquals(null, ethPosition.calculated[CalculationPeriod.post]?.liquidationPrice)
 
-        if (perp.staticTyping) {
-            perp.tradeInMarket("BTC-USD", 0)
+        perp.tradeInMarket("BTC-USD", 0)
 
-            val subaccount = perp.internalState.wallet.account.subaccounts[0]!!
-            val btcPosition = subaccount.positions?.get("BTC-USD")!!
-            assertEquals(null, btcPosition.calculated[CalculationPeriod.post]?.liquidationPrice)
-            val ethPosition = subaccount.positions?.get("ETH-USD")!!
-            assertEquals(null, ethPosition.calculated[CalculationPeriod.post]?.liquidationPrice)
-        } else {
-            test(
-                {
-                    perp.tradeInMarket("BTC-USD", 0)
-                },
-                """
-            {
-                "wallet": {
-                    "account": {
-                        "subaccounts": {
-                            "0": {
-                                "positions": {
-                                    "BTC-USD": {
-                                        "liquidationPrice": {
-                                            "postOrder": null
-                                        }
-                                    },
-                                    "ETH-USD": {
-                                        "liquidationPrice": {
-                                            "postOrder": null
-                                        }
-                                    }
-                                }
-                            }
-                        }
-                    }
-                }
-            }
-                """.trimIndent(),
-            )
-        }
+        subaccount = perp.internalState.wallet.account.subaccounts[0]!!
+        btcPosition = subaccount.positions?.get("BTC-USD")!!
+        assertEquals(null, btcPosition.calculated[CalculationPeriod.post]?.liquidationPrice)
+        ethPosition = subaccount.positions?.get("ETH-USD")!!
+        assertEquals(null, ethPosition.calculated[CalculationPeriod.post]?.liquidationPrice)
 
-        if (perp.staticTyping) {
-            perp.tradeInMarket("ETH-USD", 0)
+        perp.tradeInMarket("ETH-USD", 0)
 
-            val subaccount = perp.internalState.wallet.account.subaccounts[0]!!
-            val btcPosition = subaccount.positions?.get("BTC-USD")!!
-            assertEquals(null, btcPosition.calculated[CalculationPeriod.post]?.liquidationPrice)
-            val ethPosition = subaccount.positions?.get("ETH-USD")!!
-            assertEquals(null, ethPosition.calculated[CalculationPeriod.post]?.liquidationPrice)
-        } else {
-            test(
-                {
-                    perp.tradeInMarket("ETH-USD", 0)
-                },
-                """
-            {
-                "wallet": {
-                    "account": {
-                        "subaccounts": {
-                            "0": {
-                                "positions": {
-                                    "BTC-USD": {
-                                        "liquidationPrice": {
-                                            "postOrder": null
-                                        }
-                                    },
-                                    "ETH-USD": {
-                                        "liquidationPrice": {
-                                            "postOrder": null
-                                        }
-                                    }
-                                }
-                            }
-                        }
-                    }
-                }
-            }
-                """.trimIndent(),
-            )
-        }
+        subaccount = perp.internalState.wallet.account.subaccounts[0]!!
+        btcPosition = subaccount.positions?.get("BTC-USD")!!
+        assertEquals(null, btcPosition.calculated[CalculationPeriod.post]?.liquidationPrice)
+        ethPosition = subaccount.positions?.get("ETH-USD")!!
+        assertEquals(null, ethPosition.calculated[CalculationPeriod.post]?.liquidationPrice)
     }
 }
