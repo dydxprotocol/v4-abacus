@@ -57,47 +57,6 @@ internal class TradePositionStateValidator(
         return errors
     }
 
-    override fun validateTradeDeprecated(
-        subaccount: Map<String, Any>?,
-        market: Map<String, Any>?,
-        configs: Map<String, Any>?,
-        trade: Map<String, Any>,
-        change: PositionChange,
-        restricted: Boolean,
-        environment: V4Environment?,
-    ): List<Any>? {
-        val marketId = parser.asString(trade["marketId"])
-        val position = if (marketId != null) {
-            parser.asNativeMap(
-                parser.value(
-                    subaccount,
-                    "openPositions.$marketId",
-                ),
-            )
-        } else {
-            null
-        }
-
-        val errors = mutableListOf<Any>()
-        if (position != null) {
-            val positionSizeError = validatePositionSizeDeprecated(
-                position,
-                market,
-            )
-            if (positionSizeError != null) {
-                errors.add(positionSizeError)
-            }
-            val positionFlipError = validatePositionFlipDeprecated(
-                change,
-                trade,
-            )
-            if (positionFlipError != null) {
-                errors.add(positionFlipError)
-            }
-        }
-        return if (errors.size > 0) errors else null
-    }
-
     private fun validatePositionSize(
         position: InternalPerpetualPosition?,
         market: InternalMarketState?,
@@ -137,44 +96,6 @@ internal class TradePositionStateValidator(
         }
     }
 
-    private fun validatePositionSizeDeprecated(
-        position: Map<String, Any>?,
-        market: Map<String, Any>?,
-    ): Map<String, Any>? {
-        /*
-        NEW_POSITION_SIZE_OVER_MAX
-         */
-        val size = parser.asDouble(parser.value(position, "size.postOrder")) ?: return null
-        val maxSize =
-            parser.asDouble(parser.value(market, "configs.maxPositionSize")) ?: Numeric.double.ZERO
-        if (maxSize == Numeric.double.ZERO) {
-            return null
-        }
-        val symbol = parser.asString(market?.get("assetId")) ?: return null
-        return if (size > maxSize) {
-            errorDeprecated(
-                type = "ERROR",
-                errorCode = "NEW_POSITION_SIZE_OVER_MAX",
-                fields = listOf("size.size"),
-                actionStringKey = "APP.TRADE.MODIFY_SIZE_FIELD",
-                titleStringKey = "ERRORS.TRADE_BOX_TITLE.NEW_POSITION_SIZE_OVER_MAX",
-                textStringKey = "ERRORS.TRADE_BOX.NEW_POSITION_SIZE_OVER_MAX",
-                textParams = mapOf(
-                    "MAX_SIZE" to mapOf(
-                        "value" to maxSize,
-                        "format" to "size",
-                    ),
-                    "SYMBOL" to mapOf(
-                        "value" to symbol,
-                        "format" to "string",
-                    ),
-                ),
-            )
-        } else {
-            null
-        }
-    }
-
     private fun validatePositionFlip(
         change: PositionChange,
         trade: InternalTradeInputState,
@@ -187,32 +108,6 @@ internal class TradePositionStateValidator(
             when (change) {
                 PositionChange.NEW, PositionChange.INCREASING, PositionChange.CROSSING -> error(
                     type = ErrorType.error,
-                    errorCode = "ORDER_WOULD_FLIP_POSITION",
-                    fields = listOf("size.size"),
-                    actionStringKey = "APP.TRADE.MODIFY_SIZE_FIELD",
-                    titleStringKey = "ERRORS.TRADE_BOX_TITLE.ORDER_WOULD_FLIP_POSITION",
-                    textStringKey = "ERRORS.TRADE_BOX.ORDER_WOULD_FLIP_POSITION",
-                )
-
-                else -> null
-            }
-        } else {
-            null
-        }
-    }
-
-    private fun validatePositionFlipDeprecated(
-        change: PositionChange,
-        trade: Map<String, Any>,
-    ): Map<String, Any>? {
-        /*
-        ORDER_WOULD_FLIP_POSITION
-         */
-        val needsReduceOnly = parser.asBool(parser.value(trade, "options.needsReduceOnly")) ?: false
-        return if (needsReduceOnly && parser.asBool(trade["reduceOnly"]) == true) {
-            when (change) {
-                PositionChange.NEW, PositionChange.INCREASING, PositionChange.CROSSING -> errorDeprecated(
-                    type = "ERROR",
                     errorCode = "ORDER_WOULD_FLIP_POSITION",
                     fields = listOf("size.size"),
                     actionStringKey = "APP.TRADE.MODIFY_SIZE_FIELD",

@@ -44,26 +44,6 @@ internal class TradeResctrictedValidator(
         return closeOnlyError?.let { listOf(it) }
     }
 
-    override fun validateTradeDeprecated(
-        subaccount: Map<String, Any>?,
-        market: Map<String, Any>?,
-        configs: Map<String, Any>?,
-        trade: Map<String, Any>,
-        change: PositionChange,
-        restricted: Boolean,
-        environment: V4Environment?,
-    ): List<Any>? {
-        val closeOnlyError =
-            validateClosingOnlyDeprecated(
-                parser = parser,
-                market = market,
-                change = change,
-                restricted = restricted,
-            )
-
-        return closeOnlyError?.let { listOf(it) }
-    }
-
     private fun validateClosingOnly(
         market: InternalMarketState?,
         assets: Map<String, Asset>?,
@@ -116,71 +96,6 @@ internal class TradeResctrictedValidator(
         } else {
             error(
                 type = ErrorType.error,
-                errorCode = "CLOSED_MARKET",
-                fields = null,
-                actionStringKey = null,
-                titleStringKey = "WARNINGS.TRADE_BOX_TITLE.MARKET_STATUS_CLOSE_ONLY",
-                textStringKey = "WARNINGS.TRADE_BOX.MARKET_STATUS_CLOSE_ONLY",
-                textParams = mapOf(
-                    "MARKET" to mapOf(
-                        "value" to marketId,
-                        "format" to "string",
-                    ),
-                ),
-            )
-        }
-    }
-
-    private fun validateClosingOnlyDeprecated(
-        parser: ParserProtocol,
-        market: Map<String, Any>?,
-        change: PositionChange,
-        restricted: Boolean,
-    ): Map<String, Any>? {
-        val marketId = parser.asNativeMap(market?.get("assetId")) ?: ""
-        val canTrade = parser.asBool(parser.value(market, "status.canTrade")) ?: true
-        val canReduce = parser.asBool(parser.value(market, "status.canReduce")) ?: true
-        return if (canTrade) {
-            if (restricted) {
-                when (change) {
-                    PositionChange.NEW, PositionChange.INCREASING, PositionChange.CROSSING ->
-                        errorDeprecated(
-                            type = "ERROR",
-                            errorCode = "RESTRICTED_USER",
-                            fields = null,
-                            actionStringKey = null,
-                            titleStringKey = "ERRORS.TRADE_BOX_TITLE.MARKET_ORDER_CLOSE_POSITION_ONLY",
-                            textStringKey = "ERRORS.TRADE_BOX.MARKET_ORDER_CLOSE_POSITION_ONLY",
-                        )
-
-                    else -> null
-                }
-            } else {
-                return null
-            }
-        } else if (canReduce) {
-            when (change) {
-                PositionChange.NEW, PositionChange.INCREASING, PositionChange.CROSSING ->
-                    errorDeprecated(
-                        type = "ERROR",
-                        errorCode = "CLOSE_ONLY_MARKET",
-                        fields = listOf("size.size"),
-                        actionStringKey = "APP.TRADE.MODIFY_SIZE_FIELD",
-                        titleStringKey = "WARNINGS.TRADE_BOX_TITLE.MARKET_STATUS_CLOSE_ONLY",
-                        textStringKey = "WARNINGS.TRADE_BOX.MARKET_STATUS_CLOSE_ONLY",
-                        textParams = mapOf(
-                            "MARKET" to mapOf(
-                                "value" to marketId,
-                                "format" to "string",
-                            ),
-                        ),
-                    )
-
-                else -> null
-            }
-        } else {
-            errorDeprecated(
-                type = "ERROR",
                 errorCode = "CLOSED_MARKET",
                 fields = null,
                 actionStringKey = null,

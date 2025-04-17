@@ -32,18 +32,6 @@ internal interface ValidatorProtocol {
         inputType: InputType,
         environment: V4Environment?,
     ): List<ValidationError>?
-
-    fun validateDeprecated(
-        wallet: Map<String, Any>?,
-        user: Map<String, Any>?,
-        subaccount: Map<String, Any>?,
-        markets: Map<String, Any>?,
-        configs: Map<String, Any>?,
-        currentBlockAndHeight: BlockAndTime?,
-        transaction: Map<String, Any>,
-        transactionType: String,
-        environment: V4Environment?,
-    ): List<Any>?
 }
 
 internal interface TradeValidatorProtocol {
@@ -54,16 +42,6 @@ internal interface TradeValidatorProtocol {
         restricted: Boolean,
         environment: V4Environment?,
     ): List<ValidationError>?
-
-    fun validateTradeDeprecated(
-        subaccount: Map<String, Any>?,
-        market: Map<String, Any>?,
-        configs: Map<String, Any>?,
-        trade: Map<String, Any>,
-        change: PositionChange,
-        restricted: Boolean,
-        environment: V4Environment?,
-    ): List<Any>?
 }
 
 internal interface TransferValidatorProtocol {
@@ -73,14 +51,4 @@ internal interface TransferValidatorProtocol {
         restricted: Boolean,
         environment: V4Environment?,
     ): List<ValidationError>?
-
-    fun validateTransferDeprecated(
-        wallet: Map<String, Any>?,
-        subaccount: Map<String, Any>?,
-        transfer: Map<String, Any>,
-        configs: Map<String, Any>?,
-        currentBlockAndHeight: BlockAndTime?,
-        restricted: Boolean,
-        environment: V4Environment?,
-    ): List<Any>?
 }

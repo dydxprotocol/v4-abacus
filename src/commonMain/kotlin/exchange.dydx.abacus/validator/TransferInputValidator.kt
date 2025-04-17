@@ -57,38 +57,4 @@ internal class TransferInputValidator(
 
         return errors
     }
-
-    override fun validateDeprecated(
-        wallet: Map<String, Any>?,
-        user: Map<String, Any>?,
-        subaccount: Map<String, Any>?,
-        markets: Map<String, Any>?,
-        configs: Map<String, Any>?,
-        currentBlockAndHeight: BlockAndTime?,
-        transaction: Map<String, Any>,
-        transactionType: String,
-        environment: V4Environment?,
-    ): List<Any>? {
-        if (transactionType == "transfer") {
-            val errors = mutableListOf<Any>()
-            val restricted = parser.asBool(user?.get("restricted")) ?: false
-            for (validator in transferValidators) {
-                val validatorErrors =
-                    validator.validateTransferDeprecated(
-                        wallet = wallet,
-                        subaccount = subaccount,
-                        transfer = transaction,
-                        configs = configs,
-                        currentBlockAndHeight = currentBlockAndHeight,
-                        restricted = restricted,
-                        environment = environment,
-                    )
-                if (validatorErrors != null) {
-                    errors.addAll(validatorErrors)
-                }
-            }
-            return errors
-        }
-        return null
-    }
 }

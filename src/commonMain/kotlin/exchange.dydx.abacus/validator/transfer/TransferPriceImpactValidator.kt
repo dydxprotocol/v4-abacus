@@ -49,16 +49,4 @@ internal class TransferPriceImpactValidator(
             TransferType.transferOut -> return null
         }
     }
-
-    override fun validateTransferDeprecated(
-        wallet: Map<String, Any>?,
-        subaccount: Map<String, Any>?,
-        transfer: Map<String, Any>,
-        configs: Map<String, Any>?,
-        currentBlockAndHeight: BlockAndTime?,
-        restricted: Boolean,
-        environment: V4Environment?
-    ): List<Any>? {
-        return null
-    }
 }

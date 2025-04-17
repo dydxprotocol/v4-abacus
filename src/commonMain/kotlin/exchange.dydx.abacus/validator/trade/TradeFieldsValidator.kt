@@ -124,16 +124,4 @@ internal class TradeFieldsValidator(
 
         return errors
     }
-
-    override fun validateTradeDeprecated(
-        subaccount: Map<String, Any>?,
-        market: Map<String, Any>?,
-        configs: Map<String, Any>?,
-        trade: Map<String, Any>,
-        change: PositionChange,
-        restricted: Boolean,
-        environment: V4Environment?
-    ): List<Any>? {
-        return null
-    }
 }

@@ -5,7 +5,6 @@ import exchange.dydx.abacus.state.manager.BlockAndTime
 import exchange.dydx.abacus.state.manager.V4Environment
 import exchange.dydx.abacus.utils.ParsingHelper
 import exchange.dydx.abacus.utils.mutable
-import exchange.dydx.abacus.utils.safeSet
 import kotlinx.datetime.Instant
 
 internal enum class ComparisonOrder {
@@ -55,25 +54,6 @@ internal open class BaseProcessor(val parser: ParserProtocol) : BaseProcessorPro
         return output
     }
 
-    internal fun transform(
-        existing: Map<String, Any>?,
-        input: Map<*, *>,
-        state: String,
-        keymap: Map<String, Map<String, String>>
-    ): MutableMap<String, Any> {
-        val output = existing?.mutable() ?: mutableMapOf<String, Any>()
-        for ((type, map) in keymap) {
-            for ((key, target) in map) {
-                val value: Any? = value(input, key, type)
-                val existingValue = parser.asNativeMap(existing?.get(value))
-                val outputMap = existingValue?.mutable() ?: mutableMapOf<String, Any>()
-                outputMap.safeSet(state, value)
-                output[target] = outputMap
-            }
-        }
-        return output
-    }
-
     private fun value(input: Map<*, *>, key: String, type: String): Any? {
         val result = parser.value(input, key)
         when (type) {
@@ -109,31 +89,6 @@ internal open class BaseProcessor(val parser: ParserProtocol) : BaseProcessorPro
                 return null
             }
         }
-    }
-
-    internal fun receivedObject(
-        existing: Map<String, Any>?,
-        key: String,
-        payload: Any?,
-        process: (Any?, payload: Any) -> Any?
-    ): Map<String, Any>? {
-        if (payload != null) {
-            val modified = existing?.toMutableMap() ?: mutableMapOf()
-            val map = parser.asNativeMap(payload)
-            val transformed = if (map != null) {
-                process(parser.asNativeMap(modified[key]), map)
-            } else {
-                val list = parser.asNativeList(payload)
-                if (list != null) {
-                    process(modified[key], list)
-                } else {
-                    null
-                }
-            }
-            modified.safeSet(key, transformed)
-            return modified
-        }
-        return existing
     }
 
     internal open fun received(
@@ -228,22 +183,6 @@ internal open class BaseProcessor(val parser: ParserProtocol) : BaseProcessorPro
         } else {
             incoming
         }
-    }
-
-    internal open fun mergeDeprecated(
-        parser: ParserProtocol,
-        existing: List<Any>?,
-        incoming: List<Any>?,
-        timeField: String,
-        ascending: Boolean = true
-    ): List<Any>? {
-        return merge(
-            parser = parser,
-            existing = existing,
-            incoming = incoming,
-            timeField = { item -> parser.asDatetime(parser.asNativeMap(item)?.get(timeField)) },
-            ascending = ascending,
-        )
     }
 
     private fun ascending(first: Instant, second: Instant): Boolean {
