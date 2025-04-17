@@ -114,7 +114,7 @@ open class TradingStateMachine(
     internal val routerProcessor = SkipProcessor(
         parser = parser,
         internalState = internalState.input.transfer,
-        staticTyping = true
+        staticTyping = true,
     )
     internal val rewardsProcessor = RewardsParamsProcessor(parser)
     internal val launchIncentiveProcessor = LaunchIncentiveProcessor(parser)

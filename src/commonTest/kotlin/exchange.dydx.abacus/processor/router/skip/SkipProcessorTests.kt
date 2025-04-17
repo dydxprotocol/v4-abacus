@@ -340,7 +340,7 @@ class SkipProcessorTests {
             ),
         )
 
-        //assertEquals(expectedModified, modified)
+        // assertEquals(expectedModified, modified)
         assertEquals(payload["chain_to_assets_map"], skipProcessor.skipTokens)
         assertEquals(expectedTokens, internalState.tokens)
         assertEquals(expectedTokenResources, internalState.tokenResources)
