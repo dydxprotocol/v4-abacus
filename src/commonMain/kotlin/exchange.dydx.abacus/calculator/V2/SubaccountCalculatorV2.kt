@@ -1,7 +1,6 @@
 package exchange.dydx.abacus.calculator.v2
 
 import abs
-import exchange.dydx.abacus.calculator.CalculationPeriod
 import exchange.dydx.abacus.output.MarketConfigs
 import exchange.dydx.abacus.output.account.PositionSide
 import exchange.dydx.abacus.output.input.MarginMode
@@ -16,6 +15,17 @@ import exchange.dydx.abacus.state.internalstate.InternalSubaccountState
 import exchange.dydx.abacus.utils.Numeric
 import indexer.codegen.IndexerPerpetualPositionStatus
 import kotlin.math.max
+
+internal enum class CalculationPeriod(val rawValue: String) {
+    current("current"),
+    post("postOrder"),
+    settled("postAllOrders");
+
+    companion object {
+        operator fun invoke(rawValue: String) =
+            CalculationPeriod.entries.firstOrNull { it.rawValue == rawValue }
+    }
+}
 
 internal class SubaccountCalculatorV2(
     val parser: ParserProtocol

@@ -1,6 +1,6 @@
 package exchange.dydx.abacus.payload.v4
 
-import exchange.dydx.abacus.calculator.CalculationPeriod
+import exchange.dydx.abacus.calculator.v2.CalculationPeriod
 import exchange.dydx.abacus.tests.extensions.loadv4TradesChanged
 import exchange.dydx.abacus.tests.extensions.socket
 import kotlin.test.Test

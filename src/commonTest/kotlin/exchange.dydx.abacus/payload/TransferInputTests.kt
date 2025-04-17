@@ -1,6 +1,6 @@
 package exchange.dydx.abacus.payload
 
-import exchange.dydx.abacus.calculator.CalculationPeriod
+import exchange.dydx.abacus.calculator.v2.CalculationPeriod
 import exchange.dydx.abacus.output.input.TransferType
 import exchange.dydx.abacus.payload.v4.V4BaseTests
 import exchange.dydx.abacus.state.model.TransferInputField

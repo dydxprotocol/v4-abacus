@@ -1,6 +1,5 @@
 package exchange.dydx.abacus.calculator.v2
 
-import exchange.dydx.abacus.calculator.CalculationPeriod
 import exchange.dydx.abacus.output.input.TransferInputSummary
 import exchange.dydx.abacus.output.input.TransferType
 import exchange.dydx.abacus.protocols.ParserProtocol

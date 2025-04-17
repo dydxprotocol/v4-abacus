@@ -1,12 +1,8 @@
-package exchange.dydx.abacus.calculator.v2
+package exchange.dydx.abacus.calculator
 
 import abs
-import exchange.dydx.abacus.calculator.CalculationPeriod
-import exchange.dydx.abacus.calculator.SlippageConstants.MAJOR_MARKETS
-import exchange.dydx.abacus.calculator.SlippageConstants.STOP_MARKET_ORDER_SLIPPAGE_BUFFER
-import exchange.dydx.abacus.calculator.SlippageConstants.STOP_MARKET_ORDER_SLIPPAGE_BUFFER_MAJOR_MARKET
-import exchange.dydx.abacus.calculator.SlippageConstants.TAKE_PROFIT_MARKET_ORDER_SLIPPAGE_BUFFER
-import exchange.dydx.abacus.calculator.SlippageConstants.TAKE_PROFIT_MARKET_ORDER_SLIPPAGE_BUFFER_MAJOR_MARKET
+import exchange.dydx.abacus.calculator.v2.CalculationPeriod
+import exchange.dydx.abacus.calculator.v2.tradeinput.SlippageConstants
 import exchange.dydx.abacus.output.input.OrderSide
 import exchange.dydx.abacus.output.input.OrderType
 import exchange.dydx.abacus.output.input.TriggerOrderInputSummary
@@ -18,6 +14,10 @@ import exchange.dydx.abacus.state.internalstate.InternalTriggerOrdersInputState
 import exchange.dydx.abacus.utils.Numeric
 import indexer.codegen.IndexerPositionSide
 import kotlin.math.max
+
+internal object TriggerOrdersConstants {
+    const val TRIGGER_ORDER_DEFAULT_DURATION_DAYS = 90.0
+}
 
 internal class TriggerOrdersInputCalculatorV2() {
     fun calculate(
@@ -76,7 +76,7 @@ internal class TriggerOrdersInputCalculatorV2() {
         val notionalTotal = currentPosition.notionalTotal ?: return triggerPrices
         val leverage = currentPosition.leverage ?: return triggerPrices
 
-        if (size == null || size == Numeric.double.ZERO || notionalTotal == Numeric.double.ZERO || leverage == Numeric.double.ZERO) {
+        if (size == null || size == Numeric.Companion.double.ZERO || notionalTotal == Numeric.Companion.double.ZERO || leverage == Numeric.Companion.double.ZERO) {
             // A valid position size should never have 0 size, notional value or leverage.
             return triggerPrices;
         }
@@ -306,25 +306,25 @@ internal class TriggerOrdersInputCalculatorV2() {
         when (triggerOrder.type) {
             OrderType.TakeProfitMarket, OrderType.StopMarket -> {
                 val triggerPrice = triggerOrder.price?.triggerPrice
-                val majorMarket = MAJOR_MARKETS.contains(marketId)
+                val majorMarket = SlippageConstants.MAJOR_MARKETS.contains(marketId)
                 val slippagePercentage = if (majorMarket) {
                     if (triggerOrder.type == OrderType.StopMarket) {
-                        STOP_MARKET_ORDER_SLIPPAGE_BUFFER_MAJOR_MARKET
+                        SlippageConstants.STOP_MARKET_ORDER_SLIPPAGE_BUFFER_MAJOR_MARKET
                     } else {
-                        TAKE_PROFIT_MARKET_ORDER_SLIPPAGE_BUFFER_MAJOR_MARKET
+                        SlippageConstants.TAKE_PROFIT_MARKET_ORDER_SLIPPAGE_BUFFER_MAJOR_MARKET
                     }
                 } else {
                     if (triggerOrder.type == OrderType.StopMarket) {
-                        STOP_MARKET_ORDER_SLIPPAGE_BUFFER
+                        SlippageConstants.STOP_MARKET_ORDER_SLIPPAGE_BUFFER
                     } else {
-                        TAKE_PROFIT_MARKET_ORDER_SLIPPAGE_BUFFER
+                        SlippageConstants.TAKE_PROFIT_MARKET_ORDER_SLIPPAGE_BUFFER
                     }
                 }
                 val calculatedLimitPrice = if (triggerPrice != null) {
                     if (triggerOrder.side == OrderSide.Buy) {
-                        triggerPrice * (Numeric.double.ONE + slippagePercentage)
+                        triggerPrice * (Numeric.Companion.double.ONE + slippagePercentage)
                     } else {
-                        triggerPrice * (Numeric.double.ONE - slippagePercentage)
+                        triggerPrice * (Numeric.Companion.double.ONE - slippagePercentage)
                     }
                 } else {
                     null

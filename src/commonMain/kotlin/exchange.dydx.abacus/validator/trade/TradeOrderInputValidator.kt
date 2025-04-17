@@ -1,7 +1,7 @@
 package exchange.dydx.abacus.validator.trade
 
 import abs
-import exchange.dydx.abacus.calculator.CalculationPeriod
+import exchange.dydx.abacus.calculator.v2.CalculationPeriod
 import exchange.dydx.abacus.output.input.ErrorType
 import exchange.dydx.abacus.output.input.InputType
 import exchange.dydx.abacus.output.input.MarginMode

@@ -1,7 +1,6 @@
 package exchange.dydx.abacus.calculator.v2
 
 import abs
-import exchange.dydx.abacus.calculator.CalculationPeriod
 import exchange.dydx.abacus.output.MarketConfigs
 import exchange.dydx.abacus.output.input.OrderStatus
 import exchange.dydx.abacus.protocols.ParserProtocol

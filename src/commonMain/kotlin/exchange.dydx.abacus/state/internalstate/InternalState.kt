@@ -1,7 +1,7 @@
 package exchange.dydx.abacus.state.internalstate
 
 import com.ionspin.kotlin.bignum.decimal.BigDecimal
-import exchange.dydx.abacus.calculator.CalculationPeriod
+import exchange.dydx.abacus.calculator.v2.CalculationPeriod
 import exchange.dydx.abacus.functional.vault.ThirtyDayPnl
 import exchange.dydx.abacus.functional.vault.VaultDetails
 import exchange.dydx.abacus.output.Asset

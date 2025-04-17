@@ -2,8 +2,8 @@ package exchange.dydx.abacus.state.v2.supervisor
 
 import abs
 import exchange.dydx.abacus.calculator.MarginCalculator
-import exchange.dydx.abacus.calculator.SlippageConstants.MARKET_ORDER_MAX_SLIPPAGE
 import exchange.dydx.abacus.calculator.TriggerOrdersConstants.TRIGGER_ORDER_DEFAULT_DURATION_DAYS
+import exchange.dydx.abacus.calculator.v2.tradeinput.SlippageConstants.MARKET_ORDER_MAX_SLIPPAGE
 import exchange.dydx.abacus.output.account.SubaccountOrder
 import exchange.dydx.abacus.output.account.SubaccountPosition
 import exchange.dydx.abacus.output.input.IsolatedMarginAdjustmentType

@@ -1,7 +1,6 @@
 package exchange.dydx.abacus.calculator.v2
 
 import abs
-import exchange.dydx.abacus.calculator.CalculationPeriod
 import exchange.dydx.abacus.output.TradeStatesWithStringValues
 import exchange.dydx.abacus.output.account.SubaccountPositionResources
 import exchange.dydx.abacus.output.input.OrderSide

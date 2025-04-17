@@ -1,9 +1,9 @@
 package exchange.dydx.abacus.processor.input
 
 import abs
-import exchange.dydx.abacus.calculator.CalculationPeriod
 import exchange.dydx.abacus.calculator.MarginCalculator
-import exchange.dydx.abacus.calculator.TradeCalculation
+import exchange.dydx.abacus.calculator.v2.CalculationPeriod
+import exchange.dydx.abacus.calculator.v2.tradeinput.TradeCalculation
 import exchange.dydx.abacus.calculator.v2.tradeinput.TradeInputCalculatorV2
 import exchange.dydx.abacus.output.PerpetualMarketType
 import exchange.dydx.abacus.output.input.InputType

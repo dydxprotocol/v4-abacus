@@ -1,9 +1,8 @@
 package exchange.dydx.abacus.calculator.v2.tradeinput
 
 import abs
-import exchange.dydx.abacus.calculator.CalculationPeriod
-import exchange.dydx.abacus.calculator.TradeCalculation
 import exchange.dydx.abacus.calculator.v2.AccountTransformerV2
+import exchange.dydx.abacus.calculator.v2.CalculationPeriod
 import exchange.dydx.abacus.output.FeeTier
 import exchange.dydx.abacus.output.input.MarginMode
 import exchange.dydx.abacus.output.input.OrderSide
@@ -23,6 +22,30 @@ import exchange.dydx.abacus.state.internalstate.safeCreate
 import exchange.dydx.abacus.state.model.ClosePositionInputField
 import exchange.dydx.abacus.utils.Numeric
 import exchange.dydx.abacus.utils.Rounder
+import kollections.JsExport
+import kotlinx.serialization.Serializable
+
+@JsExport
+@Serializable
+enum class TradeCalculation(val rawValue: String) {
+    trade("TRADE"),
+    closePosition("CLOSE_POSITION");
+
+    companion object {
+        operator fun invoke(rawValue: String) =
+            TradeCalculation.entries.firstOrNull { it.rawValue == rawValue }
+    }
+}
+
+internal object SlippageConstants {
+    val MAJOR_MARKETS = listOf("ETH-USD", "BTC-USD", "SOL-USD")
+    const val MARKET_ORDER_MAX_SLIPPAGE = 0.05
+    const val STOP_MARKET_ORDER_SLIPPAGE_BUFFER_MAJOR_MARKET = 0.05
+    const val TAKE_PROFIT_MARKET_ORDER_SLIPPAGE_BUFFER_MAJOR_MARKET = 0.05
+    const val STOP_MARKET_ORDER_SLIPPAGE_BUFFER = 0.1
+    const val TAKE_PROFIT_MARKET_ORDER_SLIPPAGE_BUFFER = 0.1
+    const val SLIPPAGE_STEP_SIZE = 0.00001
+}
 
 internal class TradeInputCalculatorV2(
     private val parser: ParserProtocol,

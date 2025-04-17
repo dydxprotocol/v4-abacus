@@ -3,7 +3,7 @@
 package exchange.dydx.abacus.calculator.v2.tradeinput
 
 import abs
-import exchange.dydx.abacus.calculator.CalculationPeriod
+import exchange.dydx.abacus.calculator.v2.CalculationPeriod
 import exchange.dydx.abacus.output.input.MarginMode
 import exchange.dydx.abacus.output.input.OrderSide
 import exchange.dydx.abacus.output.input.OrderbookUsage

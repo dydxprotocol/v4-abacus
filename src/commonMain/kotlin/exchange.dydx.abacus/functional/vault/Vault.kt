@@ -1,5 +1,5 @@
 package exchange.dydx.abacus.functional.vault
-import exchange.dydx.abacus.calculator.CalculationPeriod
+import exchange.dydx.abacus.calculator.v2.CalculationPeriod
 import exchange.dydx.abacus.calculator.v2.SubaccountCalculatorV2
 import exchange.dydx.abacus.output.PerpetualMarket
 import exchange.dydx.abacus.processor.wallet.account.AssetPositionProcessor

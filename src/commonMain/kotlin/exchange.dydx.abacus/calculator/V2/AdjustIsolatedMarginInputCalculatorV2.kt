@@ -1,6 +1,5 @@
 package exchange.dydx.abacus.calculator.v2
 
-import exchange.dydx.abacus.calculator.CalculationPeriod
 import exchange.dydx.abacus.output.input.AdjustIsolatedMarginInputOptions
 import exchange.dydx.abacus.output.input.AdjustIsolatedMarginInputSummary
 import exchange.dydx.abacus.output.input.IsolatedMarginAdjustmentType

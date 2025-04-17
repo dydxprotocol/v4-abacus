@@ -1,7 +1,7 @@
 package exchange.dydx.abacus.payload.v4
 
 import com.ionspin.kotlin.bignum.decimal.toBigDecimal
-import exchange.dydx.abacus.calculator.CalculationPeriod
+import exchange.dydx.abacus.calculator.v2.CalculationPeriod
 import exchange.dydx.abacus.output.EquityTier
 import exchange.dydx.abacus.output.account.FillLiquidity
 import exchange.dydx.abacus.output.account.TransferRecordType
