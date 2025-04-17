@@ -1,6 +1,6 @@
 package exchange.dydx.abacus.processor.input
 
-import exchange.dydx.abacus.calculator.v2.AdjustIsolatedMarginInputCalculatorV2
+import exchange.dydx.abacus.calculator.AdjustIsolatedMarginInputCalculator
 import exchange.dydx.abacus.output.input.InputType
 import exchange.dydx.abacus.output.input.IsolatedMarginAdjustmentType
 import exchange.dydx.abacus.output.input.IsolatedMarginInputType
@@ -38,7 +38,7 @@ internal class AdjustIsolatedMarginInputProcessor(
             inputState.adjustIsolatedMargin = InternalAdjustIsolatedMarginInputState()
             inputState.adjustIsolatedMargin.parentSubaccountNumber = parentSubaccountNumber
 
-            val calculator = AdjustIsolatedMarginInputCalculatorV2(parser)
+            val calculator = AdjustIsolatedMarginInputCalculator(parser)
             inputState.adjustIsolatedMargin = calculator.calculate(
                 adjustIsolatedMargin = inputState.adjustIsolatedMargin,
                 walletState = walletState,

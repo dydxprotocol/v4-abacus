@@ -1,14 +1,14 @@
-package exchange.dydx.abacus.calculator.v2.tradeinput
+package exchange.dydx.abacus.calculator.tradeinput
 
 import abs
-import exchange.dydx.abacus.calculator.v2.CalculationPeriod
-import exchange.dydx.abacus.calculator.v2.tradeinput.SlippageConstants.MAJOR_MARKETS
-import exchange.dydx.abacus.calculator.v2.tradeinput.SlippageConstants.MARKET_ORDER_MAX_SLIPPAGE
-import exchange.dydx.abacus.calculator.v2.tradeinput.SlippageConstants.SLIPPAGE_STEP_SIZE
-import exchange.dydx.abacus.calculator.v2.tradeinput.SlippageConstants.STOP_MARKET_ORDER_SLIPPAGE_BUFFER
-import exchange.dydx.abacus.calculator.v2.tradeinput.SlippageConstants.STOP_MARKET_ORDER_SLIPPAGE_BUFFER_MAJOR_MARKET
-import exchange.dydx.abacus.calculator.v2.tradeinput.SlippageConstants.TAKE_PROFIT_MARKET_ORDER_SLIPPAGE_BUFFER
-import exchange.dydx.abacus.calculator.v2.tradeinput.SlippageConstants.TAKE_PROFIT_MARKET_ORDER_SLIPPAGE_BUFFER_MAJOR_MARKET
+import exchange.dydx.abacus.calculator.CalculationPeriod
+import exchange.dydx.abacus.calculator.tradeinput.SlippageConstants.MAJOR_MARKETS
+import exchange.dydx.abacus.calculator.tradeinput.SlippageConstants.MARKET_ORDER_MAX_SLIPPAGE
+import exchange.dydx.abacus.calculator.tradeinput.SlippageConstants.SLIPPAGE_STEP_SIZE
+import exchange.dydx.abacus.calculator.tradeinput.SlippageConstants.STOP_MARKET_ORDER_SLIPPAGE_BUFFER
+import exchange.dydx.abacus.calculator.tradeinput.SlippageConstants.STOP_MARKET_ORDER_SLIPPAGE_BUFFER_MAJOR_MARKET
+import exchange.dydx.abacus.calculator.tradeinput.SlippageConstants.TAKE_PROFIT_MARKET_ORDER_SLIPPAGE_BUFFER
+import exchange.dydx.abacus.calculator.tradeinput.SlippageConstants.TAKE_PROFIT_MARKET_ORDER_SLIPPAGE_BUFFER_MAJOR_MARKET
 import exchange.dydx.abacus.output.FeeTier
 import exchange.dydx.abacus.output.input.MarginMode
 import exchange.dydx.abacus.output.input.OrderSide

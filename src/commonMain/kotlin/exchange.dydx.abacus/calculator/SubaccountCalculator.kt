@@ -1,4 +1,4 @@
-package exchange.dydx.abacus.calculator.v2
+package exchange.dydx.abacus.calculator
 
 import abs
 import exchange.dydx.abacus.output.MarketConfigs
@@ -14,6 +14,7 @@ import exchange.dydx.abacus.state.internalstate.InternalSubaccountCalculated
 import exchange.dydx.abacus.state.internalstate.InternalSubaccountState
 import exchange.dydx.abacus.utils.Numeric
 import indexer.codegen.IndexerPerpetualPositionStatus
+import kotlin.collections.iterator
 import kotlin.math.max
 
 internal enum class CalculationPeriod(val rawValue: String) {
@@ -27,7 +28,7 @@ internal enum class CalculationPeriod(val rawValue: String) {
     }
 }
 
-internal class SubaccountCalculatorV2(
+internal class SubaccountCalculator(
     val parser: ParserProtocol
 ) {
     fun calculate(

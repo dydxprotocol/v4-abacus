@@ -1,6 +1,6 @@
 package exchange.dydx.abacus.payload.v4
 
-import exchange.dydx.abacus.calculator.v2.CalculationPeriod
+import exchange.dydx.abacus.calculator.CalculationPeriod
 import exchange.dydx.abacus.output.input.ErrorFormat
 import exchange.dydx.abacus.output.input.ErrorType
 import exchange.dydx.abacus.output.input.OrderSide

@@ -1,4 +1,4 @@
-package exchange.dydx.abacus.calculator.v2
+package exchange.dydx.abacus.calculator
 
 import abs
 import exchange.dydx.abacus.output.MarketConfigs
@@ -12,11 +12,12 @@ import exchange.dydx.abacus.state.internalstate.InternalPerpetualPendingPosition
 import exchange.dydx.abacus.state.internalstate.InternalSubaccountState
 import exchange.dydx.abacus.utils.NUM_PARENT_SUBACCOUNTS
 import kollections.toIList
+import kotlin.collections.iterator
 
-internal class AccountCalculatorV2(
+internal class AccountCalculator(
     val parser: ParserProtocol,
     private val useParentSubaccount: Boolean,
-    private val subaccountCalculator: SubaccountCalculatorV2 = SubaccountCalculatorV2(parser),
+    private val subaccountCalculator: SubaccountCalculator = SubaccountCalculator(parser),
 ) {
     fun calculate(
         account: InternalAccountState,

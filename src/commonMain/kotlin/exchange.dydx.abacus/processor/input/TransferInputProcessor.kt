@@ -1,6 +1,6 @@
 package exchange.dydx.abacus.processor.input
 
-import exchange.dydx.abacus.calculator.v2.TransferInputCalculatorV2
+import exchange.dydx.abacus.calculator.TransferInputCalculator
 import exchange.dydx.abacus.output.input.DepositInputOptions
 import exchange.dydx.abacus.output.input.InputType
 import exchange.dydx.abacus.output.input.SelectionOption
@@ -30,7 +30,7 @@ import kollections.toIMap
 
 internal class TransferInputProcessor(
     private val parser: ParserProtocol,
-    private val calculator: TransferInputCalculatorV2 = TransferInputCalculatorV2(parser = parser),
+    private val calculator: TransferInputCalculator = TransferInputCalculator(parser = parser),
     private val routerProcessor: SkipProcessor,
     private val environment: V4Environment?,
 ) {

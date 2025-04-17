@@ -1,8 +1,7 @@
 package exchange.dydx.abacus.calculator
 
 import abs
-import exchange.dydx.abacus.calculator.v2.CalculationPeriod
-import exchange.dydx.abacus.calculator.v2.tradeinput.SlippageConstants
+import exchange.dydx.abacus.calculator.tradeinput.SlippageConstants
 import exchange.dydx.abacus.output.input.OrderSide
 import exchange.dydx.abacus.output.input.OrderType
 import exchange.dydx.abacus.output.input.TriggerOrderInputSummary
@@ -19,7 +18,7 @@ internal object TriggerOrdersConstants {
     const val TRIGGER_ORDER_DEFAULT_DURATION_DAYS = 90.0
 }
 
-internal class TriggerOrdersInputCalculatorV2() {
+internal class TriggerOrdersInputCalculator() {
     fun calculate(
         triggerOrders: InternalTriggerOrdersInputState,
         account: InternalAccountState,

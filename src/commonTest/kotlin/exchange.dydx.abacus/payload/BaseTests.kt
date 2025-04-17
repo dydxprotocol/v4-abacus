@@ -6,7 +6,7 @@ import exchange.dydx.abacus.app.manager.TestRest
 import exchange.dydx.abacus.app.manager.TestThreading
 import exchange.dydx.abacus.app.manager.TestTimer
 import exchange.dydx.abacus.app.manager.TestWebSocket
-import exchange.dydx.abacus.calculator.v2.CalculationPeriod
+import exchange.dydx.abacus.calculator.CalculationPeriod
 import exchange.dydx.abacus.fakes.FakeTrackingProtocol
 import exchange.dydx.abacus.output.Asset
 import exchange.dydx.abacus.output.Configs

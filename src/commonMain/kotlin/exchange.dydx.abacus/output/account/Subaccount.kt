@@ -1,6 +1,6 @@
 package exchange.dydx.abacus.output.account
 
-import exchange.dydx.abacus.calculator.v2.CalculationPeriod
+import exchange.dydx.abacus.calculator.CalculationPeriod
 import exchange.dydx.abacus.output.TradeStatesWithDoubleValues
 import exchange.dydx.abacus.processor.base.ComparisonOrder
 import exchange.dydx.abacus.protocols.LocalizerProtocol

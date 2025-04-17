@@ -1,4 +1,4 @@
-package exchange.dydx.abacus.calculator.v2
+package exchange.dydx.abacus.calculator
 
 import exchange.dydx.abacus.output.input.TransferInputSummary
 import exchange.dydx.abacus.output.input.TransferType
@@ -6,9 +6,9 @@ import exchange.dydx.abacus.protocols.ParserProtocol
 import exchange.dydx.abacus.state.internalstate.InternalTransferInputState
 import exchange.dydx.abacus.state.internalstate.InternalWalletState
 
-internal class TransferInputCalculatorV2(
+internal class TransferInputCalculator(
     private val parser: ParserProtocol,
-    private val subaccountTransformer: SubaccountTransformerV2 = SubaccountTransformerV2(parser),
+    private val subaccountTransformer: SubaccountTransformer = SubaccountTransformer(parser),
 ) {
     fun calculate(
         transfer: InternalTransferInputState,

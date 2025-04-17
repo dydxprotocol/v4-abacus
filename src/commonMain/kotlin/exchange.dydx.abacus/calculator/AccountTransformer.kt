@@ -1,6 +1,5 @@
-package exchange.dydx.abacus.calculator.v2
+package exchange.dydx.abacus.calculator
 
-import exchange.dydx.abacus.calculator.MarginCalculator
 import exchange.dydx.abacus.output.input.MarginMode
 import exchange.dydx.abacus.protocols.ParserProtocol
 import exchange.dydx.abacus.state.internalstate.InternalAccountState
@@ -8,9 +7,9 @@ import exchange.dydx.abacus.state.internalstate.InternalMarketState
 import exchange.dydx.abacus.state.internalstate.InternalSubaccountState
 import exchange.dydx.abacus.state.internalstate.InternalTradeInputState
 
-internal class AccountTransformerV2(
+internal class AccountTransformer(
     val parser: ParserProtocol,
-    private val subaccountTransformer: SubaccountTransformerV2 = SubaccountTransformerV2(parser)
+    private val subaccountTransformer: SubaccountTransformer = SubaccountTransformer(parser)
 ) {
     fun applyTradeToAccount(
         account: InternalAccountState,

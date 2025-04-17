@@ -1,7 +1,6 @@
 package exchange.dydx.abacus.calculator
 
 import abs
-import exchange.dydx.abacus.calculator.v2.CalculationPeriod
 import exchange.dydx.abacus.output.PerpetualMarket
 import exchange.dydx.abacus.output.PerpetualMarketType
 import exchange.dydx.abacus.output.account.Subaccount

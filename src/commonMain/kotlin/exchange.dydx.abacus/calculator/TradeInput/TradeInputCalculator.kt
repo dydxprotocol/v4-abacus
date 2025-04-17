@@ -1,8 +1,8 @@
-package exchange.dydx.abacus.calculator.v2.tradeinput
+package exchange.dydx.abacus.calculator.tradeinput
 
 import abs
-import exchange.dydx.abacus.calculator.v2.AccountTransformerV2
-import exchange.dydx.abacus.calculator.v2.CalculationPeriod
+import exchange.dydx.abacus.calculator.AccountTransformer
+import exchange.dydx.abacus.calculator.CalculationPeriod
 import exchange.dydx.abacus.output.FeeTier
 import exchange.dydx.abacus.output.input.MarginMode
 import exchange.dydx.abacus.output.input.OrderSide
@@ -47,7 +47,7 @@ internal object SlippageConstants {
     const val SLIPPAGE_STEP_SIZE = 0.00001
 }
 
-internal class TradeInputCalculatorV2(
+internal class TradeInputCalculator(
     private val parser: ParserProtocol,
     private val calculation: TradeCalculation,
     private val marginModeCalculator: TradeInputMarginModeCalculator = TradeInputMarginModeCalculator(),
@@ -55,7 +55,7 @@ internal class TradeInputCalculatorV2(
     private val nonMarketOrderCalculator: TradeInputNonMarketOrderCalculator = TradeInputNonMarketOrderCalculator(),
     private val optionsCalculator: TradeInputOptionsCalculator = TradeInputOptionsCalculator(parser),
     private val summaryCalculator: TradeInputSummaryCalculator = TradeInputSummaryCalculator(),
-    private val accountTransformer: AccountTransformerV2 = AccountTransformerV2(parser),
+    private val accountTransformer: AccountTransformer = AccountTransformer(parser),
 ) {
     fun calculate(
         trade: InternalTradeInputState,

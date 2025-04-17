@@ -1,6 +1,6 @@
 package exchange.dydx.abacus.functional.vault
-import exchange.dydx.abacus.calculator.v2.CalculationPeriod
-import exchange.dydx.abacus.calculator.v2.SubaccountCalculatorV2
+import exchange.dydx.abacus.calculator.CalculationPeriod
+import exchange.dydx.abacus.calculator.SubaccountCalculator
 import exchange.dydx.abacus.output.PerpetualMarket
 import exchange.dydx.abacus.processor.wallet.account.AssetPositionProcessor
 import exchange.dydx.abacus.processor.wallet.account.PerpetualPositionProcessor
@@ -81,7 +81,7 @@ object VaultCalculator {
     private val parser = Parser()
     private val perpetualPositionProcessor = PerpetualPositionProcessor(parser, null)
     private val assetPositionProcessor = AssetPositionProcessor(parser)
-    private val subaccountCalculator = SubaccountCalculatorV2(parser)
+    private val subaccountCalculator = SubaccountCalculator(parser)
 
     fun getVaultHistoricalPnlResponse(apiResponse: String): IndexerMegavaultHistoricalPnlResponse? {
         return parser.asTypedObject<IndexerMegavaultHistoricalPnlResponse>(apiResponse)
