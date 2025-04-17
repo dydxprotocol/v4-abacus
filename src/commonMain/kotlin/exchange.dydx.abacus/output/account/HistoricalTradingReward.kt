@@ -59,39 +59,6 @@ data class HistoricalTradingReward(
             return null
         }
 
-        internal fun createDeprecated(
-            existing: HistoricalTradingReward?,
-            parser: ParserProtocol,
-            data: Map<*, *>,
-            period: String,
-        ): HistoricalTradingReward? {
-            data?.let {
-                val amount = parser.asDouble(data["amount"])
-                val cumulativeAmount = parser.asDouble(data["cumulativeAmount"])
-                val startedAt = parser.asDatetime(data["startedAt"])
-                val endedAt = parser.asDatetime(data["endedAt"])
-
-                if (amount != null && cumulativeAmount != null && startedAt != null) {
-                    return if (existing?.amount != amount ||
-                        existing.cumulativeAmount != cumulativeAmount ||
-                        existing.startedAt != startedAt ||
-                        existing.endedAt != endedAt
-                    ) {
-                        create(
-                            amount,
-                            cumulativeAmount,
-                            startedAt,
-                            endedAt ?: getEndedAt(startedAt, period),
-                        )
-                    } else {
-                        existing
-                    }
-                }
-            }
-            Logger.d { "HistoricalTradingReward not valid" }
-            return null
-        }
-
         private fun getEndedAt(startedAt: Instant, period: String): Instant {
             return when (period) {
                 "DAILY" -> startedAt.plus(1.days)

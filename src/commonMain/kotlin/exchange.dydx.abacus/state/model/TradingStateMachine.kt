@@ -720,10 +720,7 @@ open class TradingStateMachine(
                 Account.create(
                     existing = null,
                     parser = parser,
-                    data = accountData ?: emptyMap(),
                     tokensInfo = tokensInfo,
-                    localizer = localizer,
-                    staticTyping = staticTyping,
                     internalState = internalState.wallet.account,
                 )
             } else {
@@ -732,9 +729,6 @@ open class TradingStateMachine(
                     val subaccount = Subaccount.create(
                         existing = account.subaccounts?.get("$subaccountNumber"),
                         parser = parser,
-                        data = subaccount(subaccountNumber),
-                        localizer = localizer,
-                        staticTyping = staticTyping,
                         internalState = internalState.wallet.account.subaccounts[subaccountNumber],
                     )
                     subaccounts.typedSafeSet("$subaccountNumber", subaccount)
@@ -746,9 +740,6 @@ open class TradingStateMachine(
                         val subaccount = Subaccount.create(
                             existing = account.groupedSubaccounts?.get("$subaccountNumber"),
                             parser = parser,
-                            data = groupedSubaccount(subaccountNumber),
-                            localizer = localizer,
-                            staticTyping = staticTyping,
                             internalState = internalState.wallet.account.groupedSubaccounts[subaccountNumber],
                         )
                         groupedSubaccounts.typedSafeSet("$subaccountNumber", subaccount)
@@ -774,10 +765,7 @@ open class TradingStateMachine(
             account = Account.create(
                 existing = account,
                 parser = parser,
-                data = accountData ?: emptyMap(),
                 tokensInfo = tokensInfo,
-                localizer = localizer,
-                staticTyping = staticTyping,
                 internalState = internalState.wallet.account,
             )
         }

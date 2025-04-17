@@ -1,7 +1,6 @@
 package exchange.dydx.abacus.output.account
 
 import exchange.dydx.abacus.output.LaunchIncentivePoints
-import exchange.dydx.abacus.protocols.LocalizerProtocol
 import exchange.dydx.abacus.protocols.ParserProtocol
 import exchange.dydx.abacus.state.internalstate.InternalAccountBalanceState
 import exchange.dydx.abacus.state.internalstate.InternalAccountState
@@ -36,10 +35,7 @@ data class Account(
         internal fun create(
             existing: Account?,
             parser: ParserProtocol,
-            data: Map<String, Any>,
             tokensInfo: Map<String, TokenInfo>,
-            localizer: LocalizerProtocol?,
-            staticTyping: Boolean,
             internalState: InternalAccountState,
         ): Account {
             Logger.d { "creating Account\n" }
@@ -50,7 +46,6 @@ data class Account(
                 AccountBalance.create(
                     existing = existing?.balances?.get(key),
                     parser = parser,
-                    data = emptyMap(),
                     decimals = findTokenInfo(tokensInfo, key)?.decimals ?: 0,
                     internalState = value,
                 )?.let { balance ->
@@ -103,9 +98,6 @@ data class Account(
                 Subaccount.create(
                     existing = existing?.subaccounts?.get(key.toString()),
                     parser = parser,
-                    data = null,
-                    localizer = localizer,
-                    staticTyping = staticTyping,
                     internalState = value,
                 )?.let { subaccount ->
                     subaccounts[key.toString()] = subaccount
@@ -119,9 +111,6 @@ data class Account(
                 Subaccount.create(
                     existing = existing?.groupedSubaccounts?.get(key.toString()),
                     parser = parser,
-                    data = null,
-                    localizer = localizer,
-                    staticTyping = staticTyping,
                     internalState = value,
                 )?.let { subaccount ->
                     groupedSubaccounts[key.toString()] = subaccount
@@ -181,7 +170,6 @@ data class Account(
                     AccountBalance.create(
                         existing = existing?.stakingBalances?.get(key),
                         parser = parser,
-                        data = emptyMap(),
                         decimals = tokenInfo.decimals,
                         internalState = value,
                     )?.let { balance ->
