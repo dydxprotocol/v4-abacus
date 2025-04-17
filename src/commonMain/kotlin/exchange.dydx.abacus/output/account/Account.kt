@@ -97,7 +97,6 @@ data class Account(
             internalState.subaccounts.forEach { (key, value) ->
                 Subaccount.create(
                     existing = existing?.subaccounts?.get(key.toString()),
-                    parser = parser,
                     internalState = value,
                 )?.let { subaccount ->
                     subaccounts[key.toString()] = subaccount
@@ -110,7 +109,6 @@ data class Account(
             internalState.groupedSubaccounts.forEach { (key, value) ->
                 Subaccount.create(
                     existing = existing?.groupedSubaccounts?.get(key.toString()),
-                    parser = parser,
                     internalState = value,
                 )?.let { subaccount ->
                     groupedSubaccounts[key.toString()] = subaccount

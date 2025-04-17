@@ -3,17 +3,11 @@ package exchange.dydx.abacus.output.input
 import exchange.dydx.abacus.protocols.ParserProtocol
 import exchange.dydx.abacus.state.internalstate.InternalTransferInputState
 import exchange.dydx.abacus.state.manager.CctpConfig.cctpChainIds
-import exchange.dydx.abacus.state.manager.ExchangeConfig.exchangeList
-import exchange.dydx.abacus.state.manager.V4Environment
 import exchange.dydx.abacus.utils.IList
 import exchange.dydx.abacus.utils.IMap
-import exchange.dydx.abacus.utils.IMutableList
 import exchange.dydx.abacus.utils.Logger
 import exchange.dydx.abacus.utils.iMapOf
 import kollections.JsExport
-import kollections.iListOf
-import kollections.iMutableListOf
-import kollections.toIList
 import kollections.toIMap
 import kotlinx.serialization.Serializable
 
@@ -26,59 +20,7 @@ data class DepositInputOptions(
     val exchanges: IList<SelectionOption>?,
     val chains: IList<SelectionOption>?,
     val assets: IList<SelectionOption>?
-) {
-    companion object {
-        internal fun create(
-            existing: DepositInputOptions?,
-            parser: ParserProtocol,
-            data: Map<*, *>?,
-            internalState: InternalTransferInputState?
-        ): DepositInputOptions? {
-            Logger.d { "creating Deposit Input Options\n" }
-
-            data?.let {
-                val needsSize = parser.asBool(data["needsSize"])
-                val needsAddress = parser.asBool(data["needsAddress"])
-                val needsFastSpeed = parser.asBool(data["needsFastSpeed"])
-
-                val chains: IList<SelectionOption> = internalState?.chains?.toIList() ?: iListOf()
-
-                val assets: IList<SelectionOption> = internalState?.tokens?.toIList() ?: iListOf()
-
-                var exchanges: IMutableList<SelectionOption>? = null
-                exchangeList?.let { data ->
-                    exchanges = iMutableListOf()
-                    for (i in data.indices) {
-                        val item = data[i]
-                        val selection = SelectionOption(item.name, item.label, item.label, item.icon)
-                        exchanges?.add(selection)
-                    }
-                }
-
-                return if (existing?.needsSize != needsSize ||
-                    existing?.needsAddress != needsAddress ||
-                    existing?.needsFastSpeed != needsFastSpeed ||
-                    existing?.exchanges != exchanges ||
-                    existing?.chains != chains ||
-                    existing?.assets != assets
-                ) {
-                    DepositInputOptions(
-                        needsSize = needsSize,
-                        needsAddress = needsAddress,
-                        needsFastSpeed = needsFastSpeed,
-                        exchanges = exchanges,
-                        chains = chains,
-                        assets = assets,
-                    )
-                } else {
-                    existing
-                }
-            }
-            Logger.d { "Transfer Deposit Options not valid" }
-            return null
-        }
-    }
-}
+)
 
 @JsExport
 @Serializable
@@ -89,59 +31,7 @@ data class WithdrawalInputOptions(
     val exchanges: IList<SelectionOption>?,
     val chains: IList<SelectionOption>?,
     val assets: IList<SelectionOption>?
-) {
-    companion object {
-        internal fun create(
-            existing: WithdrawalInputOptions?,
-            parser: ParserProtocol,
-            data: Map<*, *>?,
-            internalState: InternalTransferInputState?,
-        ): WithdrawalInputOptions? {
-            Logger.d { "creating Withdrawal Input Options\n" }
-
-            data?.let {
-                val needsSize = parser.asBool(data["needsSize"])
-                val needsAddress = parser.asBool(data["needsAddress"])
-                val needsFastSpeed = parser.asBool(data["needsFastSpeed"])
-
-                val chains: IList<SelectionOption> = internalState?.chains?.toIList() ?: iListOf()
-
-                val assets: IList<SelectionOption> = internalState?.tokens?.toIList() ?: iListOf()
-
-                var exchanges: IMutableList<SelectionOption>? = null
-                exchangeList?.let { data ->
-                    exchanges = iMutableListOf()
-                    for (i in data.indices) {
-                        val item = data[i]
-                        val selection = SelectionOption(item.name, item.label, item.label, item.icon)
-                        exchanges?.add(selection)
-                    }
-                }
-
-                return if (existing?.needsSize != needsSize ||
-                    existing?.needsAddress != needsAddress ||
-                    existing?.needsFastSpeed != needsFastSpeed ||
-                    existing?.exchanges != exchanges ||
-                    existing?.chains != chains ||
-                    existing?.assets != assets
-                ) {
-                    WithdrawalInputOptions(
-                        needsSize = needsSize,
-                        needsAddress = needsAddress,
-                        needsFastSpeed = needsFastSpeed,
-                        exchanges = exchanges,
-                        chains = chains,
-                        assets = assets,
-                    )
-                } else {
-                    existing
-                }
-            }
-            Logger.d { "Transfer Withdrawal Options not valid" }
-            return null
-        }
-    }
-}
+)
 
 @JsExport
 @Serializable
@@ -150,59 +40,7 @@ data class TransferOutInputOptions(
     val needsAddress: Boolean?,
     val chains: IList<SelectionOption>?,
     val assets: IList<SelectionOption>?,
-) {
-    companion object {
-        internal fun create(
-            existing: TransferOutInputOptions?,
-            parser: ParserProtocol,
-            data: Map<*, *>?,
-            environment: V4Environment?
-        ): TransferOutInputOptions? {
-            Logger.d { "creating TransferOut Input Options\n" }
-
-            val needsSize = parser.asBool(data?.get("needsSize")) ?: false
-            val needsAddress = parser.asBool(data?.get("needsAddress")) ?: false
-
-            val chainName = environment?.chainName
-            val chainOption: SelectionOption = if (chainName != null) {
-                SelectionOption(
-                    type = "chain",
-                    string = chainName,
-                    stringKey = null,
-                    iconUrl = environment.chainLogo,
-                )
-            } else {
-                return null
-            }
-            val chains: IList<SelectionOption> = iListOf(chainOption)
-
-            val assets: IList<SelectionOption> = environment.tokens.keys.map { key ->
-                val token = environment.tokens[key]!!
-                SelectionOption(
-                    type = key,
-                    string = token.name,
-                    stringKey = null,
-                    iconUrl = token.imageUrl,
-                )
-            }.toIList()
-
-            return if (existing?.needsSize != needsSize ||
-                existing.needsAddress != needsAddress ||
-                existing.chains != chains ||
-                existing.assets != assets
-            ) {
-                TransferOutInputOptions(
-                    needsSize = needsSize,
-                    needsAddress = needsAddress,
-                    chains = chains,
-                    assets = assets,
-                )
-            } else {
-                existing
-            }
-        }
-    }
-}
+)
 
 @JsExport
 @Serializable
@@ -476,12 +314,11 @@ data class TransferInput(
         internal fun create(
             existing: TransferInput?,
             parser: ParserProtocol,
-            data: Map<*, *>?,
             internalState: InternalTransferInputState?,
         ): TransferInput? {
             Logger.d { "creating Transfer Input\n" }
 
-            if (internalState != null || data != null) {
+            if (internalState != null) {
                 val type = internalState?.type
                 val size = internalState?.size
 

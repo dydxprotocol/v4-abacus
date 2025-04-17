@@ -64,7 +64,6 @@ internal class SkipProcessor(
     }
 
     fun receivedEvmSwapVenues(
-        existing: Map<String, Any>?,
         payload: Map<String, Any>
     ) {
         val venues = parser.asNativeList(payload.get("venues"))
@@ -150,7 +149,7 @@ internal class SkipProcessor(
         }
 
         if (internalState.type == TransferType.deposit) {
-            val value = usdcAmount(modified)
+            val value = usdcAmount()
             internalState.size = TransferInputSize.safeCreate(internalState.size)
                 .copy(usdcSize = parser.asString(value))
         }
@@ -158,19 +157,11 @@ internal class SkipProcessor(
         return modified
     }
 
-    fun usdcAmount(data: Map<String, Any>): Double? {
-        if (staticTyping) {
-            val route = internalState.route
-            val toAmountUSD = parser.asString(parser.value(route, "toAmountUSD"))
-            val toAmount = parser.asString(parser.value(route, "toAmount"))
-            return parser.asDouble(toAmountUSD) ?: parser.asDouble(toAmount)
-        } else {
-            var toAmountUSD = parser.asString(parser.value(data, "transfer.route.toAmountUSD"))
-            toAmountUSD = toAmountUSD?.replace(",", "")
-            var toAmount = parser.asString(parser.value(data, "transfer.route.toAmount"))
-            toAmount = toAmount?.replace(",", "")
-            return parser.asDouble(toAmountUSD) ?: parser.asDouble(toAmount)
-        }
+    fun usdcAmount(): Double? {
+        val route = internalState.route
+        val toAmountUSD = parser.asString(parser.value(route, "toAmountUSD"))
+        val toAmount = parser.asString(parser.value(route, "toAmount"))
+        return parser.asDouble(toAmountUSD) ?: parser.asDouble(toAmount)
     }
 
     fun receivedStatus(
@@ -194,13 +185,7 @@ internal class SkipProcessor(
     fun updateTokensDefaults(modified: MutableMap<String, Any>, selectedChainId: String?) {
         val tokenOptions = tokenOptions(selectedChainId)
         internalState.tokens = tokenOptions
-        if (staticTyping) {
-            internalState.token = defaultTokenAddress(selectedChainId)
-        } else {
-            modified.safeSet("transfer.token", defaultTokenAddress(selectedChainId))
-            modified.safeSet("transfer.depositOptions.tokens", tokenOptions)
-            modified.safeSet("transfer.withdrawalOptions.tokens", tokenOptions)
-        }
+        internalState.token = defaultTokenAddress(selectedChainId)
         internalState.tokenResources = tokenResources(selectedChainId)
     }
 

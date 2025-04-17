@@ -406,20 +406,6 @@ internal object MarginCalculator {
         return iListOf(subaccountNumber)
     }
 
-    fun getChangedSubaccountNumbersDeprecated(
-        parser: ParserProtocol,
-        account: Map<String, Any>?,
-        subaccountNumber: Int,
-        tradeInput: Map<String, Any>?
-    ): IList<Int> {
-        val childSubaccountNumber = getChildSubaccountNumberForIsolatedMarginTradeDeprecated(parser, account, subaccountNumber, tradeInput)
-        if (childSubaccountNumber != null && subaccountNumber != childSubaccountNumber) {
-            return iListOf(subaccountNumber, childSubaccountNumber)
-        }
-
-        return iListOf(subaccountNumber)
-    }
-
     fun getChildSubaccountNumberForIsolatedMarginClosePosition(
         account: InternalAccountState?,
         subaccountNumber: Int,
@@ -428,17 +414,6 @@ internal object MarginCalculator {
         val marketId = tradeInput?.marketId ?: return subaccountNumber
         val position = findExistingPosition(account, marketId, subaccountNumber)
         return position?.subaccountNumber ?: subaccountNumber
-    }
-
-    fun getChildSubaccountNumberForIsolatedMarginClosePositionDeprecated(
-        parser: ParserProtocol,
-        account: Map<String, Any>?,
-        subaccountNumber: Int,
-        tradeInput: Map<String, Any>?
-    ): Int {
-        val marketId = parser.asString(tradeInput?.get("marketId")) ?: return subaccountNumber
-        val position = findExistingPositionDeprecated(parser, account, marketId, subaccountNumber)
-        return parser.asInt(position?.get("subaccountNumber")) ?: subaccountNumber
     }
 
     /**

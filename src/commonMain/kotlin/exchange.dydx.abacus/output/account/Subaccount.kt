@@ -2,7 +2,6 @@ package exchange.dydx.abacus.output.account
 
 import exchange.dydx.abacus.calculator.CalculationPeriod
 import exchange.dydx.abacus.output.TradeStatesWithDoubleValues
-import exchange.dydx.abacus.protocols.ParserProtocol
 import exchange.dydx.abacus.state.internalstate.InternalPerpetualPendingPosition
 import exchange.dydx.abacus.state.internalstate.InternalPerpetualPosition
 import exchange.dydx.abacus.state.internalstate.InternalSubaccountState
@@ -42,7 +41,6 @@ data class Subaccount(
     companion object {
         internal fun create(
             existing: Subaccount?,
-            parser: ParserProtocol,
             internalState: InternalSubaccountState?,
         ): Subaccount? {
             Logger.d { "creating Account\n" }
@@ -62,7 +60,7 @@ data class Subaccount(
 
             val quoteBalance =
                 TradeStatesWithDoubleValues(
-                    current = internalState.calculated?.get(CalculationPeriod.current)?.quoteBalance,
+                    current = internalState?.calculated?.get(CalculationPeriod.current)?.quoteBalance,
                     postOrder = internalState?.calculated?.get(CalculationPeriod.post)?.quoteBalance,
                     postAllOrders = internalState?.calculated?.get(CalculationPeriod.settled)?.quoteBalance,
                 )
@@ -134,15 +132,12 @@ data class Subaccount(
             val openPositions =
                 createOpenPositions(
                     existing = existing?.openPositions,
-                    parser = parser,
                     openPositions = internalState?.openPositions,
-                    subaccount = internalState,
                 )
 
             val pendingPositions =
                 createPendingPositions(
                     existing = existing?.pendingPositions,
-                    parser = parser,
                     pendingPositions = internalState?.pendingPositions,
                 )
 
@@ -199,19 +194,14 @@ data class Subaccount(
 
         private fun createOpenPositions(
             existing: IList<SubaccountPosition>?,
-            parser: ParserProtocol,
             openPositions: Map<String, InternalPerpetualPosition>?,
-            subaccount: InternalSubaccountState?,
         ): IList<SubaccountPosition>? {
             val newEntries: MutableList<SubaccountPosition> = mutableListOf()
             for ((key, value) in openPositions?.entries ?: emptySet()) {
                 val position = SubaccountPosition.create(
                     existing = null,
-                    parser = parser,
-                    data = emptyMap(),
                     positionId = key,
                     position = value,
-                    subaccount = subaccount,
                 )
                 if (position != null) {
                     newEntries.add(position)
@@ -230,15 +220,12 @@ data class Subaccount(
 
         private fun createPendingPositions(
             existing: IList<SubaccountPendingPosition>?,
-            parser: ParserProtocol,
             pendingPositions: List<InternalPerpetualPendingPosition>?,
         ): IList<SubaccountPendingPosition>? {
             val newEntries: MutableList<SubaccountPendingPosition> = mutableListOf()
             for (position in pendingPositions ?: emptyList()) {
                 val pendingPosition = SubaccountPendingPosition.create(
                     existing = null,
-                    parser = parser,
-                    data = emptyMap(),
                     internalState = position,
                 )
                 if (pendingPosition != null) {

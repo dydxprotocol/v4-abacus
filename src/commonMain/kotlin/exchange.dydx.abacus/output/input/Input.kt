@@ -2,7 +2,6 @@ package exchange.dydx.abacus.output.input
 
 import exchange.dydx.abacus.protocols.ParserProtocol
 import exchange.dydx.abacus.state.internalstate.InternalState
-import exchange.dydx.abacus.state.manager.V4Environment
 import exchange.dydx.abacus.utils.IList
 import exchange.dydx.abacus.utils.Logger
 import kollections.JsExport
@@ -40,106 +39,70 @@ data class Input(
         internal fun create(
             existing: Input?,
             parser: ParserProtocol,
-            data: Map<*, *>?,
-            environment: V4Environment?,
             internalState: InternalState?,
-            staticTyping: Boolean,
         ): Input? {
             Logger.d { "creating Input\n" }
-            if (staticTyping && internalState?.input?.currentType == null) {
+            if (internalState?.input?.currentType == null) {
                 return null
             }
 
-            if (staticTyping || data != null) {
-                val current = if (staticTyping) {
-                    internalState?.input?.currentType
-                } else {
-                    InputType.invoke(parser.asString(data?.get("current")))
-                }
+            val current =
+                internalState?.input?.currentType
 
-                val trade = if (staticTyping) {
-                    TradeInput.create(state = internalState?.input?.trade)
-                } else {
-                    TradeInput.create(existing?.trade, parser, parser.asMap(data?.get("trade")))
-                }
+            val trade =
+                TradeInput.create(state = internalState?.input?.trade)
 
-                val closePosition = if (staticTyping) {
-                    ClosePositionInput.create(state = internalState?.input?.closePosition)
-                } else {
-                    ClosePositionInput.create(existing?.closePosition, parser, parser.asMap(data?.get("closePosition")))
-                }
+            val closePosition =
+                ClosePositionInput.create(state = internalState?.input?.closePosition)
 
-                val transfer = TransferInput.create(
-                    existing = existing?.transfer,
+            val transfer = TransferInput.create(
+                existing = existing?.transfer,
+                parser = parser,
+                internalState = internalState?.input?.transfer,
+            )
+
+            val triggerOrders =
+                TriggerOrdersInput.create(state = internalState?.input?.triggerOrders)
+
+            val adjustIsolatedMargin =
+                AdjustIsolatedMarginInput.create(
                     parser = parser,
-                    data = parser.asMap(data?.get("transfer")),
-                    internalState = internalState?.input?.transfer,
+                    data = internalState?.input?.adjustIsolatedMargin,
                 )
 
-                val triggerOrders = if (staticTyping) {
-                    TriggerOrdersInput.create(state = internalState?.input?.triggerOrders)
-                } else {
-                    TriggerOrdersInput.create(
-                        existing?.triggerOrders,
-                        parser,
-                        parser.asMap(data?.get("triggerOrders")),
-                    )
-                }
-
-                val adjustIsolatedMargin = if (staticTyping) {
-                    AdjustIsolatedMarginInput.create(
-                        parser = parser,
-                        data = internalState?.input?.adjustIsolatedMargin,
-                    )
-                } else {
-                    AdjustIsolatedMarginInput.create(
-                        existing?.adjustIsolatedMargin,
-                        parser,
-                        parser.asMap(
-                            data?.get("adjustIsolatedMargin"),
-                        ),
-                    )
-                }
-
-                var errors = internalState?.input?.errors?.toIList()
-                if (internalState?.input?.currentType == InputType.TRADE && internalState.input.trade.marginMode == MarginMode.Isolated) {
-                    errors = internalState.input.childSubaccountErrors?.toIList()
-                }
-                if (internalState?.input?.currentType == InputType.CLOSE_POSITION && internalState.input.closePosition.marginMode == MarginMode.Isolated) {
-                    errors = internalState.input.childSubaccountErrors?.toIList()
-                }
-
-                val receiptLines = if (staticTyping) {
-                    internalState?.input?.receiptLines?.toIList()
-                } else {
-                    ReceiptLine.create(parser, parser.asList(data?.get("receiptLines")))
-                }
-
-                return if (existing?.current !== current ||
-                    existing?.trade !== trade ||
-                    existing?.closePosition !== closePosition ||
-                    existing?.transfer !== transfer ||
-                    existing?.triggerOrders !== triggerOrders ||
-                    existing?.adjustIsolatedMargin !== adjustIsolatedMargin ||
-                    existing?.receiptLines != receiptLines ||
-                    existing?.errors != errors
-                ) {
-                    Input(
-                        current,
-                        trade,
-                        closePosition,
-                        transfer,
-                        triggerOrders,
-                        adjustIsolatedMargin,
-                        receiptLines,
-                        errors,
-                    )
-                } else {
-                    existing
-                }
+            var errors = internalState?.input?.errors?.toIList()
+            if (internalState?.input?.currentType == InputType.TRADE && internalState.input.trade.marginMode == MarginMode.Isolated) {
+                errors = internalState.input.childSubaccountErrors?.toIList()
             }
-            Logger.d { "Input not valid" }
-            return null
+            if (internalState?.input?.currentType == InputType.CLOSE_POSITION && internalState.input.closePosition.marginMode == MarginMode.Isolated) {
+                errors = internalState.input.childSubaccountErrors?.toIList()
+            }
+
+            val receiptLines =
+                internalState?.input?.receiptLines?.toIList()
+
+            return if (existing?.current !== current ||
+                existing?.trade !== trade ||
+                existing?.closePosition !== closePosition ||
+                existing?.transfer !== transfer ||
+                existing?.triggerOrders !== triggerOrders ||
+                existing?.adjustIsolatedMargin !== adjustIsolatedMargin ||
+                existing?.receiptLines != receiptLines ||
+                existing?.errors != errors
+            ) {
+                Input(
+                    current,
+                    trade,
+                    closePosition,
+                    transfer,
+                    triggerOrders,
+                    adjustIsolatedMargin,
+                    receiptLines,
+                    errors,
+                )
+            } else {
+                existing
+            }
         }
     }
 }
