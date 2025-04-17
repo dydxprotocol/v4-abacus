@@ -35,10 +35,10 @@ internal class NotificationsProvider(
     private val providers: List<NotificationsProviderProtocol> = listOfNotNull(
         if (notifications.contains(NotificationProviderType.BlockReward)) {
             BlockRewardNotificationProvider(
-                stateMachine,
-                uiImplementations,
-                environment,
-                jsonEncoder,
+                stateMachine = stateMachine,
+                uiImplementations = uiImplementations,
+                environment = environment,
+                jsonEncoder = jsonEncoder,
             )
         } else {
             null
@@ -46,10 +46,10 @@ internal class NotificationsProvider(
 
         if (notifications.contains(NotificationProviderType.Fills)) {
             FillsNotificationProvider(
-                stateMachine,
-                uiImplementations,
-                parser,
-                jsonEncoder,
+                stateMachine = stateMachine,
+                uiImplementations = uiImplementations,
+                parser = parser,
+                jsonEncoder = jsonEncoder,
             )
         } else {
             null
@@ -57,11 +57,10 @@ internal class NotificationsProvider(
 
         if (notifications.contains(NotificationProviderType.Positions)) {
             PositionsNotificationProvider(
-                stateMachine,
-                uiImplementations,
-                parser,
-                jsonEncoder,
-                useParentSubaccount,
+                stateMachine = stateMachine,
+                uiImplementations = uiImplementations,
+                jsonEncoder = jsonEncoder,
+                useParentSubaccount = useParentSubaccount,
             )
         } else {
             null
@@ -69,10 +68,10 @@ internal class NotificationsProvider(
 
         if (notifications.contains(NotificationProviderType.OrderStatusChange)) {
             OrderStatusChangesNotificationProvider(
-                stateMachine,
-                uiImplementations,
-                parser,
-                jsonEncoder,
+                stateMachine = stateMachine,
+                uiImplementations = uiImplementations,
+                parser = parser,
+                jsonEncoder = jsonEncoder,
             )
         } else {
             null

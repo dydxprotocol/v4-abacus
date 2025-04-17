@@ -105,19 +105,6 @@ internal object MarginCalculator {
         } ?: false
     }
 
-    private fun hasExistingOrderDeprecated(
-        parser: ParserProtocol,
-        subaccount: Map<String, Any>?,
-        marketId: String?
-    ): Boolean {
-        val orders = parser.asNativeMap(parser.value(subaccount, "orders"))
-        return orders?.entries?.any {
-            val orderMarketId = parser.asString(parser.value(it.value, "marketId"))
-            val orderStatus = parser.asString(parser.value(it.value, "status"))
-            orderMarketId == marketId && listOf("OPEN", "PENDING", "UNTRIGGERED", "PARTIALLY_FILLED").contains(orderStatus)
-        } ?: false
-    }
-
     fun findExistingMarginMode(
         account: InternalAccountState,
         marketId: String?,
@@ -508,34 +495,11 @@ internal object MarginCalculator {
         } ?: false
     }
 
-    private fun getIsPositionFullyClosedDeprecated(
-        parser: ParserProtocol,
-        subaccount: Map<String, Any>?,
-        tradeInput: Map<String, Any>?,
-    ): Boolean {
-        return parser.asString(tradeInput?.get("marketId"))?.let { marketId ->
-            val position = parser.asNativeMap(parser.value(subaccount, "openPositions.$marketId"))
-            val currentSize = parser.asDouble(parser.value(position, "size.current")) ?: 0.0
-            val postOrderSize = tradeInput?.let { getPositionPostOrderSizeFromTradeDeprecated(parser, tradeInput, currentSize) } ?: 0.0
-            val isReduceOnly = parser.asBool(tradeInput?.get("reduceOnly")) ?: false
-            val hasFlippedSide = currentSize * postOrderSize < 0
-            return postOrderSize == 0.0 || (isReduceOnly && hasFlippedSide)
-        } ?: false
-    }
-
     private fun getIsIncreasingPositionSize(
         subaccount: InternalSubaccountState?,
         tradeInput: InternalTradeInputState?,
     ): Boolean {
         return getPositionSizeDifference(subaccount, tradeInput)?.let { it > 0 } ?: true
-    }
-
-    private fun getIsIncreasingPositionSizeDeprecated(
-        parser: ParserProtocol,
-        subaccount: Map<String, Any>?,
-        tradeInput: Map<String, Any>?,
-    ): Boolean {
-        return getPositionSizeDifferenceDeprecated(parser, subaccount, tradeInput)?.let { it > 0 } ?: true
     }
 
     private fun getIsIncreasingPositionSize(

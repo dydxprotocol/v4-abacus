@@ -4,7 +4,6 @@ import exchange.dydx.abacus.output.Notification
 import exchange.dydx.abacus.output.NotificationPriority
 import exchange.dydx.abacus.output.NotificationType
 import exchange.dydx.abacus.processor.utils.MarketId
-import exchange.dydx.abacus.protocols.ParserProtocol
 import exchange.dydx.abacus.state.model.TradingStateMachine
 import exchange.dydx.abacus.utils.IMap
 import exchange.dydx.abacus.utils.JsonEncoder
@@ -16,7 +15,6 @@ import kollections.toIMap
 class PositionsNotificationProvider(
     private val stateMachine: TradingStateMachine,
     private val uiImplementations: UIImplementations,
-    private val parser: ParserProtocol,
     private val jsonEncoder: JsonEncoder,
     private val useParentSubaccount: Boolean = false,
 ) : NotificationsProviderProtocol {
