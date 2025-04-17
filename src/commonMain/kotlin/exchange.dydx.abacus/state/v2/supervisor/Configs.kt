@@ -216,7 +216,6 @@ data class AppConfigsV2(
     var loadRemote: Boolean = true,
     var enableLogger: Boolean = false,
     var triggerOrderToast: Boolean = false,
-    var staticTyping: Boolean = true,
     var autoStart: Boolean = true,
     var skipGoFast: Boolean = false,
     var screening: Boolean = true,
