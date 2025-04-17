@@ -97,29 +97,6 @@ internal class PerpetualPositionProcessor(
         "SHORT" to "short",
         "NONE" to "none",
     )
-    private val positionKeyMap = mapOf(
-        "string" to mapOf(
-            "market" to "id",
-            "status" to "status",
-        ),
-        "double" to mapOf(
-            "maxSize" to "maxSize",
-            "exitPrice" to "exitPrice",
-            "netFunding" to "netFunding",
-            "unrealizedPnl" to "unrealizedPnl",
-        ),
-        "datetime" to mapOf(
-            "createdAt" to "createdAt",
-            "closedAt" to "closedAt",
-        ),
-    )
-
-    private val currentPositionKeyMap = mapOf(
-        "double" to mapOf(
-            "entryPrice" to "entryPrice",
-            "realizedPnl" to "realizedPnl",
-        ),
-    )
 
     override fun process(
         existing: InternalPerpetualPosition?,

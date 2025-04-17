@@ -131,15 +131,15 @@ internal class OrderProcessor(
         "IOC" to "APP.TRADE.IMMEDIATE_OR_CANCEL",
         "GTT" to "APP.TRADE.GOOD_TIL_TIME",
     )
-    private val cancelReasonStringKeys = mapOf(
-        "COULD_NOT_FILL" to "APP.TRADE.COULD_NOT_FILL",
-        "EXPIRED" to "APP.TRADE.EXPIRED",
-        "FAILED" to "APP.TRADE.FAILED",
-        "POST_ONLY_WOULD_CROSS" to "APP.TRADE.POST_ONLY_WOULD_CROSS",
-        "SELF_TRADE" to "APP.TRADE.SELF_TRADE",
-        "UNDERCOLLATERALIZED" to "APP.TRADE.UNDERCOLLATERALIZED",
-        "USER_CANCELED" to "APP.TRADE.USER_CANCELED",
-    )
+//    private val cancelReasonStringKeys = mapOf(
+//        "COULD_NOT_FILL" to "APP.TRADE.COULD_NOT_FILL",
+//        "EXPIRED" to "APP.TRADE.EXPIRED",
+//        "FAILED" to "APP.TRADE.FAILED",
+//        "POST_ONLY_WOULD_CROSS" to "APP.TRADE.POST_ONLY_WOULD_CROSS",
+//        "SELF_TRADE" to "APP.TRADE.SELF_TRADE",
+//        "UNDERCOLLATERALIZED" to "APP.TRADE.UNDERCOLLATERALIZED",
+//        "USER_CANCELED" to "APP.TRADE.USER_CANCELED",
+//    )
 
     override fun process(
         existing: SubaccountOrder?,
@@ -304,48 +304,6 @@ internal class OrderProcessor(
         }
     }
 
-    private fun shouldUpdateDeprecated(
-        existing: Map<String, Any>?,
-        payload: Map<String, Any>
-    ): Boolean {
-        // First, use updatedAt timestamp, available in v3
-        val updatedAt = parser.asDatetime(existing?.get("updatedAt"))
-            ?: parser.asDatetime(existing?.get("createdAt"))
-        val incomingUpdatedAt = parser.asDatetime(payload["updatedAt"])
-            ?: parser.asDatetime(payload["createdAt"])
-        if (updatedAt != null) {
-            if (incomingUpdatedAt != null) {
-                if (updatedAt < incomingUpdatedAt) {
-                    return true
-                } else if (updatedAt > incomingUpdatedAt) {
-                    return false
-                }
-                // If they are the same, fall through to the status and filled check
-            }
-        } else {
-            if (incomingUpdatedAt != null) {
-                return true
-            }
-            // If they are both null, fall through to the status and filled check
-        }
-        val filled = parser.asDouble(existing?.get("totalFilled")) ?: Numeric.double.ZERO
-        val incomingFilled = parser.asDouble(payload["totalFilled"]) ?: Numeric.double.ZERO
-        if (incomingFilled > filled) {
-            return true
-        } else if (incomingFilled < filled) {
-            return false
-        }
-        // If updatedAt and totalFilled are the same, we use status for best guess
-        return when (val status = parser.asString(existing?.get("status"))) {
-            "BEST_EFFORT_CANCELED" -> {
-                val newStatus = parser.asString(payload["status"])
-                (newStatus == "FILLED") || (newStatus == "CANCELED") || (newStatus == "BEST_EFFORT_CANCELED")
-            }
-
-            else -> !isStatusFinalizedDeprecated(status)
-        }
-    }
-
     private fun createResources(
         side: OrderSide,
         type: OrderType?,
@@ -409,15 +367,6 @@ internal class OrderProcessor(
         }
 
         return Pair(existing, false)
-    }
-
-    private fun isStatusFinalizedDeprecated(status: String?): Boolean {
-        // once an order is filled, canceled, or canceled with partial fill
-        // there is no need to update status again
-        return when (status) {
-            "FILLED", "CANCELED", "PARTIALLY_CANCELED" -> true
-            else -> false
-        }
     }
 
     override fun canceled(

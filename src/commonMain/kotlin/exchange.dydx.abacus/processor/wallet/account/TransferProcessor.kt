@@ -17,32 +17,6 @@ internal class TransferProcessor(
     parser: ParserProtocol,
     private val localizer: LocalizerProtocol?,
 ) : BaseProcessor(parser), TransferProcessorProtocol {
-    private val transferKeyMap = mapOf(
-        "string" to mapOf(
-            "id" to "id",
-            "clientId" to "clientId",
-            "type" to "type",
-            "symbol" to "asset",
-            "fromAddress" to "fromAddress",
-            "toAddress" to "toAddress",
-            "senderWallet" to "fromAddress",
-            "recipientWallet" to "toAddress",
-            "status" to "status",
-            "transactionHash" to "transactionHash",
-        ),
-        "datetime" to mapOf(
-            "createdAt" to "createdAt",
-            "confirmedAt" to "confirmedAt",
-        ),
-        "double" to mapOf(
-            "size" to "amount",
-        ),
-        "int" to mapOf(
-            "subaccountNumber" to "subaccountNumber",
-            "createdAtHeight" to "updatedAtBlock",
-        ),
-    )
-
     private val typeMap = mapOf(
         "DEPOSIT" to "APP.GENERAL.DEPOSIT",
         "WITHDRAWAL" to "APP.GENERAL.WITHDRAW",
