@@ -36,7 +36,6 @@ internal interface MarketProcessorProtocol : BaseProcessorProtocol {
 @Suppress("UNCHECKED_CAST")
 internal class MarketProcessor(
     parser: ParserProtocol,
-    private val calculateSparklines: Boolean,
 ) : BaseProcessor(parser), MarketProcessorProtocol {
     private val fallbackStepSize = 0.0001
     private val fallbackTickSize = 0.01

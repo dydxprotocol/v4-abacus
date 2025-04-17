@@ -34,8 +34,7 @@ internal interface MarketsProcessorProtocol : BaseProcessorProtocol {
 
 internal class MarketsProcessor(
     parser: ParserProtocol,
-    calculateSparklines: Boolean,
-    private val marketProcessor: MarketProcessorProtocol = MarketProcessor(parser, calculateSparklines)
+    private val marketProcessor: MarketProcessorProtocol = MarketProcessor(parser)
 ) : BaseProcessor(parser), MarketsProcessorProtocol {
 
     override fun processSubscribed(

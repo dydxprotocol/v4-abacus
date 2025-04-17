@@ -19,9 +19,8 @@ import indexer.models.IndexerWsOrderbookUpdateResponse
 internal class MarketsSummaryProcessor(
     parser: ParserProtocol,
     localizer: LocalizerProtocol?,
-    calculateSparklines: Boolean = false,
 ) : BaseProcessor(parser) {
-    private val marketsProcessor = MarketsProcessor(parser, calculateSparklines)
+    private val marketsProcessor = MarketsProcessor(parser)
     private val orderbookProcessor = OrderbookProcessor(parser)
     private val candlesProcessor = CandlesProcessor(parser)
     private val tradesProcessor = TradesProcessor(TradeProcessor(parser, localizer))

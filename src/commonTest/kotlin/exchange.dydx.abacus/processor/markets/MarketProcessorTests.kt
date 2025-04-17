@@ -120,7 +120,6 @@ class MarketProcessorTests {
 
     private val processor = MarketProcessor(
         parser = Parser(),
-        calculateSparklines = true,
     )
 
     @Test

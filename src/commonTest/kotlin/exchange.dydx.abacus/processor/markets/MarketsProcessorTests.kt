@@ -13,7 +13,6 @@ class MarketsProcessorTests {
     private val processor = MarketsProcessor(
         parser = Parser(),
         marketProcessor = marketProcessor,
-        calculateSparklines = false,
     )
 
     @Test
