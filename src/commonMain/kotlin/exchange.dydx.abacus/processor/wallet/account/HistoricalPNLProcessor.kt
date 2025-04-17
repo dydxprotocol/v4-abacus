@@ -15,17 +15,6 @@ internal interface HistoricalPNLProcessorProtocol {
 internal class HistoricalPNLProcessor(
     parser: ParserProtocol
 ) : BaseProcessor(parser), HistoricalPNLProcessorProtocol {
-    private val historicalPNLKeyMap = mapOf(
-        "double" to mapOf(
-            "equity" to "equity",
-            "totalPnl" to "totalPnl",
-            "netTransfers" to "netTransfers",
-        ),
-        "datetime" to mapOf(
-            "createdAt" to "createdAt",
-        ),
-    )
-
     override fun process(
         existing: SubaccountHistoricalPNL?,
         payload: IndexerPnlTicksResponseObject,
@@ -43,12 +32,5 @@ internal class HistoricalPNLProcessor(
         )
 
         return if (pnl != existing) pnl else existing
-    }
-
-    override fun received(
-        existing: Map<String, Any>?,
-        payload: Map<String, Any>
-    ): Map<String, Any> {
-        return transform(existing, payload, historicalPNLKeyMap)
     }
 }

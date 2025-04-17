@@ -4,9 +4,6 @@ import exchange.dydx.abacus.processor.base.BaseProcessor
 import exchange.dydx.abacus.protocols.LocalizerProtocol
 import exchange.dydx.abacus.protocols.ParserProtocol
 import exchange.dydx.abacus.state.internalstate.InternalPerpetualPosition
-import exchange.dydx.abacus.utils.modify
-import exchange.dydx.abacus.utils.mutable
-import exchange.dydx.abacus.utils.safeSet
 import indexer.codegen.IndexerPerpetualPositionResponseObject
 
 internal class PerpetualPositionsProcessor(
@@ -56,52 +53,6 @@ internal class PerpetualPositionsProcessor(
             } else {
                 existing
             }
-        } else {
-            existing
-        }
-    }
-
-    internal fun received(
-        payload: Map<String, Any>?,
-        subaccountNumber: Int?,
-    ): Map<String, Any>? {
-        if (payload != null) {
-            val result = mutableMapOf<String, Any>()
-            for ((key, value) in payload) {
-                parser.asNativeMap(value)?.let { data ->
-
-                    var modifiedData = data.toMutableMap()
-                    subaccountNumber?.run {
-                        modifiedData.modify("subaccountNumber", subaccountNumber)
-                    }
-
-                    val itemProcessor = itemProcessor as? PerpetualPositionProcessor
-                    val item = itemProcessor?.received(null, modifiedData)
-                    result.safeSet(key, item)
-                }
-            }
-            return result
-        }
-        return null
-    }
-
-    internal fun receivedChangesDeprecated(
-        existing: Map<String, Any>?,
-        payload: List<Any>?,
-    ): Map<String, Any>? {
-        return if (payload != null) {
-            val output = existing?.mutable() ?: mutableMapOf()
-            for (item in payload) {
-                parser.asNativeMap(item)?.let { item ->
-                    parser.asString(item["market"])?.let {
-                        val itemProcessor = itemProcessor as? PerpetualPositionProcessor
-                        val modified =
-                            itemProcessor?.receivedChangesDeprecated(parser.asNativeMap(existing?.get(it)), item)
-                        output.safeSet(it, modified)
-                    }
-                }
-            }
-            output
         } else {
             existing
         }

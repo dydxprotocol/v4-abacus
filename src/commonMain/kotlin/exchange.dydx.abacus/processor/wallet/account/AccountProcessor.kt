@@ -1,9 +1,6 @@
 package exchange.dydx.abacus.processor.wallet.account
 
 import exchange.dydx.abacus.output.LaunchIncentivePoint
-import exchange.dydx.abacus.output.account.AccountBalance
-import exchange.dydx.abacus.output.account.StakingRewards
-import exchange.dydx.abacus.output.account.UnbondingDelegation
 import exchange.dydx.abacus.processor.base.BaseProcessor
 import exchange.dydx.abacus.processor.wallet.account.staking.AccountDelegationsProcessor
 import exchange.dydx.abacus.processor.wallet.account.staking.DelegationUnbondingProcessor
@@ -17,8 +14,6 @@ import exchange.dydx.abacus.state.internalstate.InternalAccountState
 import exchange.dydx.abacus.state.internalstate.InternalSubaccountState
 import exchange.dydx.abacus.state.manager.BlockAndTime
 import exchange.dydx.abacus.state.manager.HistoricalTradingRewardsPeriod
-import exchange.dydx.abacus.utils.IMutableList
-import exchange.dydx.abacus.utils.mutable
 import exchange.dydx.abacus.utils.safeSet
 import indexer.codegen.IndexerHistoricalBlockTradingReward
 import indexer.codegen.IndexerHistoricalTradingRewardAggregation
@@ -30,7 +25,6 @@ import indexer.models.chain.OnChainDelegationResponse
 import indexer.models.chain.OnChainStakingRewardsResponse
 import indexer.models.chain.OnChainUnbondingResponse
 import indexer.models.configs.ConfigsLaunchIncentivePoints
-import kollections.iMutableListOf
 
 /*
 "account": {
@@ -177,7 +171,6 @@ internal class V4AccountProcessor(
     private val balancesProcessor = AccountBalancesProcessor(parser)
     private val delegationsProcessor = AccountDelegationsProcessor(parser)
     private val tradingRewardsProcessor = AccountTradingRewardsProcessor(parser)
-    private val launchIncentivePointsProcessor = LaunchIncentivePointsProcessor(parser)
     private val stakingRewardsProcessor = StakingRewardsProcessor(parser)
     private val unbondingProcessor = DelegationUnbondingProcessor(parser)
 
@@ -189,17 +182,6 @@ internal class V4AccountProcessor(
         return existing
     }
 
-    internal fun receivedAccountBalancesDeprecated(
-        existing: Map<String, Any>?,
-        payload: List<Any>?,
-    ): Map<String, Any> {
-        val modified = existing?.mutable() ?: mutableMapOf()
-        val balances = parser.asNativeMap(parser.value(existing, "balances"))
-        val modifiedBalances = balancesProcessor.receivedBalancesDeprecated(balances, payload)
-        modified.safeSet("balances", modifiedBalances)
-        return modified
-    }
-
     internal fun processStakingDelegations(
         existing: InternalAccountState,
         payload: OnChainDelegationResponse?,
@@ -207,19 +189,6 @@ internal class V4AccountProcessor(
         existing.stakingBalances = delegationsProcessor.process(existing.stakingBalances, payload)
         existing.stakingDelegations = delegationsProcessor.processDelegations(existing.stakingDelegations, payload)
         return existing
-    }
-
-    internal fun receivedDelegationsDeprecated(
-        existing: Map<String, Any>?,
-        payload: List<Any>?,
-    ): Map<String, Any> {
-        val modified = existing?.mutable() ?: mutableMapOf()
-        val delegations = parser.asNativeMap(parser.value(existing, "stakingBalances"))
-        val modifiedStakingBalance = delegationsProcessor.receivedDeprecated(delegations, payload)
-        modified.safeSet("stakingBalances", modifiedStakingBalance)
-        val modifiedDelegations = delegationsProcessor.receivedDelegationsDeprecated(delegations, payload)
-        modified.safeSet("stakingDelegations", modifiedDelegations)
-        return modified
     }
 
     fun processUnbonding(
@@ -230,62 +199,12 @@ internal class V4AccountProcessor(
         return existing
     }
 
-    internal fun receivedUnbondingDeprecated(
-        existing: Map<String, Any>?,
-        payload: List<Any>?,
-    ): Map<String, Any>? {
-        if (payload == null) {
-            return existing
-        }
-        val modified = existing?.mutable() ?: mutableMapOf()
-        val unbondingDelegations: IMutableList<UnbondingDelegation> = iMutableListOf()
-
-        for (validator in payload) {
-            val validatorAddress = parser.asString(parser.value(validator, "validatorAddress")) ?: continue
-            val entries = parser.asList(parser.value(validator, "entries")) ?: continue
-
-            for (entry in entries) {
-                val completionTime = parser.asString(parser.value(entry, "completionTime")) ?: continue
-                val balance = parser.asString(parser.value(entry, "balance")) ?: continue
-
-                unbondingDelegations.add(UnbondingDelegation(validatorAddress, completionTime, balance))
-            }
-        }
-        modified.safeSet("unbondingDelegation", unbondingDelegations)
-        return modified
-    }
-
     fun processStakingRewards(
         existing: InternalAccountState,
         payload: OnChainStakingRewardsResponse?,
     ): InternalAccountState {
         existing.stakingRewards = stakingRewardsProcessor.process(existing.stakingRewards, payload)
         return existing
-    }
-
-    internal fun receivedStakingRewardsDeprecated(
-        existing: Map<String, Any>?,
-        payload: Map<String, Any>?,
-    ): Map<String, Any>? {
-        val rewards = parser.asList(parser.value(payload, "rewards"))
-        val total = parser.asList(parser.value(payload, "total"))
-        if (payload == null || rewards == null || total == null) {
-            return existing
-        }
-        val modified = existing?.mutable() ?: mutableMapOf()
-        val validators: IMutableList<String> = iMutableListOf()
-        val totalRewards: IMutableList<AccountBalance> = iMutableListOf()
-        for (validator in rewards) {
-            val validatorAddress = parser.asString(parser.value(validator, "validatorAddress")) ?: continue
-            validators.add(validatorAddress)
-        }
-        for (reward in total) {
-            val denom = parser.asString(parser.value(reward, "denom")) ?: continue
-            val amount = parser.asString(parser.value(reward, "amount")) ?: continue
-            totalRewards.add(AccountBalance(denom, amount))
-        }
-        modified.safeSet("stakingRewards", StakingRewards(validators, totalRewards))
-        return modified
     }
 
     internal fun processHistoricalPnls(
@@ -299,18 +218,6 @@ internal class V4AccountProcessor(
         return existing
     }
 
-    internal fun receivedHistoricalPnlsDeprecated(
-        existing: Map<String, Any>?,
-        payload: Map<String, Any>?,
-        subaccountNumber: Int,
-    ): Map<String, Any>? {
-        val modified = existing?.mutable() ?: mutableMapOf()
-        val subaccount = parser.asNativeMap(parser.value(existing, "subaccounts.$subaccountNumber"))
-        val modifiedsubaccount = subaccountsProcessor.receivedHistoricalPnlsDeprecated(subaccount, payload)
-        modified.safeSet("subaccounts.$subaccountNumber", modifiedsubaccount)
-        return modified
-    }
-
     internal fun processFills(
         existing: InternalAccountState,
         payload: List<IndexerCompositeFillObject>?,
@@ -322,18 +229,6 @@ internal class V4AccountProcessor(
         return existing
     }
 
-    internal fun receivedFillsDeprecated(
-        existing: Map<String, Any>?,
-        payload: Map<String, Any>?,
-        subaccountNumber: Int,
-    ): Map<String, Any> {
-        val modified = existing?.mutable() ?: mutableMapOf()
-        val subaccount = parser.asNativeMap(parser.value(existing, "subaccounts.$subaccountNumber"))
-        val modifiedsubaccount = subaccountsProcessor.receivedFillsDeprecated(subaccount, payload)
-        modified.safeSet("subaccounts.$subaccountNumber", modifiedsubaccount)
-        return modified
-    }
-
     fun processTransfers(
         existing: InternalAccountState,
         payload: List<IndexerTransferResponseObject>?,
@@ -343,18 +238,6 @@ internal class V4AccountProcessor(
         val newSubaccount = subaccountsProcessor.processTransfers(subaccount, payload)
         existing.subaccounts[subaccountNumber] = newSubaccount
         return existing
-    }
-
-    internal fun receivedTransfersDeprecated(
-        existing: Map<String, Any>?,
-        payload: Map<String, Any>?,
-        subaccountNumber: Int,
-    ): Map<String, Any> {
-        val modified = existing?.mutable() ?: mutableMapOf()
-        val subaccount = parser.asNativeMap(parser.value(existing, "subaccounts.$subaccountNumber"))
-        val modifiedsubaccount = subaccountsProcessor.receivedTransfersDeprecated(subaccount, payload)
-        modified.safeSet("subaccounts.$subaccountNumber", modifiedsubaccount)
-        return modified
     }
 
     internal fun processHistoricalTradingRewards(
@@ -372,23 +255,6 @@ internal class V4AccountProcessor(
             existing.tradingRewards.historical.remove(period)
         }
         return existing
-    }
-
-    internal fun receivedHistoricalTradingRewardsDeprecated(
-        existing: Map<String, Any>?,
-        payload: List<Any>?,
-        period: String?,
-    ): Map<String, Any> {
-        val modified = existing?.mutable() ?: mutableMapOf()
-        val historicalTradingRewards =
-            parser.asNativeList(parser.value(existing, "tradingRewards.historical.$period"))
-        val modifiedHistoricalTradingRewards =
-            tradingRewardsProcessor.recievedHistoricalTradingRewardsDeprecated(
-                historicalTradingRewards,
-                payload,
-            )
-        modified.safeSet("tradingRewards.historical.$period", modifiedHistoricalTradingRewards)
-        return modified
     }
 
     fun processAccount(
@@ -411,36 +277,6 @@ internal class V4AccountProcessor(
             internalState.tradingRewards.blockRewards.addAll(blockTradingRewards)
         }
 
-        return modified
-    }
-
-    internal fun receivedAccount(
-        existing: Map<String, Any>?,
-        payload: Map<String, Any>?,
-    ): Map<String, Any> {
-        var modified = existing?.mutable() ?: mutableMapOf()
-        val subaccounts = parser.asNativeMap(parser.value(existing, "subaccounts"))
-        val modifiedSubaccounts = subaccountsProcessor.receivedSubaccounts(
-            subaccounts,
-            parser.asList(payload?.get("subaccounts")),
-        )
-        modified.safeSet("subaccounts", modifiedSubaccounts)
-
-        val tradingRewards = parser.asNativeMap(parser.value(existing, "tradingRewards"))
-        val modifiedTradingRewards = tradingRewardsProcessor.receivedTotalTradingRewardsDeprecated(
-            tradingRewards,
-            payload?.get("totalTradingRewards"),
-        )
-        modified.safeSet("tradingRewards", modifiedTradingRewards)
-
-        /* block trading rewards are only sent in subaccounts.0 channel */
-        val tradingRewardsPayload =
-            parser.asNativeList(parser.value(payload, "subaccounts.0.tradingRewards"))
-        if (tradingRewardsPayload != null) {
-            for (item in tradingRewardsPayload) {
-                modified = receivedBlockTradingRewardDeprecated(modified, item)
-            }
-        }
         return modified
     }
 
@@ -470,35 +306,6 @@ internal class V4AccountProcessor(
         }
 
         return account ?: existing
-    }
-
-    internal fun subscribedDeprecated(
-        existing: Map<String, Any>?,
-        content: Map<String, Any>,
-        height: BlockAndTime?,
-    ): Map<String, Any> {
-        var modified = existing?.mutable() ?: mutableMapOf()
-        val subaccountNumber = parser.asInt(parser.value(content, "subaccount.subaccountNumber"))
-        if (subaccountNumber != null) {
-            val subaccount =
-                parser.asNativeMap(parser.value(existing, "subaccounts.$subaccountNumber"))
-            val modifiedsubaccount = subaccountsProcessor.subscribedDeprecated(subaccount, content, height)
-            modified.safeSet("subaccounts.$subaccountNumber", modifiedsubaccount)
-        } else {
-            val parentSubaccountNumber =
-                parser.asInt(parser.value(content, "subaccount.parentSubaccountNumber"))
-            if (parentSubaccountNumber != null) {
-                modified = subscribedParentSubaccountDeprecated(modified, content, height).mutable()
-            }
-        }
-
-        /* block trading rewards are only sent in subaccounts.0 channel */
-        val tradingRewardsPayload =
-            parser.value(content, "tradingReward")
-        if (tradingRewardsPayload != null) {
-            modified = receivedBlockTradingRewardDeprecated(modified, tradingRewardsPayload)
-        }
-        return modified
     }
 
     private fun getContentBySubaccountNumber(
@@ -560,27 +367,6 @@ internal class V4AccountProcessor(
         return existing
     }
 
-    private fun subscribedParentSubaccountDeprecated(
-        existing: Map<String, Any>,
-        content: Map<String, Any>,
-        height: BlockAndTime?,
-    ): Map<String, Any> {
-        val contentBySubaccountNumber = getContentBySubaccountNumber(content)
-
-        /*
-        Now we have a map of subaccountNumber to content, we can send it to subaccountProcessor
-         */
-        val modified = existing.mutable()
-        for ((subaccountNumber, subaccountContent) in contentBySubaccountNumber) {
-            val subaccount =
-                parser.asNativeMap(parser.value(modified, "subaccounts.$subaccountNumber"))
-            val modifiedsubaccount =
-                subaccountsProcessor.subscribedDeprecated(subaccount, subaccountContent, height)
-            modified.safeSet("subaccounts.$subaccountNumber", modifiedsubaccount)
-        }
-        return modified
-    }
-
     internal fun processChannelData(
         existing: InternalAccountState,
         content: Map<String, Any>,
@@ -611,49 +397,6 @@ internal class V4AccountProcessor(
         return existing
     }
 
-    @Suppress("FunctionName")
-    internal fun channel_data(
-        existing: Map<String, Any>?,
-        content: Map<String, Any>,
-        info: SocketInfo,
-        height: BlockAndTime?,
-    ): Map<String, Any>? {
-        val subaccountNumber = info.childSubaccountNumber ?: parser.asInt(parser.value(content, "subaccounts.subaccountNumber"))
-            ?: subaccountNumberFromInfo(info)
-
-        return if (subaccountNumber != null) {
-            var modified = existing?.toMutableMap() ?: mutableMapOf()
-            val subaccount =
-                parser.asNativeMap(parser.value(existing, "subaccounts.$subaccountNumber"))
-            val modifiedsubaccount = subaccountsProcessor.channel_dataDeprecated(subaccount, content, height)
-            modified.safeSet("subaccounts.$subaccountNumber", modifiedsubaccount)
-
-            /* block trading rewards are only sent in subaccounts.0 channel */
-            val tradingRewardsPayload = content["tradingReward"]
-            if (tradingRewardsPayload != null) {
-                modified = receivedBlockTradingRewardDeprecated(modified, tradingRewardsPayload)
-            }
-            return modified
-        } else {
-            existing
-        }
-    }
-
-    private fun receivedBlockTradingRewardDeprecated(
-        existing: Map<String, Any>,
-        payload: Any,
-    ): MutableMap<String, Any> {
-        val modified = existing.mutable()
-        val blockRewards =
-            parser.asNativeList(parser.value(existing, "tradingRewards.blockRewards"))
-        val modifiedTradingRewards = tradingRewardsProcessor.recievedBlockTradingRewardDeprecated(
-            blockRewards,
-            payload,
-        )
-        modified.safeSet("tradingRewards.blockRewards", modifiedTradingRewards)
-        return modified
-    }
-
     fun updateHeight(
         existing: InternalAccountState,
         height: BlockAndTime?,
@@ -666,25 +409,6 @@ internal class V4AccountProcessor(
             )
             if (updated) {
                 return Triple(existing, true, subaccountIds)
-            }
-        }
-        return Triple(existing, false, null)
-    }
-
-    internal fun updateHeightDeprecated(
-        existing: Map<String, Any>,
-        height: BlockAndTime?,
-    ): Triple<Map<String, Any>, Boolean, List<Int>?> {
-        val subaccounts = parser.asNativeMap(parser.value(existing, "subaccounts"))
-        if (subaccounts != null) {
-            val (modifiedSubaccounts, updated, subaccountIds) = subaccountsProcessor.updateSubaccountsHeightDeprecated(
-                subaccounts,
-                height,
-            )
-            if (updated) {
-                val modified = existing.mutable()
-                modified.safeSet("subaccounts", modifiedSubaccounts)
-                return Triple(modified, true, subaccountIds)
             }
         }
         return Triple(existing, false, null)
@@ -738,24 +462,6 @@ internal class V4AccountProcessor(
         return Pair(existing, updated)
     }
 
-    internal fun orderCanceledDeprecated(
-        existing: Map<String, Any>,
-        orderId: String,
-        subaccountNumber: Int,
-    ): Pair<Map<String, Any>, Boolean> {
-        val subaccounts = parser.asNativeMap(parser.value(existing, "subaccounts"))?.mutable()
-        if (subaccounts != null) {
-            val (modifiedSubaccounts, updated) =
-                subaccountsProcessor.orderCanceledDeprecated(subaccounts, orderId, subaccountNumber)
-            if (updated) {
-                val modified = existing.mutable()
-                modified.safeSet("subaccounts", modifiedSubaccounts)
-                return Pair(modified, true)
-            }
-        }
-        return Pair(existing, false)
-    }
-
     override fun accountAddressChanged() {
         super.accountAddressChanged()
         subaccountsProcessor.accountAddress = accountAddress
@@ -773,25 +479,5 @@ internal class V4AccountProcessor(
             )
         }
         return existing
-    }
-
-    internal fun receivedLaunchIncentivePointDeprecated(
-        existing: Map<String, Any>,
-        season: String,
-        payload: Any,
-    ): Map<String, Any> {
-        /*
-        launchIncentive.{season}...
-         */
-        val data = parser.asNativeMap(payload) ?: return existing
-        val modified = existing.mutable()
-        val points = launchIncentivePointsProcessor.received(
-            season,
-            parser.asNativeMap(existing["launchIncentivePoints"]),
-            data,
-        )
-
-        modified.safeSet("launchIncentivePoints", points)
-        return modified
     }
 }

@@ -44,22 +44,6 @@ internal class WalletProcessor(
         return existing
     }
 
-    internal fun subscribedDeprecated(
-        existing: Map<String, Any>?,
-        content: Map<String, Any>,
-        height: BlockAndTime?,
-    ): Map<String, Any>? {
-        return receivedObject(
-            existing,
-            "account",
-            parser.asNativeMap(content),
-        ) { existing, payload ->
-            parser.asNativeMap(payload)?.let {
-                v4accountProcessor.subscribedDeprecated(parser.asNativeMap(existing), it, height)
-            }
-        }
-    }
-
     internal fun processChannelData(
         existing: InternalWalletState,
         content: Map<String, Any>,
@@ -76,29 +60,6 @@ internal class WalletProcessor(
         return existing
     }
 
-    @Suppress("FunctionName")
-    internal fun channel_dataDeprecated(
-        existing: Map<String, Any>?,
-        content: Map<String, Any>,
-        info: SocketInfo,
-        height: BlockAndTime?,
-    ): Map<String, Any>? {
-        return receivedObject(
-            existing,
-            "account",
-            parser.asNativeMap(content),
-        ) { existing, payload ->
-            parser.asNativeMap(payload)?.let { payload ->
-                v4accountProcessor.channel_data(
-                    parser.asNativeMap(existing),
-                    payload,
-                    info,
-                    height,
-                )
-            }
-        }
-    }
-
     fun processAccount(
         internalState: InternalWalletState,
         payload: Map<String, Any>?,
@@ -109,18 +70,6 @@ internal class WalletProcessor(
         )
         internalState.account = account
         return internalState
-    }
-
-    internal fun receivedAccount(
-        existing: Map<String, Any>?,
-        payload: Map<String, Any>?,
-    ): Map<String, Any>? {
-        return receivedObject(existing, "account", payload) { existing, payload ->
-            v4accountProcessor.receivedAccount(
-                parser.asNativeMap(existing),
-                payload as? Map<String, Any>?,
-            )
-        }
     }
 
     fun updateHeight(
@@ -140,27 +89,6 @@ internal class WalletProcessor(
         return Triple(existing, false, null)
     }
 
-    internal fun updateHeightDeprecated(
-        existing: Map<String, Any>?,
-        height: BlockAndTime?,
-    ): Triple<Map<String, Any>?, Boolean, List<Int>?> {
-        if (existing != null) {
-            val account = parser.asNativeMap(existing["account"])
-            if (account != null) {
-                val (modifiedAccount, accountUpdated, subaccountIds) = v4accountProcessor.updateHeightDeprecated(
-                    account,
-                    height,
-                )
-                if (accountUpdated) {
-                    val modified = existing.mutable()
-                    modified.safeSet("account", modifiedAccount)
-                    return Triple(modified, true, subaccountIds)
-                }
-            }
-        }
-        return Triple(existing, false, null)
-    }
-
     internal fun processAccountBalances(
         existing: InternalWalletState,
         payload: List<OnChainAccountBalanceObject>?,
@@ -170,18 +98,6 @@ internal class WalletProcessor(
             payload = payload,
         )
         return existing
-    }
-
-    internal fun receivedAccountBalances(
-        existing: Map<String, Any>?,
-        payload: List<Any>?,
-    ): Map<String, Any>? {
-        return receivedObject(existing, "account", payload) { existing, payload ->
-            v4accountProcessor.receivedAccountBalancesDeprecated(
-                parser.asNativeMap(existing),
-                payload as? List<Any>,
-            )
-        }
     }
 
     internal fun processStakingDelegations(
@@ -195,18 +111,6 @@ internal class WalletProcessor(
         return existing
     }
 
-    internal fun receivedDelegationsDeprecated(
-        existing: Map<String, Any>?,
-        payload: List<Any>?,
-    ): Map<String, Any>? {
-        return receivedObject(existing, "account", payload) { existing, payload ->
-            v4accountProcessor.receivedDelegationsDeprecated(
-                parser.asNativeMap(existing),
-                payload as? List<Any>,
-            )
-        }
-    }
-
     fun processUnbonding(
         existing: InternalWalletState,
         payload: OnChainUnbondingResponse?,
@@ -218,18 +122,6 @@ internal class WalletProcessor(
         return existing
     }
 
-    internal fun receivedUnbondingDeprecated(
-        existing: Map<String, Any>?,
-        payload: List<Any>?,
-    ): Map<String, Any>? {
-        return receivedObject(existing, "account", payload) { existing, payload ->
-            v4accountProcessor.receivedUnbondingDeprecated(
-                parser.asNativeMap(existing),
-                payload as? List<Any>,
-            )
-        }
-    }
-
     internal fun processStakingRewards(
         existing: InternalWalletState,
         payload: OnChainStakingRewardsResponse?,
@@ -239,18 +131,6 @@ internal class WalletProcessor(
             payload = payload,
         )
         return existing
-    }
-
-    internal fun receivedStakingRewardsDeprecated(
-        existing: Map<String, Any>?,
-        payload: Map<String, Any>?,
-    ): Map<String, Any>? {
-        return receivedObject(existing, "account", payload) { existing, payload ->
-            v4accountProcessor.receivedStakingRewardsDeprecated(
-                parser.asNativeMap(existing),
-                payload as? Map<String, Any>,
-            )
-        }
     }
 
     internal fun processHistoricalTradingRewards(
@@ -266,20 +146,6 @@ internal class WalletProcessor(
         return existing
     }
 
-    internal fun receivedHistoricalTradingRewards(
-        existing: Map<String, Any>?,
-        payload: List<Any>?,
-        period: String?,
-    ): Map<String, Any>? {
-        return receivedObject(existing, "account", payload) { existing, payload ->
-            v4accountProcessor.receivedHistoricalTradingRewardsDeprecated(
-                parser.asNativeMap(existing),
-                payload as? List<Any>,
-                period as? String,
-            )
-        }
-    }
-
     internal fun processOnChainUserFeeTier(
         existing: InternalWalletState,
         payload: OnChainUserFeeTierResponse?,
@@ -289,20 +155,6 @@ internal class WalletProcessor(
             payload = payload?.tier,
         )
         return existing
-    }
-    internal fun receivedOnChainUserFeeTierDeprecated(
-        existing: Map<String, Any>?,
-        payload: Map<String, Any>?,
-    ): Map<String, Any>? {
-        return receivedObject(
-            existing,
-            "user",
-            parser.asNativeMap(payload?.get("tier")),
-        ) { existing, payload ->
-            parser.asNativeMap(payload)?.let {
-                userProcessor.receivedOnChainUserFeeTierDeprecated(parser.asNativeMap(existing), it)
-            }
-        }
     }
 
     internal fun processOnChainUserStats(
@@ -314,17 +166,6 @@ internal class WalletProcessor(
             payload = payload,
         )
         return existing
-    }
-
-    internal fun receivedOnChainUserStatsDeprecated(
-        existing: Map<String, Any>?,
-        payload: Map<String, Any>?,
-    ): Map<String, Any>? {
-        return receivedObject(existing, "user", payload) { existing, payload ->
-            parser.asNativeMap(payload)?.let {
-                userProcessor.receivedOnChainUserStatsDeprecated(parser.asNativeMap(existing), it)
-            }
-        }
     }
 
     internal fun processHistoricalPnls(
@@ -340,20 +181,6 @@ internal class WalletProcessor(
         return existing
     }
 
-    internal fun receivedHistoricalPnlsDeprecated(
-        existing: Map<String, Any>?,
-        payload: Map<String, Any>,
-        subaccountNumber: Int,
-    ): Map<String, Any>? {
-        return receivedObject(existing, "account", payload) { existing, payload ->
-            v4accountProcessor.receivedHistoricalPnlsDeprecated(
-                parser.asNativeMap(existing),
-                parser.asNativeMap(payload),
-                subaccountNumber,
-            )
-        }
-    }
-
     internal fun processFills(
         existing: InternalWalletState,
         payload: List<IndexerCompositeFillObject>?,
@@ -367,20 +194,6 @@ internal class WalletProcessor(
         return existing
     }
 
-    internal fun receivedFillsDeprecated(
-        existing: Map<String, Any>?,
-        payload: Map<String, Any>,
-        subaccountNumber: Int,
-    ): Map<String, Any>? {
-        return receivedObject(existing, "account", payload) { existing, payload ->
-            v4accountProcessor.receivedFillsDeprecated(
-                parser.asNativeMap(existing),
-                parser.asNativeMap(payload),
-                subaccountNumber,
-            )
-        }
-    }
-
     fun processTransfers(
         existing: InternalWalletState,
         payload: List<IndexerTransferResponseObject>?,
@@ -392,20 +205,6 @@ internal class WalletProcessor(
             subaccountNumber = subaccountNumber,
         )
         return existing
-    }
-
-    internal fun receivedTransfersDeprecated(
-        existing: Map<String, Any>?,
-        payload: Map<String, Any>,
-        subaccountNumber: Int,
-    ): Map<String, Any>? {
-        return receivedObject(existing, "account", payload) { existing, payload ->
-            v4accountProcessor.receivedTransfersDeprecated(
-                parser.asNativeMap(existing),
-                parser.asNativeMap(payload),
-                subaccountNumber,
-            )
-        }
     }
 
     internal fun received(
@@ -442,27 +241,6 @@ internal class WalletProcessor(
         return Pair(existing, updated)
     }
 
-    internal fun orderCanceledDeprecated(
-        existing: Map<String, Any>,
-        orderId: String,
-        subaccountNumber: Int,
-    ): Pair<Map<String, Any>, Boolean> {
-        val account = parser.asNativeMap(existing["account"])
-        if (account != null) {
-            val (modifiedAccount, updated) = v4accountProcessor.orderCanceledDeprecated(
-                account,
-                orderId,
-                subaccountNumber,
-            )
-            if (updated) {
-                val modified = existing.mutable()
-                modified.safeSet("account", modifiedAccount)
-                return Pair(modified, true)
-            }
-        }
-        return Pair(existing, false)
-    }
-
     override fun accountAddressChanged() {
         super.accountAddressChanged()
         v4accountProcessor.accountAddress = accountAddress
@@ -479,22 +257,5 @@ internal class WalletProcessor(
             payload = payload,
         )
         return existing
-    }
-
-    internal fun receivedLaunchIncentivePointDeprecated(
-        existing: Map<String, Any>,
-        season: String,
-        payload: Any,
-    ): Map<String, Any> {
-        val account = parser.asNativeMap(existing["account"]) ?: mapOf()
-        val modifiedAccount = v4accountProcessor.receivedLaunchIncentivePointDeprecated(
-            account,
-            season,
-            payload,
-        )
-
-        val modified = existing.mutable()
-        modified.safeSet("account", modifiedAccount)
-        return modified
     }
 }

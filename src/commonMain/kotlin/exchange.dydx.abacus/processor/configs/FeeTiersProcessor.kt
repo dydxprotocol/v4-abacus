@@ -18,8 +18,6 @@ internal class FeeTiersProcessor(
     parser: ParserProtocol,
     private val localizer: LocalizerProtocol?,
 ) : BaseProcessor(parser), FeeTiersProcessorProtocol {
-    private val itemProcessor = FeeTierProcessor(parser = parser)
-
     override fun process(
         payload: List<OnChainFeeTier>?
     ): List<FeeTier>? {
@@ -57,19 +55,5 @@ internal class FeeTiersProcessor(
                 null
             }
         }
-    }
-
-    internal fun receivedDeprecated(
-        payload: List<Any>
-    ): List<Any> {
-        val modified = mutableListOf<Map<String, Any>>()
-        for (item in payload) {
-            parser.asNativeMap(item)?.let { it ->
-                itemProcessor.received(null, it)?.let { received ->
-                    modified.add(received)
-                }
-            }
-        }
-        return modified
     }
 }

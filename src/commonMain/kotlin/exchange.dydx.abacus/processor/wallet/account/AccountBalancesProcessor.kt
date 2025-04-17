@@ -3,8 +3,6 @@ package exchange.dydx.abacus.processor.wallet.account
 import exchange.dydx.abacus.processor.base.BaseProcessor
 import exchange.dydx.abacus.protocols.ParserProtocol
 import exchange.dydx.abacus.state.internalstate.InternalAccountBalanceState
-import exchange.dydx.abacus.utils.mutable
-import exchange.dydx.abacus.utils.safeSet
 import indexer.models.chain.OnChainAccountBalanceObject
 
 internal interface AccountBalancesProcessorProtocol {
@@ -36,31 +34,5 @@ internal class AccountBalancesProcessor(
             return modified
         }
         return existing
-    }
-
-    fun receivedBalancesDeprecated(
-        existing: Map<String, Any>?,
-        payload: List<Any>?,
-    ): Map<String, Any>? {
-        return if (payload != null) {
-            val modified = mutableMapOf<String, Any>()
-            for (itemPayload in payload) {
-                val data = parser.asNativeMap(itemPayload)
-                if (data != null) {
-                    val denom = parser.asString(data["denom"])
-                    if (denom != null) {
-                        val key = "$denom"
-                        val existing =
-                            parser.asNativeMap(existing?.get(key))?.mutable() ?: mutableMapOf()
-                        existing.safeSet("denom", denom)
-                        existing.safeSet("amount", parser.asDecimal(data["amount"]))
-                        modified.safeSet(key, existing)
-                    }
-                }
-            }
-            return modified
-        } else {
-            null
-        }
     }
 }

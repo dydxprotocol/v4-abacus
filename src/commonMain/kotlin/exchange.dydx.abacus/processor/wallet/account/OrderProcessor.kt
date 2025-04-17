@@ -15,8 +15,6 @@ import exchange.dydx.abacus.protocols.ParserProtocol
 import exchange.dydx.abacus.state.manager.BlockAndTime
 import exchange.dydx.abacus.utils.NUM_PARENT_SUBACCOUNTS
 import exchange.dydx.abacus.utils.Numeric
-import exchange.dydx.abacus.utils.mutable
-import exchange.dydx.abacus.utils.safeSet
 import indexer.codegen.IndexerAPIOrderStatus
 import indexer.models.IndexerCompositeOrderObject
 import kotlinx.datetime.Instant
@@ -133,57 +131,15 @@ internal class OrderProcessor(
         "IOC" to "APP.TRADE.IMMEDIATE_OR_CANCEL",
         "GTT" to "APP.TRADE.GOOD_TIL_TIME",
     )
-    private val cancelReasonStringKeys = mapOf(
-        "COULD_NOT_FILL" to "APP.TRADE.COULD_NOT_FILL",
-        "EXPIRED" to "APP.TRADE.EXPIRED",
-        "FAILED" to "APP.TRADE.FAILED",
-        "POST_ONLY_WOULD_CROSS" to "APP.TRADE.POST_ONLY_WOULD_CROSS",
-        "SELF_TRADE" to "APP.TRADE.SELF_TRADE",
-        "UNDERCOLLATERALIZED" to "APP.TRADE.UNDERCOLLATERALIZED",
-        "USER_CANCELED" to "APP.TRADE.USER_CANCELED",
-    )
-
-    private val orderKeyMap = mapOf(
-        "string" to mapOf(
-            "id" to "id",
-            "clientId" to "clientId",
-            "market" to "marketId",
-            "displayId" to "displayId",
-            "side" to "side",
-            "type" to "type",
-            "status" to "status",
-            "timeInForce" to "timeInForce",
-//            "cancelReason" to "cancelReason",
-//            "removalReason" to "removalReason"
-        ),
-        "double" to mapOf(
-            "price" to "price",
-            "triggerPrice" to "triggerPrice",
-            "trailingPercent" to "trailingPercent",
-            "size" to "size",
-//            "remainingSize" to "remainingSize",
-//            "totalFilled" to "totalFilled"
-        ),
-        "datetime" to mapOf(
-            "createdAt" to "createdAt",
-            "unfillableAt" to "unfillableAt",
-            "expiresAt" to "expiresAt",
-            "updatedAt" to "updatedAt",
-            "goodTilBlockTime" to "goodTilBlockTime",
-        ),
-        "bool" to mapOf(
-            "postOnly" to "postOnly",
-            "reduceOnly" to "reduceOnly",
-        ),
-        "int" to mapOf(
-            "subaccountNumber" to "subaccountNumber",
-            "clobPairId" to "clobPairId",
-            "orderFlags" to "orderFlags",
-            "goodTilBlock" to "goodTilBlock",
-            "clientMetadata" to "clientMetadata",
-            "createdAtHeight" to "createdAtHeight",
-        ),
-    )
+//    private val cancelReasonStringKeys = mapOf(
+//        "COULD_NOT_FILL" to "APP.TRADE.COULD_NOT_FILL",
+//        "EXPIRED" to "APP.TRADE.EXPIRED",
+//        "FAILED" to "APP.TRADE.FAILED",
+//        "POST_ONLY_WOULD_CROSS" to "APP.TRADE.POST_ONLY_WOULD_CROSS",
+//        "SELF_TRADE" to "APP.TRADE.SELF_TRADE",
+//        "UNDERCOLLATERALIZED" to "APP.TRADE.UNDERCOLLATERALIZED",
+//        "USER_CANCELED" to "APP.TRADE.USER_CANCELED",
+//    )
 
     override fun process(
         existing: SubaccountOrder?,
@@ -348,123 +304,6 @@ internal class OrderProcessor(
         }
     }
 
-    private fun shouldUpdateDeprecated(
-        existing: Map<String, Any>?,
-        payload: Map<String, Any>
-    ): Boolean {
-        // First, use updatedAt timestamp, available in v3
-        val updatedAt = parser.asDatetime(existing?.get("updatedAt"))
-            ?: parser.asDatetime(existing?.get("createdAt"))
-        val incomingUpdatedAt = parser.asDatetime(payload["updatedAt"])
-            ?: parser.asDatetime(payload["createdAt"])
-        if (updatedAt != null) {
-            if (incomingUpdatedAt != null) {
-                if (updatedAt < incomingUpdatedAt) {
-                    return true
-                } else if (updatedAt > incomingUpdatedAt) {
-                    return false
-                }
-                // If they are the same, fall through to the status and filled check
-            }
-        } else {
-            if (incomingUpdatedAt != null) {
-                return true
-            }
-            // If they are both null, fall through to the status and filled check
-        }
-        val filled = parser.asDouble(existing?.get("totalFilled")) ?: Numeric.double.ZERO
-        val incomingFilled = parser.asDouble(payload["totalFilled"]) ?: Numeric.double.ZERO
-        if (incomingFilled > filled) {
-            return true
-        } else if (incomingFilled < filled) {
-            return false
-        }
-        // If updatedAt and totalFilled are the same, we use status for best guess
-        return when (val status = parser.asString(existing?.get("status"))) {
-            "BEST_EFFORT_CANCELED" -> {
-                val newStatus = parser.asString(payload["status"])
-                (newStatus == "FILLED") || (newStatus == "CANCELED") || (newStatus == "BEST_EFFORT_CANCELED")
-            }
-
-            else -> !isStatusFinalizedDeprecated(status)
-        }
-    }
-
-    override fun received(
-        existing: Map<String, Any>?,
-        payload: Map<String, Any>,
-        height: BlockAndTime?,
-    ): Map<String, Any>? {
-        return if (shouldUpdateDeprecated(existing, payload)) {
-            val modified = transform(existing, payload, orderKeyMap)
-
-            parser.asString(payload["ticker"])?.let { marketId ->
-                modified.safeSet("displayId", MarketId.getDisplayId(marketId))
-
-                if (modified["marketId"] == null) {
-                    modified.safeSet("marketId", payload["ticker"])
-                }
-            }
-
-            if (modified["id"] == null) {
-                modified.safeSet("id", payload["clientId"])
-            }
-            parser.asInt(modified["subaccountNumber"])?.run {
-                modified.safeSet("subaccountNumber", this)
-                // the v4_parent_subaccount message has subaccountNumber available but v4_orders does not
-                modified.safeSet(
-                    "marginMode",
-                    if (this >= NUM_PARENT_SUBACCOUNTS) MarginMode.Isolated.rawValue else MarginMode.Cross.rawValue,
-                )
-            }
-            parser.asDouble(payload["size"])?.let { size ->
-                parser.asDouble(payload["totalFilled"])?.let { totalFilled ->
-                    val remainingSize = size - totalFilled
-                    modified.safeSet("totalFilled", totalFilled)
-                    modified.safeSet("remainingSize", remainingSize)
-                    if (totalFilled != Numeric.double.ZERO && remainingSize != Numeric.double.ZERO) {
-                        when (modified["status"]) {
-                            "OPEN" -> modified.safeSet("status", "PARTIALLY_FILLED")
-                            "CANCELED" -> modified.safeSet(
-                                "status",
-                                "PARTIALLY_CANCELED",
-                            ) // finalized state
-                        }
-                    }
-                }
-            }
-
-            modified.safeSet("cancelReason", payload["removalReason"] ?: payload["cancelReason"])
-
-            parser.asDouble(payload["orderFlags"])?.let { orderFlags ->
-                // if order is short-term order and indexer returns best effort canceled and has no partial fill
-                // treat as a pending order until it's partially filled or finalized
-                val isShortTermOrder = orderFlags.equals(Numeric.double.ZERO)
-                val isBestEffortCanceled = modified["status"] == "BEST_EFFORT_CANCELED"
-                val cancelReason = parser.asString(modified["cancelReason"])
-                val isUserCanceled =
-                    cancelReason == "USER_CANCELED" || cancelReason == "ORDER_REMOVAL_REASON_USER_CANCELED"
-                if (isShortTermOrder && isBestEffortCanceled && !isUserCanceled) {
-                    modified.safeSet("status", "PENDING")
-                }
-            }
-
-            modified.safeSet(
-                "type",
-                OrderTypeProcessor.orderType(
-                    parser.asString(modified["type"]),
-                    parser.asInt(modified["clientMetadata"]),
-                ),
-            )
-
-            updateResourceDeprecated(modified)
-            val (returnValue, updated) = updateHeightDeprecated(modified, height);
-            return returnValue
-        } else {
-            existing
-        }
-    }
-
     private fun createResources(
         side: OrderSide,
         type: OrderType?,
@@ -484,40 +323,6 @@ internal class OrderProcessor(
         },
         timeInForceStringKey = timeInForceStringKeys[timeInForce?.rawValue],
     )
-
-    private fun updateResourceDeprecated(modified: MutableMap<String, Any>) {
-        val resources = parser.asNativeMap(modified["resources"])?.mutable()
-            ?: mutableMapOf()
-
-        val type = parser.asString(modified["type"])
-
-        if (type != null) {
-            typeStringKeys[type]?.let {
-                resources["typeStringKey"] = it
-            }
-        }
-        (parser.asString(modified["side"])).let {
-            sideStringKeys[it]?.let {
-                resources["sideStringKey"] = it
-            }
-        }
-        (parser.asString(modified["status"])).let {
-            statusStringKeys[it]?.let {
-                resources["statusStringKey"] = it
-            }
-        }
-        (parser.asString(modified["timeInForce"])).let {
-            timeInForceStringKeys[it]?.let {
-                resources["timeInForceStringKey"] = it
-            }
-        }
-        (parser.asString(modified["cancelReason"])).let {
-            cancelReasonStringKeys[it]?.let {
-                resources["cancelReasonStringKey"] = it
-            }
-        }
-        modified["resources"] = resources
-    }
 
     override fun updateHeight(
         existing: SubaccountOrder,
@@ -564,48 +369,6 @@ internal class OrderProcessor(
         return Pair(existing, false)
     }
 
-    internal fun updateHeightDeprecated(
-        existing: Map<String, Any>,
-        height: BlockAndTime?,
-    ): Pair<Map<String, Any>, Boolean> {
-        if (height != null) {
-            when (val status = parser.asString(existing["status"])) {
-                "PENDING", "BEST_EFFORT_CANCELED", "PARTIALLY_FILLED" -> {
-                    val goodTilBlock = parser.asInt(existing["goodTilBlock"])
-                    if (goodTilBlock != null && goodTilBlock != 0 && height.block >= goodTilBlock) {
-                        val modified = existing.mutable();
-                        modified["status"] = "CANCELED"
-                        modified["updatedAt"] = height.time
-
-                        parser.asDouble(existing["size"])?.let { size ->
-                            parser.asDouble(existing["totalFilled"])?.let { totalFilled ->
-                                val remainingSize = size - totalFilled
-                                if (totalFilled != Numeric.double.ZERO && remainingSize != Numeric.double.ZERO) {
-                                    modified["status"] = "PARTIALLY_CANCELED"
-                                }
-                            }
-                        }
-
-                        updateResourceDeprecated(modified)
-                        return Pair(modified, true)
-                    }
-                }
-
-                else -> {}
-            }
-        }
-        return Pair(existing, false)
-    }
-
-    private fun isStatusFinalizedDeprecated(status: String?): Boolean {
-        // once an order is filled, canceled, or canceled with partial fill
-        // there is no need to update status again
-        return when (status) {
-            "FILLED", "CANCELED", "PARTIALLY_CANCELED" -> true
-            else -> false
-        }
-    }
-
     override fun canceled(
         existing: SubaccountOrder,
     ): SubaccountOrder {
@@ -627,19 +390,5 @@ internal class OrderProcessor(
         return modified.copy(
             resources = resources,
         )
-    }
-
-    internal fun canceledDeprecated(
-        existing: Map<String, Any>,
-    ): Map<String, Any> {
-        val modified = existing.mutable()
-        // show order status as canceling if frontend initiated cancel
-        if (!isStatusFinalizedDeprecated(parser.asString(modified["status"]))) {
-            modified["status"] = "BEST_EFFORT_CANCELED"
-        }
-
-        modified["cancelReason"] = "USER_CANCELED"
-        updateResourceDeprecated(modified)
-        return modified
     }
 }

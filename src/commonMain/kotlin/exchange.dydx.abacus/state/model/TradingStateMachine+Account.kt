@@ -31,14 +31,10 @@ internal fun TradingStateMachine.account(payload: String): StateChanges {
 private fun TradingStateMachine.receivedAccount(
     payload: Map<String, Any>
 ): StateChanges {
-    if (staticTyping) {
-        walletProcessor.processAccount(
-            internalState = internalState.wallet,
-            payload = payload,
-        )
-    } else {
-        this.wallet = walletProcessor.receivedAccount(wallet, payload)
-    }
+    walletProcessor.processAccount(
+        internalState = internalState.wallet,
+        payload = payload,
+    )
     return StateChanges(iListOf(Changes.subaccount, Changes.tradingRewards))
 }
 
@@ -46,31 +42,16 @@ internal fun TradingStateMachine.updateHeight(
     height: BlockAndTime,
 ): StateResponse {
     this.currentBlockAndHeight = height
-    if (staticTyping) {
-        val (modifiedWallet, updated, subaccountIds) = walletProcessor.updateHeight(
-            existing = internalState.wallet,
-            height = height,
-        )
-        return if (updated) {
-            val changes = StateChanges(iListOf(Changes.subaccount), null, subaccountIds?.toIList())
-            val realChanges = updateStateChanges(changes)
-            StateResponse(state, realChanges, null, null)
-        } else {
-            return StateResponse(state, null, null, null)
-        }
+    val (modifiedWallet, updated, subaccountIds) = walletProcessor.updateHeight(
+        existing = internalState.wallet,
+        height = height,
+    )
+    return if (updated) {
+        val changes = StateChanges(iListOf(Changes.subaccount), null, subaccountIds?.toIList())
+        val realChanges = updateStateChanges(changes)
+        StateResponse(state, realChanges, null, null)
     } else {
-        val (modifiedWallet, updated, subaccountIds) = walletProcessor.updateHeightDeprecated(
-            wallet,
-            height,
-        )
-        return if (updated) {
-            this.wallet = modifiedWallet
-            val changes = StateChanges(iListOf(Changes.subaccount), null, subaccountIds?.toIList())
-            val realChanges = updateStateChanges(changes)
-            StateResponse(state, realChanges, null, null)
-        } else {
-            return StateResponse(state, null, null, null)
-        }
+        return StateResponse(state, null, null, null)
     }
 }
 

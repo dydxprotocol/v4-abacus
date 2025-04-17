@@ -6,8 +6,6 @@ import exchange.dydx.abacus.processor.base.BaseProcessorProtocol
 import exchange.dydx.abacus.protocols.LocalizerProtocol
 import exchange.dydx.abacus.protocols.ParserProtocol
 import exchange.dydx.abacus.state.internalstate.InternalConfigsState
-import exchange.dydx.abacus.utils.mutable
-import exchange.dydx.abacus.utils.safeSet
 import indexer.models.chain.OnChainEquityTiersResponse
 import indexer.models.chain.OnChainFeeTiersResponse
 import indexer.models.chain.OnChainWithdrawalAndTransferGatingStatusResponse
@@ -42,10 +40,6 @@ internal class ConfigsProcessor(
     private val feeTiersProcessor: FeeTiersProcessorProtocol = FeeTiersProcessor(parser, localier),
     private val withdrawalCapacityProcessor: WithdrawalCapacityProcessorProtocol = WithdrawalCapacityProcessor(parser)
 ) : BaseProcessor(parser), ConfigsProcessorProtocol {
-    // Deprecated
-    private val feeDiscountsProcessor = FeeDiscountsProcessor(parser)
-    private val networkConfigsProcessor = NetworkConfigsProcessor(parser)
-    private val withdrawalGatingProcessor = WithdrawalGatingProcessor(parser)
 
     override fun processOnChainEquityTiers(
         existing: InternalConfigsState,
@@ -55,76 +49,12 @@ internal class ConfigsProcessor(
         return existing
     }
 
-    internal fun receivedOnChainEquityTiersDeprecated(
-        existing: Map<String, Any>?,
-        payload: Map<String, Any>
-    ): Map<String, Any>? {
-        val modified = existing?.mutable() ?: mutableMapOf()
-        val map = parser.asNativeMap(payload) as Map<String, List<Any>>?
-        modified.safeSet("equityTiers", map)
-
-        return receivedObject(existing, "equityTiers", modified) { existing, payload ->
-            val map = parser.asNativeMap(payload) as Map<String, Map<String, List<Any>>>?
-            if (map != null) {
-                val equityTiersProcessor = equityTiersProcessor as EquityTiersProcessor
-                equityTiersProcessor.receivedDeprecated(map)
-            } else {
-                null
-            }
-        }
-    }
-
     override fun processOnChainFeeTiers(
         existing: InternalConfigsState,
         payload: OnChainFeeTiersResponse?,
     ): InternalConfigsState {
         existing.feeTiers = feeTiersProcessor.process(payload?.params?.tiers)
         return existing
-    }
-
-    internal fun receivedOnChainFeeTiersDeprecated(
-        existing: Map<String, Any>?,
-        payload: List<Any>
-    ): Map<String, Any>? {
-        return receivedObject(existing, "feeTiers", payload) { existing, payload ->
-            val list = parser.asNativeList(payload)
-            if (list != null) {
-                val feeTiersProcessor = feeTiersProcessor as FeeTiersProcessor
-                feeTiersProcessor.receivedDeprecated(list)
-            } else {
-                null
-            }
-        }
-    }
-
-    // Not used
-    internal fun receivedFeeDiscounts(
-        existing: Map<String, Any>?,
-        payload: List<Any>
-    ): Map<String, Any>? {
-        return receivedObject(existing, "feeDiscounts", payload) { existing, payload ->
-            val list = parser.asNativeList(payload)
-            if (list != null) {
-                feeDiscountsProcessor.received(list)
-            } else {
-                null
-            }
-        }
-    }
-
-    // Not used
-    internal fun receivedNetworkConfigs(
-        existing: Map<String, Any>?,
-        payload: Map<String, Any>
-    ): Map<String, Any>? {
-        return receivedObject(existing, "network", payload) { existing, payload ->
-            val map = parser.asNativeMap(payload)
-            if (map != null) {
-                networkConfigsProcessor.received(parser.asNativeMap(existing), map)
-            } else {
-                null
-            }
-        }
     }
 
     override fun processWithdrawalGating(
@@ -137,40 +67,11 @@ internal class ConfigsProcessor(
         return existing
     }
 
-    internal fun receivedWithdrawalGatingDeprecated(
-        existing: Map<String, Any>?,
-        payload: Map<String, Any>
-    ): Map<String, Any>? {
-        return receivedObject(existing, "withdrawalGating", payload) { existing, payload ->
-            val map = parser.asNativeMap(payload)
-            if (map != null) {
-                withdrawalGatingProcessor.received(parser.asNativeMap(existing), map)
-            } else {
-                null
-            }
-        }
-    }
-
     override fun processWithdrawalCapacity(
         existing: InternalConfigsState,
         payload: OnChainWithdrawalCapacityResponse?
     ): InternalConfigsState {
         existing.withdrawalCapacity = withdrawalCapacityProcessor.process(payload)
         return existing
-    }
-
-    internal fun receivedWithdrawalCapacityDeprecated(
-        existing: Map<String, Any>?,
-        payload: Map<String, Any>
-    ): Map<String, Any>? {
-        return receivedObject(existing, "withdrawalCapacity", payload) { existing, payload ->
-            val map = parser.asNativeMap(payload)
-            if (map != null) {
-                val withdrawalCapacityProcessor = withdrawalCapacityProcessor as WithdrawalCapacityProcessor
-                withdrawalCapacityProcessor.received(parser.asNativeMap(existing), map)
-            } else {
-                null
-            }
-        }
     }
 }

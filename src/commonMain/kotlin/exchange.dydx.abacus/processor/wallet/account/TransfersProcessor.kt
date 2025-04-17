@@ -33,23 +33,6 @@ internal class TransfersProcessor(
         return output.sortedByDescending { it.updatedAtMilliseconds }
     }
 
-    override fun received(existing: List<Any>?, payload: List<Any>): List<Any> {
-        val output = mutableListOf<Any>()
-        val newItems = payload.mapNotNull {
-            parser.asNativeMap(it)?.let { map ->
-                val itemProcessor = itemProcessor as TransferProcessor
-                itemProcessor.received(null, map)
-            }
-        }.toList()
-        if (newItems != null) {
-            output.addAll(newItems)
-        }
-        if (existing != null) {
-            output.addAll(existing)
-        }
-        return output
-    }
-
     override fun accountAddressChanged() {
         super.accountAddressChanged()
         itemProcessor.accountAddress = accountAddress

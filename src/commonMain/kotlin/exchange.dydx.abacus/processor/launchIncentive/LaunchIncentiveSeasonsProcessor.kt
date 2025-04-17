@@ -15,8 +15,6 @@ internal interface LaunchIncentiveSeasonsProcessorProtocol {
 internal class LaunchIncentiveSeasonsProcessor(
     parser: ParserProtocol
 ) : BaseProcessor(parser), LaunchIncentiveSeasonsProcessorProtocol {
-    private val itemProcessor = LaunchIncentiveSeasonProcessor(parser = parser)
-
     private val millisecondsInSecond = 1000.0
 
     override fun process(
@@ -34,20 +32,5 @@ internal class LaunchIncentiveSeasonsProcessor(
         } else {
             existing
         }
-    }
-
-    override fun received(
-        existing: List<Any>?,
-        payload: List<Any>
-    ): List<Any>? {
-        val modified = mutableListOf<Map<String, Any>>()
-        for (item in payload) {
-            parser.asNativeMap(item)?.let { it ->
-                itemProcessor.received(null, it)?.let { received ->
-                    modified.add(received)
-                }
-            }
-        }
-        return modified
     }
 }

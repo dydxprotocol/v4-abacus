@@ -29,23 +29,4 @@ internal class FillsProcessor(
         }
         return new
     }
-
-    fun receivedDeprecated(existing: List<Any>?, payload: List<Any>, subaccountNumber: Int): List<Any>? {
-        val new = payload.mapNotNull { eachPayload ->
-            parser.asNativeMap(eachPayload)?.let { eachPayloadData ->
-                val modified = eachPayloadData.toMutableMap()
-
-                val itemProcessor = fillProcessor as FillProcessor
-                itemProcessor.receivedDeprecated(
-                    null,
-                    modified,
-                    subaccountNumber,
-                )
-            }
-        }
-        existing?.let {
-            return mergeWithIds(new, existing) { data -> parser.asNativeMap(data)?.let { parser.asString(it["id"]) } }
-        }
-        return new
-    }
 }
