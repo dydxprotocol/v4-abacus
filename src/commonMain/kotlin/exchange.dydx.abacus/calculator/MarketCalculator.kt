@@ -14,7 +14,7 @@ internal class MarketCalculator(val parser: ParserProtocol) {
         var openInterestUSDC = Numeric.double.ZERO
         var trades24H = Numeric.double.ZERO
 
-        for ((key, market) in markets) {
+        for ((_, market) in markets) {
             val perpetual = market.perpetualMarket?.perpetual
             if (perpetual != null) {
                 volume24HUSDC += perpetual.volume24H ?: Numeric.double.ZERO
