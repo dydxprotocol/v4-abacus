@@ -11,27 +11,19 @@ internal fun TradingStateMachine.sparklines(
     period: IndexerSparklineTimePeriod
 ): StateChanges? {
     val json = parser.decodeJsonObject(payload) as? Map<String, List<String>>
-    if (staticTyping) {
-        val sparklines = parser.asTypedStringMapOfList<String>(json)
-        return if (sparklines != null) {
-            marketsProcessor.processSparklines(internalState.marketsSummary, sparklines, period)
-            when (period) {
-                IndexerSparklineTimePeriod.ONE_DAY -> {
-                    StateChanges(iListOf(Changes.sparklines, Changes.markets), null)
-                }
-                IndexerSparklineTimePeriod.SEVEN_DAYS -> {
-                    StateChanges(iListOf(Changes.markets), null)
-                }
+    val sparklines = parser.asTypedStringMapOfList<String>(json)
+    return if (sparklines != null) {
+        marketsProcessor.processSparklines(internalState.marketsSummary, sparklines, period)
+        when (period) {
+            IndexerSparklineTimePeriod.ONE_DAY -> {
+                StateChanges(iListOf(Changes.sparklines, Changes.markets), null)
             }
-        } else {
-            StateChanges.noChange
+
+            IndexerSparklineTimePeriod.SEVEN_DAYS -> {
+                StateChanges(iListOf(Changes.markets), null)
+            }
         }
     } else {
-        return if (json != null) {
-            marketsSummary = marketsProcessor.receivedSparklinesDeprecated(marketsSummary, json)
-            return StateChanges(iListOf(Changes.sparklines, Changes.markets), null)
-        } else {
-            StateChanges.noChange
-        }
+        StateChanges.noChange
     }
 }

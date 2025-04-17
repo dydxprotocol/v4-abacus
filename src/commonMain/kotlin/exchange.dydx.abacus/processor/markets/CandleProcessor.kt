@@ -3,7 +3,6 @@ package exchange.dydx.abacus.processor.markets
 import exchange.dydx.abacus.output.MarketCandle
 import exchange.dydx.abacus.processor.base.BaseProcessor
 import exchange.dydx.abacus.protocols.ParserProtocol
-import exchange.dydx.abacus.utils.ParsingHelper.Companion.transform
 import indexer.codegen.IndexerCandleResponseObject
 
 /*
@@ -43,25 +42,6 @@ internal interface CandleProcessorProtocol {
 internal class CandleProcessor(
     parser: ParserProtocol
 ) : BaseProcessor(parser), CandleProcessorProtocol {
-    private val candleKeyMap = mapOf(
-        "double" to mapOf(
-            "low" to "low",
-            "high" to "high",
-            "open" to "open",
-            "close" to "close",
-            "baseTokenVolume" to "baseTokenVolume",
-            "usdVolume" to "usdVolume",
-            "startingOpenInterest" to "startingOpenInterest",
-        ),
-        "datetime" to mapOf(
-            "startedAt" to "startedAt",
-            "updatedAt" to "updatedAt",
-        ),
-        "int" to mapOf(
-            "trades" to "trades",
-        ),
-    )
-
     override fun process(
         payload: IndexerCandleResponseObject?
     ): MarketCandle? {
@@ -90,12 +70,5 @@ internal class CandleProcessor(
             usdVolume = usdVolume,
             trades = parser.asInt(payload.trades),
         )
-    }
-
-    override fun received(
-        existing: Map<String, Any>?,
-        payload: Map<String, Any>
-    ): Map<String, Any> {
-        return transform(existing, payload, candleKeyMap)
     }
 }

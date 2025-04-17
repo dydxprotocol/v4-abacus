@@ -12,16 +12,13 @@ internal fun TradingStateMachine.receivedTrades(
     payload: Map<String, Any>
 ): StateChanges? {
     return if (market != null) {
-        if (staticTyping) {
-            val response = parser.asTypedObject<IndexerTradeResponse>(payload.toJson())
-            marketsProcessor.processTradesSubscribed(
-                existing = internalState.marketsSummary,
-                marketId = market,
-                content = response,
-            )
-        } else {
-            this.marketsSummary = marketsProcessor.receivedTradesDeprecated(marketsSummary, market, payload)
-        }
+        val response = parser.asTypedObject<IndexerTradeResponse>(payload.toJson())
+        marketsProcessor.processTradesSubscribed(
+            existing = internalState.marketsSummary,
+            marketId = market,
+            content = response,
+        )
+
         StateChanges(iListOf(Changes.trades), iListOf(market))
     } else {
         null
@@ -33,16 +30,12 @@ internal fun TradingStateMachine.receivedTradesChanges(
     payload: Map<String, Any>
 ): StateChanges? {
     return if (market != null) {
-        if (staticTyping) {
-            val response = parser.asTypedObject<IndexerTradeResponse>(payload.toJson())
-            marketsProcessor.processTradesUpdates(
-                existing = internalState.marketsSummary,
-                marketId = market,
-                content = response,
-            )
-        } else {
-            this.marketsSummary = marketsProcessor.receivedTradesChangesDeprecated(marketsSummary, market, payload)
-        }
+        val response = parser.asTypedObject<IndexerTradeResponse>(payload.toJson())
+        marketsProcessor.processTradesUpdates(
+            existing = internalState.marketsSummary,
+            marketId = market,
+            content = response,
+        )
         StateChanges(iListOf(Changes.trades), iListOf(market))
     } else {
         null
@@ -54,17 +47,13 @@ internal fun TradingStateMachine.receivedBatchedTradesChanges(
     payload: List<Any>
 ): StateChanges? {
     return if (market != null) {
-        if (staticTyping) {
-            payload.mapNotNull { parser.asNativeMap(it) }.forEach { tradeUpdatePayload ->
-                val response = parser.asTypedObject<IndexerTradeResponse>(tradeUpdatePayload.toJson())
-                marketsProcessor.processTradesUpdates(
-                    existing = internalState.marketsSummary,
-                    marketId = market,
-                    content = response,
-                )
-            }
-        } else {
-            this.marketsSummary = marketsProcessor.receivedBatchedTradesChanges(marketsSummary, market, payload)
+        payload.mapNotNull { parser.asNativeMap(it) }.forEach { tradeUpdatePayload ->
+            val response = parser.asTypedObject<IndexerTradeResponse>(tradeUpdatePayload.toJson())
+            marketsProcessor.processTradesUpdates(
+                existing = internalState.marketsSummary,
+                marketId = market,
+                content = response,
+            )
         }
         StateChanges(iListOf(Changes.trades), iListOf(market))
     } else {
