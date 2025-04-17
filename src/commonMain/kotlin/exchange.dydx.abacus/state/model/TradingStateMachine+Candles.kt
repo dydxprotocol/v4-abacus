@@ -33,10 +33,26 @@ private fun TradingStateMachine.receivedCandles(payload: Map<String, Any>): Stat
         val list = parser.asList(payload["candles"])
         val size = list?.size ?: 0
         if (size > 0) {
-            if (staticTyping) {
+            for (marketId in marketIds) {
+                val candlesPayload =
+                    parser.asTypedList<IndexerCandleResponseObject>(list)
+                val resolution = candlesPayload?.firstOrNull()?.resolution
+                if (resolution != null) {
+                    marketsProcessor.processBatchCandlesChanges(
+                        existing = internalState.marketsSummary,
+                        marketId = marketId,
+                        resolution = resolution.value,
+                        content = candlesPayload,
+                    )
+                }
+            }
+            StateChanges(iListOf(Changes.candles), marketIds)
+        } else {
+            val size = parser.asMap(payload["candles"])?.size ?: 0
+            if (size > 0) {
                 for (marketId in marketIds) {
                     val candlesPayload =
-                        parser.asTypedList<IndexerCandleResponseObject>(list)
+                        parser.asTypedList<IndexerCandleResponseObject>(markets?.get(marketId))
                     val resolution = candlesPayload?.firstOrNull()?.resolution
                     if (resolution != null) {
                         marketsProcessor.processBatchCandlesChanges(
@@ -46,30 +62,6 @@ private fun TradingStateMachine.receivedCandles(payload: Map<String, Any>): Stat
                             content = candlesPayload,
                         )
                     }
-                }
-            } else {
-                marketsSummary = marketsProcessor.receivedCandles(marketsSummary, payload)
-            }
-            StateChanges(iListOf(Changes.candles), marketIds)
-        } else {
-            val size = parser.asMap(payload["candles"])?.size ?: 0
-            if (size > 0) {
-                if (staticTyping) {
-                    for (marketId in marketIds) {
-                        val candlesPayload =
-                            parser.asTypedList<IndexerCandleResponseObject>(markets?.get(marketId))
-                        val resolution = candlesPayload?.firstOrNull()?.resolution
-                        if (resolution != null) {
-                            marketsProcessor.processBatchCandlesChanges(
-                                existing = internalState.marketsSummary,
-                                marketId = marketId,
-                                resolution = resolution.value,
-                                content = candlesPayload,
-                            )
-                        }
-                    }
-                } else {
-                    marketsSummary = marketsProcessor.receivedCandles(marketsSummary, payload)
                 }
                 StateChanges(iListOf(Changes.candles), marketIds)
             } else {
@@ -86,18 +78,14 @@ internal fun TradingStateMachine.receivedCandles(
     resolution: String,
     payload: Map<String, Any>
 ): StateChanges {
-    if (staticTyping) {
-        val candlesPayload = parser.asTypedObject<IndexerCandleResponse>(payload)
-        marketsProcessor.processCandles(
-            existing = internalState.marketsSummary,
-            marketId = marketId,
-            resolution = resolution,
-            content = candlesPayload,
-        )
-    } else {
-        this.marketsSummary =
-            marketsProcessor.receivedCandlesDeprecated(marketsSummary, marketId, resolution, payload)
-    }
+    val candlesPayload = parser.asTypedObject<IndexerCandleResponse>(payload)
+    marketsProcessor.processCandles(
+        existing = internalState.marketsSummary,
+        marketId = marketId,
+        resolution = resolution,
+        content = candlesPayload,
+    )
+
     return StateChanges(iListOf(Changes.candles), iListOf(marketId))
 }
 
@@ -106,18 +94,13 @@ internal fun TradingStateMachine.receivedCandlesChanges(
     resolution: String,
     payload: Map<String, Any>
 ): StateChanges {
-    if (staticTyping) {
-        val candlesPayload = parser.asTypedObject<IndexerCandleResponseObject>(payload)
-        marketsProcessor.processCandlesChanges(
-            existing = internalState.marketsSummary,
-            marketId = market,
-            resolution = resolution,
-            content = candlesPayload,
-        )
-    } else {
-        this.marketsSummary =
-            marketsProcessor.receivedCandlesChanges(marketsSummary, market, resolution, payload)
-    }
+    val candlesPayload = parser.asTypedObject<IndexerCandleResponseObject>(payload)
+    marketsProcessor.processCandlesChanges(
+        existing = internalState.marketsSummary,
+        marketId = market,
+        resolution = resolution,
+        content = candlesPayload,
+    )
     return StateChanges(iListOf(Changes.candles), iListOf(market))
 }
 
@@ -126,17 +109,12 @@ internal fun TradingStateMachine.receivedBatchedCandlesChanges(
     resolution: String,
     payload: List<Any>
 ): StateChanges {
-    if (staticTyping) {
-        val candlesPayload = parser.asTypedList<IndexerCandleResponseObject>(payload)
-        marketsProcessor.processBatchCandlesChanges(
-            existing = internalState.marketsSummary,
-            marketId = market,
-            resolution = resolution,
-            content = candlesPayload,
-        )
-    } else {
-        this.marketsSummary =
-            marketsProcessor.receivedBatchedCandlesChanges(marketsSummary, market, resolution, payload)
-    }
+    val candlesPayload = parser.asTypedList<IndexerCandleResponseObject>(payload)
+    marketsProcessor.processBatchCandlesChanges(
+        existing = internalState.marketsSummary,
+        marketId = market,
+        resolution = resolution,
+        content = candlesPayload,
+    )
     return StateChanges(iListOf(Changes.candles), iListOf(market))
 }

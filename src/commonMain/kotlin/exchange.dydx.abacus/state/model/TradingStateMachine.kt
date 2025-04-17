@@ -60,12 +60,14 @@ import exchange.dydx.abacus.responses.StateResponse
 import exchange.dydx.abacus.state.app.helper.Formatter
 import exchange.dydx.abacus.state.changes.Changes
 import exchange.dydx.abacus.state.changes.StateChanges
+import exchange.dydx.abacus.state.changes.StateChanges.Companion.noChange
 import exchange.dydx.abacus.state.internalstate.InternalAccountState
 import exchange.dydx.abacus.state.internalstate.InternalState
 import exchange.dydx.abacus.state.manager.BlockAndTime
 import exchange.dydx.abacus.state.manager.EnvironmentFeatureFlags
 import exchange.dydx.abacus.state.manager.TokenInfo
 import exchange.dydx.abacus.state.manager.V4Environment
+import exchange.dydx.abacus.state.manager.configs.V4StateManagerConfigs.Companion.configs
 import exchange.dydx.abacus.utils.IList
 import exchange.dydx.abacus.utils.Logger
 import exchange.dydx.abacus.utils.NUM_PARENT_SUBACCOUNTS
@@ -109,7 +111,6 @@ open class TradingStateMachine(
     internal val marketsProcessor = MarketsSummaryProcessor(
         parser = parser,
         localizer = localizer,
-        staticTyping = staticTyping,
     )
     internal val assetsProcessor = run {
         val processor = AssetsProcessor(
@@ -317,26 +318,18 @@ open class TradingStateMachine(
         deploymentUri: String
     ): StateChanges {
         val json = parser.decodeJsonObject(infoPayload)
-        if (staticTyping) {
-            val infoPayload = parser.asTypedStringMap<ConfigsAssetMetadata>(json)
-            val pricesJson = parser.decodeJsonObject(pricesPayload)
-            val pricesPayload = parser.asTypedStringMap<ConfigsAssetMetadataPrice>(pricesJson)
-            if (infoPayload == null) {
-                Logger.e { "Error parsing asset payload" }
-                return StateChanges.noChange
-            }
-            return processMarketsConfigurationsWithMetadataService(
-                infoPayload = infoPayload,
-                pricesPayload = pricesPayload,
-                subaccountNumber = subaccountNumber,
-            )
-        } else {
-            return if (json != null) {
-                receivedMarketsConfigurationsDeprecated(json, subaccountNumber, deploymentUri)
-            } else {
-                StateChanges.noChange
-            }
+        val infoPayload = parser.asTypedStringMap<ConfigsAssetMetadata>(json)
+        val pricesJson = parser.decodeJsonObject(pricesPayload)
+        val pricesPayload = parser.asTypedStringMap<ConfigsAssetMetadataPrice>(pricesJson)
+        if (infoPayload == null) {
+            Logger.e { "Error parsing asset payload" }
+            return StateChanges.noChange
         }
+        return processMarketsConfigurationsWithMetadataService(
+            infoPayload = infoPayload,
+            pricesPayload = pricesPayload,
+            subaccountNumber = subaccountNumber,
+        )
     }
 
     internal fun updateStateChanges(changes: StateChanges): StateChanges {

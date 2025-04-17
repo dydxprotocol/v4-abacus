@@ -12,10 +12,10 @@ import indexer.codegen.IndexerTradeResponseObject
 import kotlin.test.Test
 import kotlin.test.assertContentEquals
 
-class TradesProcessorV2Tests {
+class TradesProcessorTests {
 
-    private val processor = TradesProcessorV2(
-        tradeProcessor = TradeProcessorV2(Parser(), DummyLocalizer()),
+    private val processor = TradesProcessor(
+        tradeProcessor = TradeProcessor(Parser(), DummyLocalizer()),
         limit = 5,
     )
 

@@ -17,19 +17,14 @@ internal fun TradingStateMachine.receivedOrderbook(
     if (marketId == null) {
         return null
     }
-    if (staticTyping) {
-        val orderbookPayload = parser.asTypedObject<IndexerOrderbookResponseObject>(payload)
-        val market = internalState.marketsSummary.markets[marketId]
-        marketsProcessor.processOrderbook(
-            existing = internalState.marketsSummary,
-            marketId = marketId,
-            tickSize = market?.perpetualMarket?.configs?.tickSize,
-            content = orderbookPayload,
-        )
-    } else {
-        this.marketsSummary =
-            marketsProcessor.receivedOrderbookDeprecated(marketsSummary, marketId, payload)
-    }
+    val orderbookPayload = parser.asTypedObject<IndexerOrderbookResponseObject>(payload)
+    val market = internalState.marketsSummary.markets[marketId]
+    marketsProcessor.processOrderbook(
+        existing = internalState.marketsSummary,
+        marketId = marketId,
+        tickSize = market?.perpetualMarket?.configs?.tickSize,
+        content = orderbookPayload,
+    )
 
     return StateChanges(
         iListOf(Changes.orderbook, Changes.input),
@@ -59,22 +54,14 @@ internal fun TradingStateMachine.receivedBatchOrderbookChanges(
     if (marketId == null) {
         return null
     }
-    if (staticTyping) {
-        val orderbookUpdatePayload = parser.asTypedList<IndexerWsOrderbookUpdateResponse>(payload)
-        val market = internalState.marketsSummary.markets[marketId]
-        marketsProcessor.processBatchOrderbookChanges(
-            existing = internalState.marketsSummary,
-            tickSize = market?.perpetualMarket?.configs?.tickSize,
-            marketId = marketId,
-            content = orderbookUpdatePayload,
-        )
-    } else {
-        this.marketsSummary = marketsProcessor.receivedBatchOrderbookChangesDeprecated(
-            marketsSummary,
-            marketId,
-            payload,
-        )
-    }
+    val orderbookUpdatePayload = parser.asTypedList<IndexerWsOrderbookUpdateResponse>(payload)
+    val market = internalState.marketsSummary.markets[marketId]
+    marketsProcessor.processBatchOrderbookChanges(
+        existing = internalState.marketsSummary,
+        tickSize = market?.perpetualMarket?.configs?.tickSize,
+        marketId = marketId,
+        content = orderbookUpdatePayload,
+    )
 
     return StateChanges(
         iListOf(Changes.orderbook, Changes.input),
@@ -88,24 +75,18 @@ internal fun TradingStateMachine.setOrderbookGrouping(
     groupingMultiplier: Int,
 ): StateResponse {
     return if (this.groupingMultiplier != groupingMultiplier) {
-        if (staticTyping) {
-            val market = internalState.marketsSummary.markets[marketId]
-            marketsProcessor.groupOrderbook(
-                existing = internalState.marketsSummary,
-                tickSize = market?.perpetualMarket?.configs?.tickSize,
-                marketId = marketId,
-                groupingMultiplier = groupingMultiplier,
-            )
-        } else {
-            this.groupingMultiplier = groupingMultiplier
-            this.marketsSummary =
-                marketsProcessor.groupOrderbookDeprecated(marketsSummary, marketId)
-        }
+        val market = internalState.marketsSummary.markets[marketId]
+        marketsProcessor.groupOrderbook(
+            existing = internalState.marketsSummary,
+            tickSize = market?.perpetualMarket?.configs?.tickSize,
+            marketId = marketId,
+            groupingMultiplier = groupingMultiplier,
+        )
 
         val changes =
             StateChanges(
                 iListOf(Changes.orderbook),
-                if (marketId != null) iListOf(marketId) else null,
+                iListOf(marketId),
                 null,
             )
 
