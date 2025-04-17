@@ -20,24 +20,6 @@ internal interface RewardsParamsProcessorProtocol {
 internal class RewardsParamsProcessor(
     parser: ParserProtocol
 ) : BaseProcessor(parser), RewardsParamsProcessorProtocol {
-    private val rewardsParamsKeyMap = mapOf(
-        "string" to mapOf(
-            "denom" to "denom",
-        ),
-        "double" to mapOf(
-            "denomExponent" to "denomExponent",
-            "feeMultiplierPpm" to "feeMultiplierPpm",
-            "marketId" to "marketId",
-        ),
-    )
-
-    private val tokenPriceMap = mapOf(
-        "double" to mapOf(
-            "price" to "price",
-            "exponent" to "exponent",
-        ),
-    )
-
     override fun process(
         payload: OnChainRewardsParamsResponse?,
     ): InternalRewardsParamsState? {
@@ -64,22 +46,6 @@ internal class RewardsParamsProcessor(
             )
         } else {
             null
-        }
-    }
-
-    override fun received(
-        existing: Map<String, Any>?,
-        payload: Map<String, Any>
-    ): Map<String, Any>? {
-        return transform(existing, payload, rewardsParamsKeyMap)
-    }
-
-    fun receivedTokenPrice(
-        existing: Map<String, Any>?,
-        payload: Map<String, Any>
-    ): Map<String, Any>? {
-        return receivedObject(existing, "tokenPrice", payload) { existing, payload ->
-            transform(parser.asNativeMap(existing), parser.asNativeMap(payload), tokenPriceMap)
         }
     }
 }

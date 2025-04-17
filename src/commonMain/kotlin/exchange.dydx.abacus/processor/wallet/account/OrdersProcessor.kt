@@ -95,26 +95,6 @@ internal class OrdersProcessor(
         return Pair(modified, updated)
     }
 
-    internal fun updateHeightDeprecated(
-        existing: Map<String, Any>,
-        height: BlockAndTime?
-    ): Pair<Map<String, Any>, Boolean> {
-        var updated = false
-        val modified = existing.mutable()
-        for ((key, item) in existing) {
-            val order = parser.asNativeMap(item)
-            if (order != null && itemProcessor != null) {
-                val (modifiedOrder, orderUpdated) = itemProcessor.updateHeightDeprecated(order, height)
-                if (orderUpdated) {
-                    modified[key] = modifiedOrder
-                    updated = orderUpdated
-                }
-            }
-        }
-
-        return Pair(modified, updated)
-    }
-
     fun canceled(
         existing: List<SubaccountOrder>?,
         orderId: String,
@@ -127,21 +107,6 @@ internal class OrdersProcessor(
             return Pair(modified, true)
         } else {
             return Pair(existing, false)
-        }
-    }
-
-    internal fun canceledDeprecated(
-        existing: Map<String, Any>,
-        orderId: String,
-    ): Pair<Map<String, Any>, Boolean> {
-        val order = parser.asNativeMap(existing.get(orderId))
-        return if (order != null) {
-            val modified = existing.mutable()
-            itemProcessor?.canceledDeprecated(order)
-            modified.typedSafeSet(orderId, order)
-            Pair(modified, true)
-        } else {
-            Pair(existing, false)
         }
     }
 }

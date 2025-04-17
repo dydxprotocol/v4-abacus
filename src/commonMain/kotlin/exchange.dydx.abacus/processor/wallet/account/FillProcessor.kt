@@ -13,7 +13,6 @@ import exchange.dydx.abacus.protocols.LocalizerProtocol
 import exchange.dydx.abacus.protocols.ParserProtocol
 import exchange.dydx.abacus.utils.Logger
 import exchange.dydx.abacus.utils.NUM_PARENT_SUBACCOUNTS
-import exchange.dydx.abacus.utils.safeSet
 import indexer.models.IndexerCompositeFillObject
 
 internal interface FillProcessorProtocol {
@@ -27,30 +26,6 @@ internal class FillProcessor(
     parser: ParserProtocol,
     private val localizer: LocalizerProtocol?,
 ) : BaseProcessor(parser), FillProcessorProtocol {
-    private val fillKeyMap = mapOf(
-        "string" to mapOf(
-            "id" to "id",
-            "side" to "side",
-            "liquidity" to "liquidity",
-            "type" to "type",
-            "market" to "marketId",
-            "displayId" to "displayId",
-            "orderId" to "orderId",
-        ),
-        "datetime" to mapOf(
-            "createdAt" to "createdAt",
-        ),
-        "double" to mapOf(
-            "price" to "price",
-            "size" to "size",
-            "fee" to "fee",
-        ),
-        "int" to mapOf(
-            "clientMetadata" to "clientMetadata",
-            "subaccountNumber" to "subaccountNumber",
-        ),
-    )
-
     private val sideMap = mapOf(
         "BUY" to "APP.GENERAL.BUY",
         "SELL" to "APP.GENERAL.SELL",
@@ -133,64 +108,5 @@ internal class FillProcessor(
                 Logger.e { "Failed to parse fill: $payload" }
             }
         }
-    }
-
-    internal fun receivedDeprecated(
-        existing: Map<String, Any>?,
-        payload: Map<String, Any>,
-        subaccountNumber: Int,
-    ): Map<String, Any> {
-        val fill = transform(existing, payload, fillKeyMap)
-
-        if (fill["marketId"] == null) {
-            fill.safeSet("marketId", parser.asString(payload["ticker"]))
-            parser.asString(payload["ticker"])?.let { marketId ->
-                fill.safeSet("displayId", MarketId.getDisplayId(marketId))
-            }
-        } else {
-            parser.asString(fill["marketId"])?.let { marketId ->
-                fill.safeSet("displayId", MarketId.getDisplayId(marketId))
-            }
-        }
-
-        val fillSubaccountNumber = parser.asInt(payload["subaccountNumber"])
-
-        if (fillSubaccountNumber == null) {
-            fill.safeSet("subaccountNumber", subaccountNumber)
-        }
-
-        parser.asInt(fill["subaccountNumber"])?.run {
-            fill.safeSet("marginMode", if (this >= NUM_PARENT_SUBACCOUNTS) MarginMode.Isolated.rawValue else MarginMode.Cross.rawValue)
-        }
-
-        fill.safeSet(
-            "type",
-            OrderTypeProcessor.orderType(
-                parser.asString(fill["type"]),
-                parser.asInt(fill["clientMetadata"]),
-            ),
-        )
-
-        val resources = mutableMapOf<String, Any>()
-        fill["side"]?.let {
-            sideMap[it]?.let {
-                resources["sideStringKey"] = it
-            }
-            sideIconMap[it]?.let {
-                resources["iconLocal"] = it
-            }
-        }
-        fill["liquidity"]?.let {
-            liquidityMap[it]?.let {
-                resources["liquidityStringKey"] = it
-            }
-        }
-        fill["type"]?.let {
-            typeMap[it]?.let {
-                resources["typeStringKey"] = it
-            }
-        }
-        fill["resources"] = resources
-        return fill
     }
 }

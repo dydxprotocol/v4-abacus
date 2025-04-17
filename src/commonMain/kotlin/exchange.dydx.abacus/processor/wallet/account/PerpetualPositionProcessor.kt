@@ -3,15 +3,10 @@ package exchange.dydx.abacus.processor.wallet.account
 import abs
 import exchange.dydx.abacus.output.TradeStatesWithStringValues
 import exchange.dydx.abacus.output.account.SubaccountPositionResources
-import exchange.dydx.abacus.output.input.MarginMode
 import exchange.dydx.abacus.processor.base.BaseProcessor
-import exchange.dydx.abacus.processor.utils.MarketId
 import exchange.dydx.abacus.protocols.LocalizerProtocol
 import exchange.dydx.abacus.protocols.ParserProtocol
 import exchange.dydx.abacus.state.internalstate.InternalPerpetualPosition
-import exchange.dydx.abacus.utils.NUM_PARENT_SUBACCOUNTS
-import exchange.dydx.abacus.utils.Numeric
-import exchange.dydx.abacus.utils.safeSet
 import indexer.codegen.IndexerPerpetualPositionResponseObject
 import indexer.codegen.IndexerPositionSide
 
@@ -193,78 +188,6 @@ internal class PerpetualPositionProcessor(
         // Filter at output
         return if (payload != null) {
             process(existing, payload)
-        } else {
-            existing
-        }
-    }
-
-    override fun received(
-        existing: Map<String, Any>?,
-        payload: Map<String, Any>,
-    ): Map<String, Any> {
-        var modified = transform(existing, payload, positionKeyMap)
-        modified = transform(modified, payload, "current", currentPositionKeyMap)
-
-        val size = parser.asDouble(payload["size"])
-        val sizeMap = size(parser.asNativeMap(payload["size"]), size, parser.asString(payload["side"]))
-        modified.safeSet("size", sizeMap)
-
-        parser.asInt(payload["subaccountNumber"])?.run {
-            modified.safeSet("subaccountNumber", this)
-
-            // the v4_parent_subaccount message has subaccountNumber available but v4_orders does not
-            modified.safeSet("marginMode", if (this >= NUM_PARENT_SUBACCOUNTS) MarginMode.Isolated.rawValue else MarginMode.Cross.rawValue)
-        }
-
-        parser.asString(modified["id"])?.let { marketId ->
-            MarketId.getDisplayId(marketId).let { displayId ->
-                modified["displayId"] = displayId
-            }
-
-            MarketId.getAssetId(marketId)?.let { assetId ->
-                modified["assetId"] = assetId
-            }
-        }
-
-        val resources = parser.asNativeMap(modified["resources"])?.toMutableMap()
-            ?: mutableMapOf<String, Any>()
-        val side = parser.asString(payload["side"]) ?: "NONE"
-        sideStringKeys[side]?.let {
-            resources["sideStringKey"] = mapOf("current" to it)
-        }
-        indicators[side]?.let {
-            resources["indicator"] = mapOf("current" to it)
-        }
-        modified["resources"] = resources
-        return modified
-    }
-
-    private fun size(existing: Map<String, Any>?, size: Double?, side: String?): Map<String, Any>? {
-        val sizeMap = existing?.toMutableMap() ?: mutableMapOf()
-        val signedSize = if (size != null) if (side == "SHORT") (size.abs() * -1.0) else size else null
-        sizeMap.safeSet("current", signedSize)
-        return sizeMap
-    }
-
-    private fun side(size: Double?): String {
-        if (size != null) {
-            if (size > Numeric.double.ZERO) {
-                return "LONG"
-            } else if (size < Numeric.double.ZERO) {
-                return "SHORT"
-            }
-        }
-        return "NONE"
-    }
-
-    internal fun receivedChangesDeprecated(
-        existing: Map<String, Any>?,
-        payload: Map<String, Any>?
-    ): Map<String, Any>? {
-        // Keep the position even if it is closed in the internal state.
-        // Filter at output
-        return if (payload != null) {
-            received(existing, payload)
         } else {
             existing
         }

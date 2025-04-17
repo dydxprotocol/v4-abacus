@@ -10,8 +10,6 @@ internal class HistoricalPNLsProcessor(
     parser: ParserProtocol,
     private val pnlProcessor: HistoricalPNLProcessorProtocol = HistoricalPNLProcessor(parser = parser)
 ) : BaseProcessor(parser) {
-    private val itemProcessor: HistoricalPNLProcessor? = pnlProcessor as? HistoricalPNLProcessor
-
     fun process(
         existing: List<SubaccountHistoricalPNL>?,
         payload: List<IndexerPnlTicksResponseObject>,
@@ -32,27 +30,6 @@ internal class HistoricalPNLsProcessor(
                 }
             },
             ascending = true,
-        )
-    }
-
-    override fun received(
-        existing: List<Any>?,
-        payload: List<Any>
-    ): List<Any>? {
-        val history = mutableListOf<Any>()
-        for (item in payload.reversed()) {
-            parser.asNativeMap(item)?.let {
-                if (itemProcessor != null) {
-                    history.add(itemProcessor.received(null, it))
-                }
-            }
-        }
-        return mergeDeprecated(
-            parser,
-            existing,
-            history,
-            "createdAt",
-            true,
         )
     }
 }

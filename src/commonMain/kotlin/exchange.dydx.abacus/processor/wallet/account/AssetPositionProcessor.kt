@@ -15,17 +15,6 @@ internal interface AssetPositionProcessorProtocol {
 internal class AssetPositionProcessor(
     parser: ParserProtocol
 ) : BaseProcessor(parser), AssetPositionProcessorProtocol {
-    private val positionKeyMap = mapOf(
-        "string" to mapOf(
-            "symbol" to "id",
-            "side" to "side",
-            "assetId" to "assetId",
-        ),
-        "double" to mapOf(
-            "size" to "size",
-        ),
-    )
-
     override fun process(
         payload: IndexerAssetPositionResponseObject?
     ): InternalAssetPositionState? {
@@ -37,24 +26,6 @@ internal class AssetPositionProcessor(
                 assetId = payload.assetId,
                 subaccountNumber = payload.subaccountNumber,
             )
-        } else {
-            null
-        }
-    }
-
-    override fun received(
-        existing: Map<String, Any>?,
-        payload: Map<String, Any>
-    ): Map<String, Any> {
-        return transform(existing, payload, positionKeyMap)
-    }
-
-    internal fun receivedChanges(
-        existing: Map<String, Any>?,
-        payload: Map<String, Any>?
-    ): Map<String, Any>? {
-        return if (payload != null) {
-            received(existing, payload)
         } else {
             null
         }
