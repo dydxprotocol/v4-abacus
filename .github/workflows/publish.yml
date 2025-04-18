@@ -33,17 +33,17 @@ jobs:
             exit 1
           fi
           
-  create-tag:
-    runs-on: ubuntu-latest
-    needs: check-version
-    permissions:
-      contents: write
-    steps:
-      - uses: jaywcjlove/create-tag-action@v2.2.0
-        with:
-          version: ${{ needs.check-version.outputs.new_version }}
-          release: true
-          test: '^v\d+\.\d+\.\d+$'
+  # create-tag:
+  #   runs-on: ubuntu-latest
+  #   needs: check-version
+  #   permissions:
+  #     contents: write
+  #   steps:
+  #     - uses: jaywcjlove/create-tag-action@v2.2.0
+  #       with:
+  #         version: ${{ needs.check-version.outputs.new_version }}
+  #         release: true
+  #         test: '^v\d+\.\d+\.\d+$'
 
   publish-jvm:
     name: Publish JVM Package
