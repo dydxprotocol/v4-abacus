@@ -2,7 +2,7 @@ package exchange.dydx.abacus.output
 
 import exchange.dydx.abacus.output.input.OrderSide
 import exchange.dydx.abacus.output.input.OrderType
-import exchange.dydx.abacus.state.internalstate.InternalState
+import exchange.dydx.abacus.state.InternalState
 import exchange.dydx.abacus.state.manager.OrderbookGrouping
 import exchange.dydx.abacus.utils.IList
 import exchange.dydx.abacus.utils.IMap

@@ -10,7 +10,7 @@ import exchange.dydx.abacus.output.input.ErrorType
 import exchange.dydx.abacus.output.input.ValidationError
 import exchange.dydx.abacus.protocols.LocalizerProtocol
 import exchange.dydx.abacus.protocols.ParserProtocol
-import exchange.dydx.abacus.state.app.helper.Formatter
+import exchange.dydx.abacus.state.helper.Formatter
 import exchange.dydx.abacus.utils.JsonEncoder
 import kollections.iListOf
 import kollections.toIList

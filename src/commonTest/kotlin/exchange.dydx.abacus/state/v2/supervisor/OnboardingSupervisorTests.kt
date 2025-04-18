@@ -1,4 +1,4 @@
-package exchange.dydx.abacus.state.v2.supervisor
+package exchange.dydx.abacus.state.supervisor
 import kotlin.test.Test
 
 class OnboardingSupervisorTests {

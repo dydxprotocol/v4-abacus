@@ -6,11 +6,11 @@ import exchange.dydx.abacus.output.input.InputType
 import exchange.dydx.abacus.output.input.MarginMode
 import exchange.dydx.abacus.output.input.OrderSide
 import exchange.dydx.abacus.responses.StateResponse
-import exchange.dydx.abacus.state.model.ClosePositionInputField
-import exchange.dydx.abacus.state.model.TradeInputField
-import exchange.dydx.abacus.state.model.closePosition
-import exchange.dydx.abacus.state.model.trade
-import exchange.dydx.abacus.state.model.tradeInMarket
+import exchange.dydx.abacus.state.machine.ClosePositionInputField
+import exchange.dydx.abacus.state.machine.TradeInputField
+import exchange.dydx.abacus.state.machine.closePosition
+import exchange.dydx.abacus.state.machine.trade
+import exchange.dydx.abacus.state.machine.tradeInMarket
 import exchange.dydx.abacus.tests.extensions.parseOnChainEquityTiers
 import exchange.dydx.abacus.tests.extensions.socket
 import kotlin.test.BeforeTest

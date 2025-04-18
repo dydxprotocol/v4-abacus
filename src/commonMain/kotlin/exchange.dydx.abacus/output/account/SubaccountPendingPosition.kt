@@ -2,7 +2,7 @@ package exchange.dydx.abacus.output.account
 
 import exchange.dydx.abacus.calculator.CalculationPeriod
 import exchange.dydx.abacus.output.TradeStatesWithDoubleValues
-import exchange.dydx.abacus.state.internalstate.InternalPerpetualPendingPosition
+import exchange.dydx.abacus.state.InternalPerpetualPendingPosition
 import exchange.dydx.abacus.utils.Logger
 import kollections.JsExport
 import kotlinx.serialization.Serializable

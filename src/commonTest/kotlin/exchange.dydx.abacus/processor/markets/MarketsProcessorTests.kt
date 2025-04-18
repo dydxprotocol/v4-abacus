@@ -1,6 +1,6 @@
 package exchange.dydx.abacus.processor.markets
 
-import exchange.dydx.abacus.state.internalstate.InternalMarketSummaryState
+import exchange.dydx.abacus.state.InternalMarketSummaryState
 import exchange.dydx.abacus.tests.mock.processor.markets.MarketProcessorMock
 import exchange.dydx.abacus.utils.Parser
 import indexer.codegen.IndexerSparklineTimePeriod

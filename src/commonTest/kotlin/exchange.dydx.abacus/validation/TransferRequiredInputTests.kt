@@ -4,8 +4,8 @@ import exchange.dydx.abacus.output.input.ErrorType
 import exchange.dydx.abacus.output.input.InputType
 import exchange.dydx.abacus.output.input.TransferType
 import exchange.dydx.abacus.payload.v4.V4BaseTests
-import exchange.dydx.abacus.state.model.TransferInputField
-import exchange.dydx.abacus.state.model.transfer
+import exchange.dydx.abacus.state.machine.TransferInputField
+import exchange.dydx.abacus.state.machine.transfer
 import exchange.dydx.abacus.tests.extensions.log
 import exchange.dydx.abacus.utils.ServerTime
 import kotlin.test.Test

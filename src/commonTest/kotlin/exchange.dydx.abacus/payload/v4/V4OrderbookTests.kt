@@ -1,8 +1,8 @@
 package exchange.dydx.abacus.payload.v4
 
 import exchange.dydx.abacus.payload.v3.V3BaseTests
-import exchange.dydx.abacus.state.app.adaptors.AbUrl
-import exchange.dydx.abacus.state.model.setOrderbookGrouping
+import exchange.dydx.abacus.state.helper.AbUrl
+import exchange.dydx.abacus.state.machine.setOrderbookGrouping
 import exchange.dydx.abacus.tests.extensions.log
 import exchange.dydx.abacus.tests.extensions.socket
 import exchange.dydx.abacus.utils.ServerTime

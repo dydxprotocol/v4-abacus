@@ -1,16 +1,16 @@
 package exchange.dydx.abacus.app.manager.v2
 
+import exchange.dydx.abacus.AsyncAbacusStateManagerV2
 import exchange.dydx.abacus.app.manager.NetworkTests
 import exchange.dydx.abacus.app.manager.TestChain
 import exchange.dydx.abacus.app.manager.TestRest
 import exchange.dydx.abacus.app.manager.TestState
 import exchange.dydx.abacus.app.manager.TestWebSocket
 import exchange.dydx.abacus.payload.BaseTests
-import exchange.dydx.abacus.state.manager.setAddresses
-import exchange.dydx.abacus.state.v2.manager.AsyncAbacusStateManagerV2
-import exchange.dydx.abacus.state.v2.manager.StateManagerAdaptorV2
-import exchange.dydx.abacus.state.v2.supervisor.AccountConfigs
-import exchange.dydx.abacus.state.v2.supervisor.AppConfigsV2
+import exchange.dydx.abacus.setAddresses
+import exchange.dydx.abacus.state.StateManagerAdaptorV2
+import exchange.dydx.abacus.state.supervisor.AccountConfigs
+import exchange.dydx.abacus.state.supervisor.AppConfigsV2
 import exchange.dydx.abacus.tests.payloads.AbacusMockData
 import exchange.dydx.abacus.utils.values
 import kotlin.test.BeforeTest

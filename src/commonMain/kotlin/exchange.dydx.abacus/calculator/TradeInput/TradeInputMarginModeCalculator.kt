@@ -3,9 +3,9 @@ package exchange.dydx.abacus.calculator.tradeinput
 import exchange.dydx.abacus.calculator.CalculationPeriod
 import exchange.dydx.abacus.calculator.MarginCalculator
 import exchange.dydx.abacus.output.input.MarginMode
-import exchange.dydx.abacus.state.internalstate.InternalAccountState
-import exchange.dydx.abacus.state.internalstate.InternalMarketState
-import exchange.dydx.abacus.state.internalstate.InternalTradeInputState
+import exchange.dydx.abacus.state.InternalAccountState
+import exchange.dydx.abacus.state.InternalMarketState
+import exchange.dydx.abacus.state.InternalTradeInputState
 import exchange.dydx.abacus.utils.DEFAULT_TARGET_LEVERAGE
 import exchange.dydx.abacus.utils.Numeric
 import kotlin.math.min

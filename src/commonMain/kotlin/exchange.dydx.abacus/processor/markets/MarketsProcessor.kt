@@ -3,8 +3,8 @@ package exchange.dydx.abacus.processor.markets
 import exchange.dydx.abacus.processor.base.BaseProcessor
 import exchange.dydx.abacus.processor.base.BaseProcessorProtocol
 import exchange.dydx.abacus.protocols.ParserProtocol
-import exchange.dydx.abacus.state.internalstate.InternalMarketState
-import exchange.dydx.abacus.state.internalstate.InternalMarketSummaryState
+import exchange.dydx.abacus.state.InternalMarketState
+import exchange.dydx.abacus.state.InternalMarketSummaryState
 import indexer.codegen.IndexerSparklineTimePeriod
 import indexer.models.IndexerCompositeMarketObject
 import indexer.models.IndexerWsMarketUpdateResponse

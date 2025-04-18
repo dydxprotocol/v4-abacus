@@ -4,9 +4,9 @@ import exchange.dydx.abacus.calculator.CalculationPeriod
 import exchange.dydx.abacus.output.input.InputType
 import exchange.dydx.abacus.output.input.OrderSide
 import exchange.dydx.abacus.output.input.OrderType
+import exchange.dydx.abacus.state.machine.ClosePositionInputField
+import exchange.dydx.abacus.state.machine.closePosition
 import exchange.dydx.abacus.state.manager.StatsigConfig
-import exchange.dydx.abacus.state.model.ClosePositionInputField
-import exchange.dydx.abacus.state.model.closePosition
 import exchange.dydx.abacus.tests.extensions.log
 import exchange.dydx.abacus.tests.extensions.socket
 import exchange.dydx.abacus.utils.ServerTime

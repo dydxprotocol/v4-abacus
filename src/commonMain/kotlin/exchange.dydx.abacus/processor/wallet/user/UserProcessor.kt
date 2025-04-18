@@ -2,7 +2,7 @@ package exchange.dydx.abacus.processor.wallet.user
 
 import exchange.dydx.abacus.processor.base.BaseProcessor
 import exchange.dydx.abacus.protocols.ParserProtocol
-import exchange.dydx.abacus.state.internalstate.InternalUserState
+import exchange.dydx.abacus.state.InternalUserState
 import exchange.dydx.abacus.utils.QUANTUM_MULTIPLIER
 import indexer.models.chain.OnChainUserFeeTier
 import indexer.models.chain.OnChainUserStatsResponse

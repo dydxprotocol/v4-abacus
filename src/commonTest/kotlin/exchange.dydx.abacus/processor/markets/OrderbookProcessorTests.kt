@@ -1,8 +1,8 @@
 package exchange.dydx.abacus.processor.markets
 
-import exchange.dydx.abacus.state.internalstate.InternalMarketState
-import exchange.dydx.abacus.state.internalstate.InternalOrderbook
-import exchange.dydx.abacus.state.internalstate.InternalOrderbookTick
+import exchange.dydx.abacus.state.InternalMarketState
+import exchange.dydx.abacus.state.InternalOrderbook
+import exchange.dydx.abacus.state.InternalOrderbookTick
 import exchange.dydx.abacus.tests.mock.calculator.OrderbookCalculatorMock
 import exchange.dydx.abacus.utils.Parser
 import indexer.codegen.IndexerOrderbookResponseObject

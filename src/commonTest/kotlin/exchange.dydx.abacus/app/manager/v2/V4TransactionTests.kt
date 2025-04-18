@@ -1,5 +1,6 @@
 package exchange.dydx.abacus.app.manager.v2
 
+import exchange.dydx.abacus.AsyncAbacusStateManagerV2
 import exchange.dydx.abacus.app.manager.NetworkTests
 import exchange.dydx.abacus.app.manager.TestChain
 import exchange.dydx.abacus.app.manager.TestRest
@@ -7,16 +8,15 @@ import exchange.dydx.abacus.app.manager.TestState
 import exchange.dydx.abacus.app.manager.TestWebSocket
 import exchange.dydx.abacus.payload.BaseTests
 import exchange.dydx.abacus.protocols.TransactionCallback
+import exchange.dydx.abacus.setAddresses
+import exchange.dydx.abacus.state.machine.ClosePositionInputField
+import exchange.dydx.abacus.state.machine.TradeInputField
+import exchange.dydx.abacus.state.machine.TriggerOrdersInputField
 import exchange.dydx.abacus.state.manager.HumanReadablePlaceOrderPayload
 import exchange.dydx.abacus.state.manager.HumanReadableTriggerOrdersPayload
-import exchange.dydx.abacus.state.manager.setAddresses
-import exchange.dydx.abacus.state.model.ClosePositionInputField
-import exchange.dydx.abacus.state.model.TradeInputField
-import exchange.dydx.abacus.state.model.TriggerOrdersInputField
-import exchange.dydx.abacus.state.v2.manager.AsyncAbacusStateManagerV2
-import exchange.dydx.abacus.state.v2.supervisor.AppConfigsV2
-import exchange.dydx.abacus.state.v2.supervisor.SubaccountConfigs
-import exchange.dydx.abacus.state.v2.supervisor.SubaccountSupervisor
+import exchange.dydx.abacus.state.supervisor.AppConfigsV2
+import exchange.dydx.abacus.state.supervisor.SubaccountConfigs
+import exchange.dydx.abacus.state.supervisor.SubaccountSupervisor
 import exchange.dydx.abacus.tests.payloads.AbacusMockData
 import kotlinx.serialization.json.Json
 import kotlin.test.BeforeTest

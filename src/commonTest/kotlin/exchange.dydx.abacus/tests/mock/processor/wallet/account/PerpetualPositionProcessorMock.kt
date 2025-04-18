@@ -1,7 +1,7 @@
 package exchange.dydx.abacus.tests.mock.processor.wallet.account
 
 import exchange.dydx.abacus.processor.wallet.account.PerpetualPositionProcessorProtocol
-import exchange.dydx.abacus.state.internalstate.InternalPerpetualPosition
+import exchange.dydx.abacus.state.InternalPerpetualPosition
 import indexer.codegen.IndexerPerpetualPositionResponseObject
 
 internal class PerpetualPositionProcessorMock : PerpetualPositionProcessorProtocol {

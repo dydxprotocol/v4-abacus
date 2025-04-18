@@ -1,6 +1,6 @@
 package exchange.dydx.abacus.processor.configs
 
-import exchange.dydx.abacus.state.internalstate.InternalConfigsState
+import exchange.dydx.abacus.state.InternalConfigsState
 import exchange.dydx.abacus.tests.mock.LocalizerProtocolMock
 import exchange.dydx.abacus.tests.mock.processor.configs.EquityTiersProcessorMock
 import exchange.dydx.abacus.tests.mock.processor.configs.FeeTiersProcessorMock

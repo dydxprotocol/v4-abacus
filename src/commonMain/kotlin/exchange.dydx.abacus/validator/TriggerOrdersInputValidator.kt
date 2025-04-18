@@ -10,15 +10,15 @@ import exchange.dydx.abacus.output.input.OrderType
 import exchange.dydx.abacus.output.input.ValidationError
 import exchange.dydx.abacus.protocols.LocalizerProtocol
 import exchange.dydx.abacus.protocols.ParserProtocol
-import exchange.dydx.abacus.state.app.helper.Formatter
-import exchange.dydx.abacus.state.internalstate.InternalMarketState
-import exchange.dydx.abacus.state.internalstate.InternalPerpetualPosition
-import exchange.dydx.abacus.state.internalstate.InternalState
-import exchange.dydx.abacus.state.internalstate.InternalTriggerOrderState
-import exchange.dydx.abacus.state.internalstate.InternalTriggerOrdersInputState
+import exchange.dydx.abacus.state.InternalMarketState
+import exchange.dydx.abacus.state.InternalPerpetualPosition
+import exchange.dydx.abacus.state.InternalState
+import exchange.dydx.abacus.state.InternalTriggerOrderState
+import exchange.dydx.abacus.state.InternalTriggerOrdersInputState
+import exchange.dydx.abacus.state.helper.Formatter
+import exchange.dydx.abacus.state.machine.TriggerOrdersInputField
 import exchange.dydx.abacus.state.manager.BlockAndTime
 import exchange.dydx.abacus.state.manager.V4Environment
-import exchange.dydx.abacus.state.model.TriggerOrdersInputField
 
 enum class RelativeToPrice(val rawValue: String) {
     ABOVE("ABOVE"),

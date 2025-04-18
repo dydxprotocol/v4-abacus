@@ -5,9 +5,9 @@ import exchange.dydx.abacus.output.input.InputType
 import exchange.dydx.abacus.output.input.OrderSide
 import exchange.dydx.abacus.output.input.OrderType
 import exchange.dydx.abacus.responses.StateResponse
-import exchange.dydx.abacus.state.app.adaptors.AbUrl
-import exchange.dydx.abacus.state.model.TriggerOrdersInputField
-import exchange.dydx.abacus.state.model.triggerOrders
+import exchange.dydx.abacus.state.helper.AbUrl
+import exchange.dydx.abacus.state.machine.TriggerOrdersInputField
+import exchange.dydx.abacus.state.machine.triggerOrders
 import exchange.dydx.abacus.tests.extensions.rest
 import kollections.iListOf
 import kotlin.test.Test

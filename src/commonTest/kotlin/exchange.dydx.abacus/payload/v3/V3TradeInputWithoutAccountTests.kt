@@ -2,9 +2,9 @@ package exchange.dydx.abacus.payload.v3
 
 import exchange.dydx.abacus.output.input.OrderSide
 import exchange.dydx.abacus.output.input.OrderType
-import exchange.dydx.abacus.state.model.TradeInputField
-import exchange.dydx.abacus.state.model.trade
-import exchange.dydx.abacus.state.model.tradeInMarket
+import exchange.dydx.abacus.state.machine.TradeInputField
+import exchange.dydx.abacus.state.machine.trade
+import exchange.dydx.abacus.state.machine.tradeInMarket
 import exchange.dydx.abacus.tests.extensions.loadAccounts
 import exchange.dydx.abacus.tests.extensions.log
 import exchange.dydx.abacus.utils.ServerTime

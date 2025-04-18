@@ -4,7 +4,7 @@ import exchange.dydx.abacus.output.input.InputType
 import exchange.dydx.abacus.output.input.OrderType
 import exchange.dydx.abacus.output.input.ReceiptLine
 import exchange.dydx.abacus.output.input.TransferType
-import exchange.dydx.abacus.state.internalstate.InternalInputState
+import exchange.dydx.abacus.state.InternalInputState
 
 internal class ReceiptCalculator {
     fun calculate(

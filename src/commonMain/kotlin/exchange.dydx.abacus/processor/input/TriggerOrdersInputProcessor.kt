@@ -4,13 +4,13 @@ import exchange.dydx.abacus.output.input.InputType
 import exchange.dydx.abacus.output.input.OrderType
 import exchange.dydx.abacus.output.input.TriggerPrice
 import exchange.dydx.abacus.protocols.ParserProtocol
-import exchange.dydx.abacus.state.changes.Changes
-import exchange.dydx.abacus.state.changes.StateChanges
-import exchange.dydx.abacus.state.internalstate.InternalAccountState
-import exchange.dydx.abacus.state.internalstate.InternalInputState
-import exchange.dydx.abacus.state.internalstate.InternalTriggerOrderState
-import exchange.dydx.abacus.state.internalstate.safeCreate
-import exchange.dydx.abacus.state.model.TriggerOrdersInputField
+import exchange.dydx.abacus.state.Changes
+import exchange.dydx.abacus.state.InternalAccountState
+import exchange.dydx.abacus.state.InternalInputState
+import exchange.dydx.abacus.state.InternalTriggerOrderState
+import exchange.dydx.abacus.state.StateChanges
+import exchange.dydx.abacus.state.machine.TriggerOrdersInputField
+import exchange.dydx.abacus.state.safeCreate
 import kollections.iListOf
 
 internal interface TriggerOrdersInputProcessorProtocol {

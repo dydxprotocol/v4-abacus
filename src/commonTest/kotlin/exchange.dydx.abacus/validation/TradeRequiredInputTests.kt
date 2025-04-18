@@ -3,8 +3,8 @@ package exchange.dydx.abacus.validation
 import exchange.dydx.abacus.output.input.ErrorType
 import exchange.dydx.abacus.output.input.OrderType
 import exchange.dydx.abacus.payload.v4.V4BaseTests
-import exchange.dydx.abacus.state.model.TradeInputField
-import exchange.dydx.abacus.state.model.trade
+import exchange.dydx.abacus.state.machine.TradeInputField
+import exchange.dydx.abacus.state.machine.trade
 import exchange.dydx.abacus.tests.extensions.log
 import exchange.dydx.abacus.utils.ServerTime
 import kotlin.test.Test

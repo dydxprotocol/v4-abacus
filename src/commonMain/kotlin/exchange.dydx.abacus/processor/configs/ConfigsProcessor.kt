@@ -5,7 +5,7 @@ import exchange.dydx.abacus.processor.base.BaseProcessor
 import exchange.dydx.abacus.processor.base.BaseProcessorProtocol
 import exchange.dydx.abacus.protocols.LocalizerProtocol
 import exchange.dydx.abacus.protocols.ParserProtocol
-import exchange.dydx.abacus.state.internalstate.InternalConfigsState
+import exchange.dydx.abacus.state.InternalConfigsState
 import indexer.models.chain.OnChainEquityTiersResponse
 import indexer.models.chain.OnChainFeeTiersResponse
 import indexer.models.chain.OnChainWithdrawalAndTransferGatingStatusResponse

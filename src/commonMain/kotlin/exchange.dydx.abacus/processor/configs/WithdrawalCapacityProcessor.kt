@@ -4,7 +4,7 @@ import com.ionspin.kotlin.bignum.decimal.BigDecimal
 import exchange.dydx.abacus.processor.base.BaseProcessor
 import exchange.dydx.abacus.processor.base.BaseProcessorProtocol
 import exchange.dydx.abacus.protocols.ParserProtocol
-import exchange.dydx.abacus.state.internalstate.InternalWithdrawalCapacityState
+import exchange.dydx.abacus.state.InternalWithdrawalCapacityState
 import indexer.models.chain.OnChainWithdrawalCapacityResponse
 import kotlin.math.pow
 

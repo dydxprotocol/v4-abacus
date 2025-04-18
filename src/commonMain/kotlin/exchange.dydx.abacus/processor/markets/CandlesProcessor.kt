@@ -2,7 +2,7 @@ package exchange.dydx.abacus.processor.markets
 
 import exchange.dydx.abacus.processor.base.BaseProcessor
 import exchange.dydx.abacus.protocols.ParserProtocol
-import exchange.dydx.abacus.state.internalstate.InternalMarketState
+import exchange.dydx.abacus.state.InternalMarketState
 import indexer.codegen.IndexerCandleResponse
 import indexer.codegen.IndexerCandleResponseObject
 import kotlinx.datetime.Instant

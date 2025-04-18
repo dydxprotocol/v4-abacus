@@ -3,7 +3,7 @@ package exchange.dydx.abacus.processor.wallet.account
 import exchange.dydx.abacus.output.account.PositionSide
 import exchange.dydx.abacus.processor.base.BaseProcessor
 import exchange.dydx.abacus.protocols.ParserProtocol
-import exchange.dydx.abacus.state.internalstate.InternalAssetPositionState
+import exchange.dydx.abacus.state.InternalAssetPositionState
 import indexer.codegen.IndexerAssetPositionResponseObject
 
 internal interface AssetPositionProcessorProtocol {

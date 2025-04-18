@@ -3,8 +3,8 @@ package exchange.dydx.abacus.processor.wallet.account.staking
 import com.ionspin.kotlin.bignum.decimal.BigDecimal
 import exchange.dydx.abacus.processor.base.BaseProcessor
 import exchange.dydx.abacus.protocols.ParserProtocol
-import exchange.dydx.abacus.state.internalstate.InternalAccountBalanceState
-import exchange.dydx.abacus.state.internalstate.InternalStakingDelegationState
+import exchange.dydx.abacus.state.InternalAccountBalanceState
+import exchange.dydx.abacus.state.InternalStakingDelegationState
 import indexer.models.chain.OnChainDelegationResponse
 
 internal interface AccountDelegationsProcessorProtocol {

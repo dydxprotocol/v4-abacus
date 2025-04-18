@@ -1,5 +1,6 @@
 package exchange.dydx.abacus.app.manager.v2
 
+import exchange.dydx.abacus.AsyncAbacusStateManagerV2
 import exchange.dydx.abacus.app.manager.NetworkTests
 import exchange.dydx.abacus.app.manager.TestChain
 import exchange.dydx.abacus.app.manager.TestRest
@@ -9,9 +10,8 @@ import exchange.dydx.abacus.output.ComplianceAction
 import exchange.dydx.abacus.output.ComplianceStatus
 import exchange.dydx.abacus.output.Restriction
 import exchange.dydx.abacus.payload.BaseTests
-import exchange.dydx.abacus.state.manager.setAddresses
-import exchange.dydx.abacus.state.v2.manager.AsyncAbacusStateManagerV2
-import exchange.dydx.abacus.state.v2.supervisor.AppConfigsV2
+import exchange.dydx.abacus.setAddresses
+import exchange.dydx.abacus.state.supervisor.AppConfigsV2
 import exchange.dydx.abacus.tests.payloads.AbacusMockData
 import kotlin.test.BeforeTest
 import kotlin.test.Test

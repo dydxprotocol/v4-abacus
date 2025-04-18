@@ -1,8 +1,8 @@
 package exchange.dydx.abacus.responses
 
 import exchange.dydx.abacus.output.PerpetualState
-import exchange.dydx.abacus.state.changes.Changes
-import exchange.dydx.abacus.state.changes.StateChanges
+import exchange.dydx.abacus.state.Changes
+import exchange.dydx.abacus.state.StateChanges
 import exchange.dydx.abacus.utils.IList
 import kollections.JsExport
 import kollections.iListOf

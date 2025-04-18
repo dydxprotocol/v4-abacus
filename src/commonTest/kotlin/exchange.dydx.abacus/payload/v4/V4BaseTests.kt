@@ -12,10 +12,10 @@ import exchange.dydx.abacus.output.account.HistoricalTradingReward
 import exchange.dydx.abacus.output.account.TradingRewards
 import exchange.dydx.abacus.payload.BaseTests
 import exchange.dydx.abacus.responses.StateResponse
-import exchange.dydx.abacus.state.app.adaptors.AbUrl
-import exchange.dydx.abacus.state.internalstate.InternalAccountState
-import exchange.dydx.abacus.state.internalstate.InternalTradingRewardsState
-import exchange.dydx.abacus.state.model.PerpTradingStateMachine
+import exchange.dydx.abacus.state.InternalAccountState
+import exchange.dydx.abacus.state.InternalTradingRewardsState
+import exchange.dydx.abacus.state.helper.AbUrl
+import exchange.dydx.abacus.state.machine.PerpTradingStateMachine
 import exchange.dydx.abacus.tests.extensions.loadMarkets
 import exchange.dydx.abacus.tests.extensions.loadMarketsConfigurations
 import exchange.dydx.abacus.tests.extensions.loadOrderbook

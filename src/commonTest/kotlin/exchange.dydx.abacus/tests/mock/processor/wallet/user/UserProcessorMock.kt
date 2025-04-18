@@ -1,7 +1,7 @@
 package exchange.dydx.abacus.tests.mock.processor.wallet.user
 
 import exchange.dydx.abacus.processor.wallet.user.UserProcessorProtocol
-import exchange.dydx.abacus.state.internalstate.InternalUserState
+import exchange.dydx.abacus.state.InternalUserState
 import indexer.models.chain.OnChainUserFeeTier
 import indexer.models.chain.OnChainUserStatsResponse
 

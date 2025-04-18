@@ -20,7 +20,7 @@ import exchange.dydx.abacus.output.account.SubaccountOrder
 import exchange.dydx.abacus.output.account.SubaccountTransfer
 import exchange.dydx.abacus.output.input.Input
 import exchange.dydx.abacus.responses.ParsingError
-import exchange.dydx.abacus.state.changes.StateChanges
+import exchange.dydx.abacus.state.StateChanges
 import exchange.dydx.abacus.state.manager.ApiState
 import exchange.dydx.abacus.utils.IList
 import exchange.dydx.abacus.utils.IMap

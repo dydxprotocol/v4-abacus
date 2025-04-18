@@ -2,11 +2,11 @@ package exchange.dydx.abacus.state.manager.notification
 
 import exchange.dydx.abacus.output.Notification
 import exchange.dydx.abacus.protocols.ParserProtocol
+import exchange.dydx.abacus.state.machine.TradingStateMachine
 import exchange.dydx.abacus.state.manager.V4Environment
 import exchange.dydx.abacus.state.manager.notification.providers.BlockRewardNotificationProvider
 import exchange.dydx.abacus.state.manager.notification.providers.OrderStatusChangesNotificationProvider
-import exchange.dydx.abacus.state.model.TradingStateMachine
-import exchange.dydx.abacus.state.v2.supervisor.NotificationProviderType
+import exchange.dydx.abacus.state.supervisor.NotificationProviderType
 import exchange.dydx.abacus.utils.IMap
 import exchange.dydx.abacus.utils.JsonEncoder
 import exchange.dydx.abacus.utils.ParsingHelper

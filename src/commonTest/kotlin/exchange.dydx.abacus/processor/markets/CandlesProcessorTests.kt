@@ -1,6 +1,6 @@
 package exchange.dydx.abacus.processor.markets
 
-import exchange.dydx.abacus.state.internalstate.InternalMarketState
+import exchange.dydx.abacus.state.InternalMarketState
 import exchange.dydx.abacus.tests.mock.processor.markets.CandleProcessorMock
 import exchange.dydx.abacus.utils.Parser
 import indexer.codegen.IndexerCandleResponse

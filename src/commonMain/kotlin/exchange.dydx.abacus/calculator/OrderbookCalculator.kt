@@ -4,8 +4,8 @@ import exchange.dydx.abacus.output.MarketOrderbook
 import exchange.dydx.abacus.output.MarketOrderbookGrouping
 import exchange.dydx.abacus.output.OrderbookLine
 import exchange.dydx.abacus.protocols.ParserProtocol
-import exchange.dydx.abacus.state.internalstate.InternalOrderbook
-import exchange.dydx.abacus.state.internalstate.InternalOrderbookTick
+import exchange.dydx.abacus.state.InternalOrderbook
+import exchange.dydx.abacus.state.InternalOrderbookTick
 import exchange.dydx.abacus.state.manager.OrderbookGrouping
 import exchange.dydx.abacus.utils.Numeric
 import exchange.dydx.abacus.utils.Rounder

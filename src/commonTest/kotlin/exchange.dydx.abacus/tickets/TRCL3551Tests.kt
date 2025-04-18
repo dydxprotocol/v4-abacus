@@ -1,7 +1,7 @@
 package exchange.dydx.abacus.tickets
 
 import exchange.dydx.abacus.output.LaunchIncentiveSeason
-import exchange.dydx.abacus.state.model.launchIncentiveSeasons
+import exchange.dydx.abacus.state.machine.launchIncentiveSeasons
 import kollections.toIList
 import kotlin.test.Test
 import kotlin.test.assertEquals

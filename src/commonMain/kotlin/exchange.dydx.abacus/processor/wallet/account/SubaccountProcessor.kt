@@ -7,8 +7,8 @@ import exchange.dydx.abacus.protocols.LocalizerProtocol
 import exchange.dydx.abacus.protocols.ParserProtocol
 import exchange.dydx.abacus.protocols.asTypedList
 import exchange.dydx.abacus.protocols.asTypedObject
-import exchange.dydx.abacus.state.internalstate.InternalSubaccountCalculated
-import exchange.dydx.abacus.state.internalstate.InternalSubaccountState
+import exchange.dydx.abacus.state.InternalSubaccountCalculated
+import exchange.dydx.abacus.state.InternalSubaccountState
 import exchange.dydx.abacus.state.manager.BlockAndTime
 import indexer.codegen.IndexerAssetPositionResponseObject
 import indexer.codegen.IndexerPerpetualPositionResponseObject

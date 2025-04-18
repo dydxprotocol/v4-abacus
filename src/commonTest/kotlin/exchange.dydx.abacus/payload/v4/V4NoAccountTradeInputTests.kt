@@ -1,9 +1,9 @@
 package exchange.dydx.abacus.payload.v4
 
 import exchange.dydx.abacus.output.input.ErrorType
-import exchange.dydx.abacus.state.model.TradeInputField
-import exchange.dydx.abacus.state.model.trade
-import exchange.dydx.abacus.state.model.tradeInMarket
+import exchange.dydx.abacus.state.machine.TradeInputField
+import exchange.dydx.abacus.state.machine.trade
+import exchange.dydx.abacus.state.machine.tradeInMarket
 import exchange.dydx.abacus.tests.extensions.loadOrderbook
 import kotlin.test.Test
 import kotlin.test.assertEquals

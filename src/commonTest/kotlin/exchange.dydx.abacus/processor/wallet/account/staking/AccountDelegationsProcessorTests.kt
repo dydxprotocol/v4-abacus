@@ -1,7 +1,7 @@
 package exchange.dydx.abacus.processor.wallet.account.staking
 
 import com.ionspin.kotlin.bignum.decimal.toBigDecimal
-import exchange.dydx.abacus.state.internalstate.InternalAccountBalanceState
+import exchange.dydx.abacus.state.InternalAccountBalanceState
 import exchange.dydx.abacus.utils.Parser
 import indexer.models.chain.OnChainAccountBalanceObject
 import indexer.models.chain.OnChainDelegationInfo

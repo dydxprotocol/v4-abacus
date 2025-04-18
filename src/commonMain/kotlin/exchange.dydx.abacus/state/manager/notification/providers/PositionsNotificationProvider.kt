@@ -4,7 +4,7 @@ import exchange.dydx.abacus.output.Notification
 import exchange.dydx.abacus.output.NotificationPriority
 import exchange.dydx.abacus.output.NotificationType
 import exchange.dydx.abacus.processor.utils.MarketId
-import exchange.dydx.abacus.state.model.TradingStateMachine
+import exchange.dydx.abacus.state.machine.TradingStateMachine
 import exchange.dydx.abacus.utils.IMap
 import exchange.dydx.abacus.utils.JsonEncoder
 import exchange.dydx.abacus.utils.UIImplementations

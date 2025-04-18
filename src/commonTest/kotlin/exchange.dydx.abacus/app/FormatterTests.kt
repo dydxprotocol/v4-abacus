@@ -1,6 +1,6 @@
 package exchange.dydx.abacus.app
 
-import exchange.dydx.abacus.state.app.helper.Formatter
+import exchange.dydx.abacus.state.helper.Formatter
 import kotlin.test.Test
 import kotlin.test.assertEquals
 

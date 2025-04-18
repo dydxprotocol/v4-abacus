@@ -2,7 +2,7 @@ package exchange.dydx.abacus.tests.mock.calculator
 
 import exchange.dydx.abacus.calculator.OrderbookCalculatorProtocol
 import exchange.dydx.abacus.output.MarketOrderbook
-import exchange.dydx.abacus.state.internalstate.InternalOrderbook
+import exchange.dydx.abacus.state.InternalOrderbook
 
 internal class OrderbookCalculatorMock : OrderbookCalculatorProtocol {
     var calculateCallCount = 0
