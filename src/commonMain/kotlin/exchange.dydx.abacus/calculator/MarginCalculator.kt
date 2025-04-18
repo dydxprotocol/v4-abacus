@@ -9,11 +9,11 @@ import exchange.dydx.abacus.output.input.MarginMode
 import exchange.dydx.abacus.output.input.OrderSide
 import exchange.dydx.abacus.output.input.TradeInput
 import exchange.dydx.abacus.protocols.ParserProtocol
-import exchange.dydx.abacus.state.internalstate.InternalAccountState
-import exchange.dydx.abacus.state.internalstate.InternalMarketState
-import exchange.dydx.abacus.state.internalstate.InternalPerpetualPosition
-import exchange.dydx.abacus.state.internalstate.InternalSubaccountState
-import exchange.dydx.abacus.state.internalstate.InternalTradeInputState
+import exchange.dydx.abacus.state.InternalAccountState
+import exchange.dydx.abacus.state.InternalMarketState
+import exchange.dydx.abacus.state.InternalPerpetualPosition
+import exchange.dydx.abacus.state.InternalSubaccountState
+import exchange.dydx.abacus.state.InternalTradeInputState
 import exchange.dydx.abacus.utils.DEFAULT_TARGET_LEVERAGE
 import exchange.dydx.abacus.utils.IList
 import exchange.dydx.abacus.utils.Logger
@@ -102,19 +102,6 @@ internal object MarginCalculator {
     ): Boolean {
         return subaccount?.orders?.any { order ->
             order.marketId == marketId && order.status.isOpen
-        } ?: false
-    }
-
-    private fun hasExistingOrderDeprecated(
-        parser: ParserProtocol,
-        subaccount: Map<String, Any>?,
-        marketId: String?
-    ): Boolean {
-        val orders = parser.asNativeMap(parser.value(subaccount, "orders"))
-        return orders?.entries?.any {
-            val orderMarketId = parser.asString(parser.value(it.value, "marketId"))
-            val orderStatus = parser.asString(parser.value(it.value, "status"))
-            orderMarketId == marketId && listOf("OPEN", "PENDING", "UNTRIGGERED", "PARTIALLY_FILLED").contains(orderStatus)
         } ?: false
     }
 
@@ -448,21 +435,6 @@ internal object MarginCalculator {
     /**
      * @description Determine if collateral should be transferred into child subaccount for an isolated margin trade
      */
-    internal fun getShouldTransferInCollateralDeprecated(
-        parser: ParserProtocol,
-        subaccount: Map<String, Any>?,
-        tradeInput: Map<String, Any>?,
-    ): Boolean {
-        val isIncreasingPositionSize = getIsIncreasingPositionSizeDeprecated(parser, subaccount, tradeInput)
-        val isIsolatedMarginOrder = parser.asString(tradeInput?.get("marginMode")) == "ISOLATED"
-        val isReduceOnly = parser.asBool(tradeInput?.get("reduceOnly")) ?: false
-
-        return isIncreasingPositionSize && isIsolatedMarginOrder && !isReduceOnly
-    }
-
-    /**
-     * @description Determine if collateral should be transferred into child subaccount for an isolated margin trade
-     */
     private fun getShouldTransferInCollateral(
         trade: TradeInput,
         subaccount: Subaccount,
@@ -484,23 +456,6 @@ internal object MarginCalculator {
         val isIsolatedMarginOrder = tradeInput?.marginMode == MarginMode.Isolated
         val hasOpenOrder = tradeInput?.marketId?.let { marketId ->
             hasExistingOrder(subaccount, marketId)
-        } ?: false
-
-        return isPositionFullyClosed && isIsolatedMarginOrder && !hasOpenOrder
-    }
-
-    /**
-     * @description Determine if collateral should be transferred out of child subaccount for an isolated margin trade
-     */
-    internal fun getShouldTransferOutRemainingCollateralDeprecated(
-        parser: ParserProtocol,
-        subaccount: Map<String, Any>?,
-        tradeInput: Map<String, Any>?,
-    ): Boolean {
-        val isPositionFullyClosed = getIsPositionFullyClosedDeprecated(parser, subaccount, tradeInput)
-        val isIsolatedMarginOrder = parser.asString(tradeInput?.get("marginMode")) == "ISOLATED"
-        val hasOpenOrder = parser.asString(tradeInput?.get("marketId"))?.let { marketId ->
-            hasExistingOrderDeprecated(parser, subaccount, marketId)
         } ?: false
 
         return isPositionFullyClosed && isIsolatedMarginOrder && !hasOpenOrder
@@ -540,34 +495,11 @@ internal object MarginCalculator {
         } ?: false
     }
 
-    private fun getIsPositionFullyClosedDeprecated(
-        parser: ParserProtocol,
-        subaccount: Map<String, Any>?,
-        tradeInput: Map<String, Any>?,
-    ): Boolean {
-        return parser.asString(tradeInput?.get("marketId"))?.let { marketId ->
-            val position = parser.asNativeMap(parser.value(subaccount, "openPositions.$marketId"))
-            val currentSize = parser.asDouble(parser.value(position, "size.current")) ?: 0.0
-            val postOrderSize = tradeInput?.let { getPositionPostOrderSizeFromTradeDeprecated(parser, tradeInput, currentSize) } ?: 0.0
-            val isReduceOnly = parser.asBool(tradeInput?.get("reduceOnly")) ?: false
-            val hasFlippedSide = currentSize * postOrderSize < 0
-            return postOrderSize == 0.0 || (isReduceOnly && hasFlippedSide)
-        } ?: false
-    }
-
     private fun getIsIncreasingPositionSize(
         subaccount: InternalSubaccountState?,
         tradeInput: InternalTradeInputState?,
     ): Boolean {
         return getPositionSizeDifference(subaccount, tradeInput)?.let { it > 0 } ?: true
-    }
-
-    private fun getIsIncreasingPositionSizeDeprecated(
-        parser: ParserProtocol,
-        subaccount: Map<String, Any>?,
-        tradeInput: Map<String, Any>?,
-    ): Boolean {
-        return getPositionSizeDifferenceDeprecated(parser, subaccount, tradeInput)?.let { it > 0 } ?: true
     }
 
     private fun getIsIncreasingPositionSize(

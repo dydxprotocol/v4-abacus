@@ -1,7 +1,7 @@
 package exchange.dydx.abacus.calculator
 
 import exchange.dydx.abacus.protocols.ParserProtocol
-import exchange.dydx.abacus.state.internalstate.InternalMarketSummaryState
+import exchange.dydx.abacus.state.InternalMarketSummaryState
 import exchange.dydx.abacus.utils.Numeric
 
 internal class MarketCalculator(val parser: ParserProtocol) {

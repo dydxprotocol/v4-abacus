@@ -3,7 +3,7 @@ package exchange.dydx.abacus.di
 import exchange.dydx.abacus.protocols.DataNotificationProtocol
 import exchange.dydx.abacus.protocols.PresentationProtocol
 import exchange.dydx.abacus.protocols.StateNotificationProtocol
-import exchange.dydx.abacus.state.v2.supervisor.AppConfigsV2
+import exchange.dydx.abacus.state.supervisor.AppConfigsV2
 import exchange.dydx.abacus.utils.IOImplementations
 import exchange.dydx.abacus.utils.UIImplementations
 

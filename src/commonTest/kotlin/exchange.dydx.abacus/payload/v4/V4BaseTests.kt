@@ -12,10 +12,10 @@ import exchange.dydx.abacus.output.account.HistoricalTradingReward
 import exchange.dydx.abacus.output.account.TradingRewards
 import exchange.dydx.abacus.payload.BaseTests
 import exchange.dydx.abacus.responses.StateResponse
-import exchange.dydx.abacus.state.app.adaptors.AbUrl
-import exchange.dydx.abacus.state.internalstate.InternalAccountState
-import exchange.dydx.abacus.state.internalstate.InternalTradingRewardsState
-import exchange.dydx.abacus.state.model.PerpTradingStateMachine
+import exchange.dydx.abacus.state.InternalAccountState
+import exchange.dydx.abacus.state.InternalTradingRewardsState
+import exchange.dydx.abacus.state.helper.AbUrl
+import exchange.dydx.abacus.state.machine.PerpTradingStateMachine
 import exchange.dydx.abacus.tests.extensions.loadMarkets
 import exchange.dydx.abacus.tests.extensions.loadMarketsConfigurations
 import exchange.dydx.abacus.tests.extensions.loadOrderbook
@@ -35,14 +35,13 @@ open class V4BaseTests(
         AbUrl.fromString("wss://indexer.v4staging.dydx.exchange/v4/ws")
     internal val testRestUrl =
         "https://indexer.v4staging.dydx.exchange"
-    override fun createState(useParentSubaccount: Boolean, staticTyping: Boolean): PerpTradingStateMachine {
+    override fun createState(useParentSubaccount: Boolean): PerpTradingStateMachine {
         return PerpTradingStateMachine(
             environment = mock.v4Environment,
             localizer = null,
             formatter = null,
             maxSubaccountNumber = 127,
             useParentSubaccount = useParentSubaccount,
-            staticTyping = staticTyping,
             trackingProtocol = trackingProtocol,
         )
     }
@@ -139,23 +138,20 @@ open class V4BaseTests(
     override fun verifyAccountState(
         data: Map<String, Any>?,
         state: InternalAccountState?,
-        staticTyping: Boolean,
         obj: Account?,
         trace: String
     ) {
-        super.verifyAccountState(data, state, staticTyping, obj, trace)
-        if (data != null || (staticTyping && state != null)) {
+        super.verifyAccountState(data, state, obj, trace)
+        if (state != null) {
             verifyTradingRewardsState(
-                data = parser.asNativeMap(data?.get("tradingRewards")),
                 obj = obj!!.tradingRewards,
-                staticTyping = staticTyping,
                 state = state?.tradingRewards,
                 trace = "$trace.tradingRewards",
             )
             verifyLaunchIncentivePointsState(
-                parser.asNativeMap(data?.get("launchIncentivePoints")),
-                obj.launchIncentivePoints,
-                "$trace.launchIncentivePoints",
+                data = parser.asNativeMap(data?.get("launchIncentivePoints")),
+                obj = obj.launchIncentivePoints,
+                trace = "$trace.launchIncentivePoints",
             )
         } else {
             assertNull(obj)
@@ -207,226 +203,97 @@ open class V4BaseTests(
     }
 
     private fun verifyTradingRewardsState(
-        data: Map<String, Any>?,
         obj: TradingRewards?,
-        staticTyping: Boolean,
         state: InternalTradingRewardsState?,
         trace: String,
     ) {
-        if (staticTyping) {
-            assertNotNull(state)
+        assertNotNull(state)
 
-            if (obj != null) {
-                if (state.total != null) {
-                    assertEquals(state.total, obj.total, "$trace.total")
-                }
+        if (obj != null) {
+            if (state.total != null) {
+                assertEquals(state.total, obj.total, "$trace.total")
+            }
 
-                if (state.blockRewards.isNotEmpty()) {
-                    assertEquals(
-                        state.blockRewards.size,
-                        obj.blockRewards?.size,
-                        "$trace.blockRewards.size",
+            if (state.blockRewards.isNotEmpty()) {
+                assertEquals(
+                    state.blockRewards.size,
+                    obj.blockRewards?.size,
+                    "$trace.blockRewards.size",
+                )
+                for (i in state.blockRewards.indices) {
+                    verifyBlockRewardState(
+                        obj = obj.blockRewards?.get(i),
+                        state = state.blockRewards[i],
+                        trace = "$trace.blockRewards.$i",
                     )
-                    for (i in state.blockRewards.indices) {
-                        verifyBlockRewardState(
-                            data = null,
-                            obj = obj.blockRewards?.get(i),
-                            staticTyping = staticTyping,
-                            state = state.blockRewards[i],
-                            trace = "$trace.blockRewards.$i",
-                        )
-                    }
-                }
-
-                if (state.historical.isNotEmpty()) {
-                    assertEquals(
-                        state.historical.size,
-                        obj.filledHistory?.size,
-                        "$trace.historical.size",
-                    )
-
-                    for ((period, rewardsData) in state.historical) {
-                        val rewardsListObjOrig = obj.filledHistory?.get(period.rawValue)
-                        val rewardsListDataOrig = rewardsData
-
-                        assertTrue {
-                            (rewardsListObjOrig?.size ?: 0) >= rewardsListDataOrig.size
-                        }
-
-                        val rewardsListObj = rewardsListObjOrig?.filter {
-                            it.amount != 0.0
-                        }
-                        val rewardsListData = rewardsListDataOrig.filter {
-                            parser.asDouble(it.tradingReward) != 0.0
-                        }
-
-                        assertNotNull(rewardsListObj)
-                        assertEquals(
-                            rewardsListData.size.toDouble(),
-                            rewardsListObj.size.toDouble(),
-                            0.0,
-                            "$trace.historical.$period.size $doesntMatchText",
-                        )
-
-                        for (i in rewardsListObj.indices) {
-                            verifyHistoricalTradingRewardState(
-                                data = null,
-                                obj = rewardsListObj[i],
-                                staticTyping = staticTyping,
-                                state = rewardsListData[i],
-                                trace = " $trace.historical.$period.$i",
-                            )
-                        }
-                    }
                 }
             }
-        } else {
-            if (data != null) {
-                val totalData = parser.asDouble(data["total"])
-                val blockRewardsData = parser.asList(data["blockRewards"])
-                val historicalData = parser.asNativeMap(data["historical"])
 
-                if (totalData != null) {
-                    assertNotNull(obj?.total)
-                    assertEquals(totalData, obj?.total, "$trace.total")
-                }
+            if (state.historical.isNotEmpty()) {
+                assertEquals(
+                    state.historical.size,
+                    obj.filledHistory?.size,
+                    "$trace.historical.size",
+                )
 
-                if (blockRewardsData != null) {
-                    val blockRewards = obj?.blockRewards
-                    assertNotNull(blockRewards)
+                for ((period, rewardsData) in state.historical) {
+                    val rewardsListObjOrig = obj.filledHistory?.get(period.rawValue)
+                    val rewardsListDataOrig = rewardsData
+
+                    assertTrue {
+                        (rewardsListObjOrig?.size ?: 0) >= rewardsListDataOrig.size
+                    }
+
+                    val rewardsListObj = rewardsListObjOrig?.filter {
+                        it.amount != 0.0
+                    }
+                    val rewardsListData = rewardsListDataOrig.filter {
+                        parser.asDouble(it.tradingReward) != 0.0
+                    }
+
+                    assertNotNull(rewardsListObj)
                     assertEquals(
-                        blockRewardsData.size,
-                        blockRewards.size,
-                        "$trace.blockRewards.size $doesntMatchText",
+                        rewardsListData.size.toDouble(),
+                        rewardsListObj.size.toDouble(),
+                        0.0,
+                        "$trace.historical.$period.size $doesntMatchText",
                     )
-                    for (i in blockRewards.indices) {
-                        verifyBlockRewardState(
-                            data = parser.asNativeMap(blockRewardsData.get(i)),
-                            obj = blockRewards[i],
-                            staticTyping = staticTyping,
-                            state = null,
-                            trace = "$trace.blockRewards.$i",
+
+                    for (i in rewardsListObj.indices) {
+                        verifyHistoricalTradingRewardState(
+                            obj = rewardsListObj[i],
+                            state = rewardsListData[i],
+                            trace = " $trace.historical.$period.$i",
                         )
                     }
                 }
-                if (historicalData != null) {
-                    assertNotNull(obj?.filledHistory)
-                    for ((period, rewardsData) in historicalData) {
-                        val rewardsListObjOrig = obj?.filledHistory?.get(period)
-                        val rewardsListDataOrig = parser.asList(rewardsData)
-
-                        assertTrue {
-                            (rewardsListObjOrig?.size ?: 0) >= (rewardsListDataOrig?.size ?: 0)
-                        }
-
-                        val rewardsListObj = rewardsListObjOrig?.filter {
-                            it.amount != 0.0
-                        }
-                        val rewardsListData = rewardsListDataOrig?.filter {
-                            parser.asDouble(parser.value(it, "amount")) != 0.0
-                        }
-
-                        assertNotNull(rewardsListObj)
-                        assertEquals(
-                            (rewardsListData?.size ?: 0).toDouble(),
-                            rewardsListObj.size.toDouble(),
-                            0.0,
-                            "$trace.historical.$period.size $doesntMatchText",
-                        )
-
-                        for (i in rewardsListObj.indices) {
-                            verifyHistoricalTradingRewardState(
-                                data = parser.asNativeMap(rewardsListData?.get(i)),
-                                obj = rewardsListObj[i],
-                                staticTyping = staticTyping,
-                                state = null,
-                                trace = "$trace.historical.$period.$i",
-                            )
-                        }
-                    }
-                }
-            } else {
-                assertNull(obj)
             }
         }
     }
 
     private fun verifyBlockRewardState(
-        data: Map<String, Any>?,
         obj: BlockReward?,
-        staticTyping: Boolean,
         state: IndexerHistoricalBlockTradingReward?,
         trace: String,
     ) {
-        if (staticTyping) {
-            assertNotNull(state)
-            if (obj != null) {
-                assertEquals(state.tradingReward, obj.tradingReward.toString(), "$trace.amount")
-                assertEquals(parser.asDatetime(state.createdAt)?.toEpochMilliseconds()?.toDouble(), obj.createdAtMilliseconds, "$trace.createdAt")
-                assertEquals(state.createdAtHeight, obj.createdAtHeight.toString(), "$trace.createdAtHeight")
-            }
-        } else {
-            if (data != null) {
-                assertNotNull(obj)
-                assertEquals(
-                    parser.asDouble(data["tradingReward"]),
-                    obj.tradingReward,
-                    "$trace.tradingReward",
-                )
-                assertEquals(
-                    parser.asDatetime(data["createdAt"])?.toEpochMilliseconds()?.toDouble(),
-                    obj.createdAtMilliseconds,
-                    "$trace.createdAt",
-                )
-                assertEquals(
-                    parser.asInt(data["createdAtHeight"]),
-                    obj.createdAtHeight,
-                    "$trace.createdAtHeight",
-                )
-            } else {
-                assertNull(obj)
-            }
+        assertNotNull(state)
+        if (obj != null) {
+            assertEquals(state.tradingReward, obj.tradingReward.toString(), "$trace.amount")
+            assertEquals(parser.asDatetime(state.createdAt)?.toEpochMilliseconds()?.toDouble(), obj.createdAtMilliseconds, "$trace.createdAt")
+            assertEquals(state.createdAtHeight, obj.createdAtHeight.toString(), "$trace.createdAtHeight")
         }
     }
 
     private fun verifyHistoricalTradingRewardState(
-        data: Map<String, Any>?,
         obj: HistoricalTradingReward?,
-        staticTyping: Boolean,
         state: IndexerHistoricalTradingRewardAggregation?,
         trace: String,
     ) {
-        if (staticTyping) {
-            assertNotNull(state)
-            if (obj != null) {
-                assertEquals(state.tradingReward, obj.amount.toString(), "$trace.amount")
-                assertEquals(parser.asDatetime(state.startedAt), obj.startedAt, "$trace.startedAt")
-                assertEquals(parser.asDatetime(state.endedAt), obj.endedAt, "$trace.endedAt")
-            }
-        } else {
-            if (data != null) {
-                assertNotNull(obj)
-                assertEquals(
-                    parser.asDouble(data["amount"]),
-                    obj.amount,
-                    "$trace.amount",
-                )
-                assertEquals(
-                    parser.asDatetime(data["startedAt"]),
-                    obj.startedAt,
-                    "$trace.startedAt",
-                )
-                assertNotNull(obj.endedAt)
-                if (parser.asDatetime(data["endedAt"]) != null) {
-                    assertEquals(
-                        parser.asDatetime(data["endedAt"]),
-                        obj.endedAt,
-                        "$trace.endedAt",
-                    )
-                }
-            } else {
-                assertNull(obj)
-            }
+        assertNotNull(state)
+        if (obj != null) {
+            assertEquals(state.tradingReward, obj.amount.toString(), "$trace.amount")
+            assertEquals(parser.asDatetime(state.startedAt), obj.startedAt, "$trace.startedAt")
+            assertEquals(parser.asDatetime(state.endedAt), obj.endedAt, "$trace.endedAt")
         }
     }
 }

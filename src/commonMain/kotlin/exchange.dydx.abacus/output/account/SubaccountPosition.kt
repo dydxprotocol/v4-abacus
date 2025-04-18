@@ -7,7 +7,7 @@ import exchange.dydx.abacus.output.input.MarginMode
 import exchange.dydx.abacus.processor.utils.MarketId
 import exchange.dydx.abacus.protocols.LocalizerProtocol
 import exchange.dydx.abacus.protocols.ParserProtocol
-import exchange.dydx.abacus.state.internalstate.InternalPerpetualPosition
+import exchange.dydx.abacus.state.InternalPerpetualPosition
 import exchange.dydx.abacus.utils.IMap
 import exchange.dydx.abacus.utils.Logger
 import kollections.JsExport

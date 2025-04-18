@@ -10,10 +10,8 @@ import exchange.dydx.abacus.output.input.ErrorType
 import exchange.dydx.abacus.output.input.ValidationError
 import exchange.dydx.abacus.protocols.LocalizerProtocol
 import exchange.dydx.abacus.protocols.ParserProtocol
-import exchange.dydx.abacus.state.app.helper.Formatter
+import exchange.dydx.abacus.state.helper.Formatter
 import exchange.dydx.abacus.utils.JsonEncoder
-import exchange.dydx.abacus.utils.filterNotNull
-import exchange.dydx.abacus.utils.mutable
 import kollections.iListOf
 import kollections.toIList
 
@@ -43,23 +41,6 @@ internal open class BaseInputValidator(
                     stringKey = actionStringKey,
                     params = null,
                     localized = null,
-                ),
-            ),
-        )
-    }
-
-    internal fun requiredDeprecated(
-        errorCode: String,
-        field: String,
-        actionStringKey: String,
-    ): Map<String, Any> {
-        return mapOf(
-            "type" to "REQUIRED",
-            "code" to errorCode,
-            "fields" to listOf(field),
-            "resources" to mapOf(
-                "action" to mapOf(
-                    "stringKey" to actionStringKey,
                 ),
             ),
         )
@@ -106,43 +87,6 @@ internal open class BaseInputValidator(
                 },
             ),
         )
-    }
-
-    internal fun errorDeprecated(
-        type: String,
-        errorCode: String,
-        fields: List<String>?,
-        actionStringKey: String?,
-        titleStringKey: String,
-        textStringKey: String,
-        textParams: Map<String, Any>? = null,
-        action: String? = null,
-        link: String? = null,
-        linkText: String? = null,
-    ): Map<String, Any> {
-        return mapOf(
-            "type" to type,
-            "code" to errorCode,
-            "fields" to fields,
-            "action" to action,
-            "link" to link,
-            "linkText" to linkText,
-            "resources" to mapOf(
-                "title" to listOfNotNull(
-                    localize(titleStringKey, null)?.let { "localized" to it } ?: run { null },
-                    "stringKey" to titleStringKey,
-                ).toMap(),
-                "text" to listOfNotNull(
-                    localize(textStringKey, textParams)?.let { "localized" to it } ?: run { null },
-                    "stringKey" to textStringKey,
-                    "params" to paramsDeprecated(parser, textParams),
-                ).toMap(),
-                "action" to listOfNotNull(
-                    localize(actionStringKey, null)?.let { "localized" to it } ?: run { null },
-                    "stringKey" to actionStringKey,
-                ).toMap(),
-            ),
-        ).filterNotNull()
     }
 
     private fun localize(stringKey: String?, params: Map<String, Any>? = null): String? {
@@ -209,24 +153,6 @@ internal open class BaseInputValidator(
                         value = parser.asString(it["value"]),
                         format = ErrorFormat.invoke(parser.asString(it["format"])),
                     )
-                    params.add(param)
-                }
-            }
-            return params
-        }
-        return null
-    }
-
-    private fun paramsDeprecated(
-        parser: ParserProtocol,
-        map: Map<String, Any>?,
-    ): List<Map<String, Any>>? {
-        if (map != null) {
-            val params = mutableListOf<Map<String, Any>>()
-            for ((key, value) in map) {
-                parser.asNativeMap(value)?.let {
-                    val param = it.mutable()
-                    param["key"] = key
                     params.add(param)
                 }
             }

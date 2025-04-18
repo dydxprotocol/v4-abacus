@@ -1,6 +1,6 @@
 package exchange.dydx.abacus.processor.launchIncentive
 
-import exchange.dydx.abacus.state.internalstate.InternalLaunchIncentiveState
+import exchange.dydx.abacus.state.InternalLaunchIncentiveState
 import exchange.dydx.abacus.tests.mock.processor.launchIncentive.LaunchIncentiveSeasonsProcessorMock
 import exchange.dydx.abacus.utils.Parser
 import kotlin.test.Test

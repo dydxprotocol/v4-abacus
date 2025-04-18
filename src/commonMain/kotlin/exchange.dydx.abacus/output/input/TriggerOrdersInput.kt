@@ -1,8 +1,8 @@
 package exchange.dydx.abacus.output.input
 
 import exchange.dydx.abacus.protocols.ParserProtocol
-import exchange.dydx.abacus.state.internalstate.InternalTriggerOrderState
-import exchange.dydx.abacus.state.internalstate.InternalTriggerOrdersInputState
+import exchange.dydx.abacus.state.InternalTriggerOrderState
+import exchange.dydx.abacus.state.InternalTriggerOrdersInputState
 import exchange.dydx.abacus.utils.Logger
 import kollections.JsExport
 import kotlinx.serialization.Serializable

@@ -1,7 +1,7 @@
 package exchange.dydx.abacus.tests.mock.processor.wallet.account
 
 import exchange.dydx.abacus.processor.wallet.account.AssetPositionProcessorProtocol
-import exchange.dydx.abacus.state.internalstate.InternalAssetPositionState
+import exchange.dydx.abacus.state.InternalAssetPositionState
 import indexer.codegen.IndexerAssetPositionResponseObject
 
 internal class AssetPositionProcessorMock : AssetPositionProcessorProtocol {

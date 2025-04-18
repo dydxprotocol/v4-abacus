@@ -1,9 +1,9 @@
 package exchange.dydx.abacus.output.input
 
 import exchange.dydx.abacus.protocols.ParserProtocol
-import exchange.dydx.abacus.state.internalstate.InternalTradeInputOptions
-import exchange.dydx.abacus.state.internalstate.InternalTradeInputState
-import exchange.dydx.abacus.state.internalstate.InternalTradeInputSummary
+import exchange.dydx.abacus.state.InternalTradeInputOptions
+import exchange.dydx.abacus.state.InternalTradeInputState
+import exchange.dydx.abacus.state.InternalTradeInputSummary
 import exchange.dydx.abacus.utils.IList
 import exchange.dydx.abacus.utils.IMutableList
 import exchange.dydx.abacus.utils.Logger

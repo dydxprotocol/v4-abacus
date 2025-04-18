@@ -2,7 +2,7 @@ package exchange.dydx.abacus.output.account
 
 import exchange.dydx.abacus.processor.base.ComparisonOrder
 import exchange.dydx.abacus.protocols.ParserProtocol
-import exchange.dydx.abacus.state.internalstate.InternalTradingRewardsState
+import exchange.dydx.abacus.state.InternalTradingRewardsState
 import exchange.dydx.abacus.state.manager.HistoricalTradingRewardsPeriod
 import exchange.dydx.abacus.utils.IList
 import exchange.dydx.abacus.utils.IMap

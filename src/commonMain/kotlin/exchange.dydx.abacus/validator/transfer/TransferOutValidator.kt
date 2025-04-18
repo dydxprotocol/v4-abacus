@@ -5,8 +5,8 @@ import exchange.dydx.abacus.output.input.TransferType
 import exchange.dydx.abacus.output.input.ValidationError
 import exchange.dydx.abacus.protocols.LocalizerProtocol
 import exchange.dydx.abacus.protocols.ParserProtocol
-import exchange.dydx.abacus.state.app.helper.Formatter
-import exchange.dydx.abacus.state.internalstate.InternalState
+import exchange.dydx.abacus.state.InternalState
+import exchange.dydx.abacus.state.helper.Formatter
 import exchange.dydx.abacus.state.manager.BlockAndTime
 import exchange.dydx.abacus.state.manager.V4Environment
 import exchange.dydx.abacus.utils.isAddressValid
@@ -31,33 +31,6 @@ internal class TransferOutValidator(
             return listOf(
                 error(
                     type = ErrorType.error,
-                    errorCode = "INVALID_ADDRESS",
-                    fields = listOf("address"),
-                    actionStringKey = "APP.DIRECT_TRANSFER_MODAL.ADDRESS_FIELD",
-                    titleStringKey = "APP.DIRECT_TRANSFER_MODAL.INVALID_ADDRESS_TITLE",
-                    textStringKey = "APP.DIRECT_TRANSFER_MODAL.INVALID_ADDRESS_BODY",
-                ),
-            )
-        } else {
-            return null
-        }
-    }
-
-    override fun validateTransferDeprecated(
-        wallet: Map<String, Any>?,
-        subaccount: Map<String, Any>?,
-        transfer: Map<String, Any>,
-        configs: Map<String, Any>?,
-        currentBlockAndHeight: BlockAndTime?,
-        restricted: Boolean,
-        environment: V4Environment?
-    ): List<Any>? {
-        val address = parser.asString(parser.value(transfer, "address"))
-        val type = parser.asString(parser.value(transfer, "type"))
-        if (type == "TRANSFER_OUT" && !address.isNullOrEmpty() && !address.isAddressValid()) {
-            return listOf(
-                errorDeprecated(
-                    type = "ERROR",
                     errorCode = "INVALID_ADDRESS",
                     fields = listOf("address"),
                     actionStringKey = "APP.DIRECT_TRANSFER_MODAL.ADDRESS_FIELD",

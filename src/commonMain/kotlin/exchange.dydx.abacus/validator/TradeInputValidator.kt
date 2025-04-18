@@ -5,10 +5,10 @@ import exchange.dydx.abacus.output.input.InputType
 import exchange.dydx.abacus.output.input.ValidationError
 import exchange.dydx.abacus.protocols.LocalizerProtocol
 import exchange.dydx.abacus.protocols.ParserProtocol
-import exchange.dydx.abacus.state.app.helper.Formatter
-import exchange.dydx.abacus.state.internalstate.InternalState
-import exchange.dydx.abacus.state.internalstate.InternalSubaccountState
-import exchange.dydx.abacus.state.internalstate.InternalTradeInputState
+import exchange.dydx.abacus.state.InternalState
+import exchange.dydx.abacus.state.InternalSubaccountState
+import exchange.dydx.abacus.state.InternalTradeInputState
+import exchange.dydx.abacus.state.helper.Formatter
 import exchange.dydx.abacus.state.manager.BlockAndTime
 import exchange.dydx.abacus.state.manager.V4Environment
 import exchange.dydx.abacus.utils.Numeric
@@ -89,59 +89,6 @@ internal class TradeInputValidator(
         return errors
     }
 
-    override fun validateDeprecated(
-        wallet: Map<String, Any>?,
-        user: Map<String, Any>?,
-        subaccount: Map<String, Any>?,
-        markets: Map<String, Any>?,
-        configs: Map<String, Any>?,
-        currentBlockAndHeight: BlockAndTime?,
-        transaction: Map<String, Any>,
-        transactionType: String,
-        environment: V4Environment?,
-    ): List<Any>? {
-        if (transactionType == "trade" || transactionType == "closePosition") {
-            val marketId = parser.asString(transaction["marketId"]) ?: return null
-            val change = getPositionChangeDeprecated(parser, subaccount, transaction)
-            val restricted = parser.asBool(user?.get("restricted")) ?: false
-            val market = parser.asNativeMap(markets?.get(marketId))
-            val errors = mutableListOf<Any>()
-
-            for (validator in tradeValidators) {
-                val validatorErrors =
-                    validator.validateTradeDeprecated(
-                        subaccount = subaccount,
-                        market = market,
-                        configs = configs,
-                        trade = transaction,
-                        change = change,
-                        restricted = restricted,
-                        environment = environment,
-                    )
-                if (validatorErrors != null) {
-                    errors.addAll(validatorErrors)
-                }
-            }
-
-            val sizeParent = parser.asNativeMap(transaction["size"])
-
-            tradeValidationTracker.logValidationResult(
-                TradeValidationPayload(
-                    errors = errors.mapNotNull { (it as? Map<*, *>)?.get("code") as? String },
-                    marketId = marketId,
-                    size = parser.asDouble(sizeParent?.get("size")),
-                    notionalSize = parser.asDouble(sizeParent?.get("usdcSize")),
-                ).apply {
-                    indexSlippage = parser.asDouble(parser.asNativeMap(transaction.get("summary"))?.get("indexSlippage"))
-                    orderbookSlippage = parser.asDouble(parser.asNativeMap(transaction.get("summary"))?.get("slippage"))
-                },
-            )
-
-            return errors
-        }
-        return null
-    }
-
     private fun getPositionChange(
         subaccount: InternalSubaccountState?,
         trade: InternalTradeInputState,
@@ -150,53 +97,6 @@ internal class TradeInputValidator(
         val position = subaccount?.openPositions?.get(marketId) ?: return PositionChange.NONE
         val size = position.calculated[CalculationPeriod.current]?.size ?: Numeric.double.ZERO
         val postOrder = position.calculated[CalculationPeriod.post]?.size ?: Numeric.double.ZERO
-        return if (size != Numeric.double.ZERO) {
-            if (postOrder != Numeric.double.ZERO) {
-                if (size > Numeric.double.ZERO) {
-                    if (postOrder > size) {
-                        PositionChange.INCREASING
-                    } else if (postOrder < Numeric.double.ZERO) {
-                        PositionChange.CROSSING
-                    } else if (postOrder < size) {
-                        PositionChange.DECREASING
-                    } else {
-                        PositionChange.NONE
-                    }
-                } else {
-                    if (postOrder > size) {
-                        PositionChange.DECREASING
-                    } else if (postOrder > Numeric.double.ZERO) {
-                        PositionChange.CROSSING
-                    } else if (postOrder < size) {
-                        PositionChange.INCREASING
-                    } else {
-                        PositionChange.NONE
-                    }
-                }
-            } else {
-                PositionChange.CLOSING
-            }
-        } else {
-            if (postOrder != Numeric.double.ZERO) {
-                PositionChange.NEW
-            } else {
-                PositionChange.NONE
-            }
-        }
-    }
-
-    private fun getPositionChangeDeprecated(
-        parser: ParserProtocol,
-        subaccount: Map<String, Any>?,
-        trade: Map<String, Any>,
-    ): PositionChange {
-        val marketId = parser.asString(trade["marketId"]) ?: return PositionChange.NONE
-        val position =
-            parser.asNativeMap(parser.value(subaccount, "openPositions.$marketId"))
-                ?: return PositionChange.NONE
-        val size = parser.asDouble(parser.value(position, "size.current")) ?: Numeric.double.ZERO
-        val postOrder =
-            parser.asDouble(parser.value(position, "size.postOrder")) ?: Numeric.double.ZERO
         return if (size != Numeric.double.ZERO) {
             if (postOrder != Numeric.double.ZERO) {
                 if (size > Numeric.double.ZERO) {

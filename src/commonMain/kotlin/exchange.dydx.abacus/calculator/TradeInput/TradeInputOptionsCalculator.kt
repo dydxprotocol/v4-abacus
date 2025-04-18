@@ -9,13 +9,13 @@ import exchange.dydx.abacus.output.input.SelectionOption
 import exchange.dydx.abacus.output.input.Tooltip
 import exchange.dydx.abacus.output.input.TradeInputGoodUntil
 import exchange.dydx.abacus.protocols.ParserProtocol
-import exchange.dydx.abacus.state.internalstate.InternalAccountState
-import exchange.dydx.abacus.state.internalstate.InternalMarketState
-import exchange.dydx.abacus.state.internalstate.InternalPerpetualPosition
-import exchange.dydx.abacus.state.internalstate.InternalSubaccountState
-import exchange.dydx.abacus.state.internalstate.InternalTradeInputOptions
-import exchange.dydx.abacus.state.internalstate.InternalTradeInputState
-import exchange.dydx.abacus.state.internalstate.safeCreate
+import exchange.dydx.abacus.state.InternalAccountState
+import exchange.dydx.abacus.state.InternalMarketState
+import exchange.dydx.abacus.state.InternalPerpetualPosition
+import exchange.dydx.abacus.state.InternalSubaccountState
+import exchange.dydx.abacus.state.InternalTradeInputOptions
+import exchange.dydx.abacus.state.InternalTradeInputState
+import exchange.dydx.abacus.state.safeCreate
 import exchange.dydx.abacus.utils.Numeric
 import kollections.iListOf
 

@@ -1,7 +1,7 @@
 package exchange.dydx.abacus.output.input
 
 import exchange.dydx.abacus.protocols.ParserProtocol
-import exchange.dydx.abacus.state.internalstate.InternalTransferInputState
+import exchange.dydx.abacus.state.InternalTransferInputState
 import exchange.dydx.abacus.state.manager.CctpConfig.cctpChainIds
 import exchange.dydx.abacus.utils.IList
 import exchange.dydx.abacus.utils.IMap

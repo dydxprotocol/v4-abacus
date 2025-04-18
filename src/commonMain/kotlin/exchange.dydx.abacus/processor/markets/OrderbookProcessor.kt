@@ -4,9 +4,9 @@ import exchange.dydx.abacus.calculator.OrderbookCalculator
 import exchange.dydx.abacus.calculator.OrderbookCalculatorProtocol
 import exchange.dydx.abacus.processor.base.BaseProcessor
 import exchange.dydx.abacus.protocols.ParserProtocol
-import exchange.dydx.abacus.state.internalstate.InternalMarketState
-import exchange.dydx.abacus.state.internalstate.InternalOrderbook
-import exchange.dydx.abacus.state.internalstate.InternalOrderbookTick
+import exchange.dydx.abacus.state.InternalMarketState
+import exchange.dydx.abacus.state.InternalOrderbook
+import exchange.dydx.abacus.state.InternalOrderbookTick
 import exchange.dydx.abacus.utils.Numeric
 import exchange.dydx.abacus.utils.mutable
 import indexer.codegen.IndexerOrderbookResponseObject

@@ -1,6 +1,6 @@
 package exchange.dydx.abacus.payload.v4
 
-import exchange.dydx.abacus.state.app.adaptors.AbUrl
+import exchange.dydx.abacus.state.helper.AbUrl
 import exchange.dydx.abacus.tests.extensions.rest
 import kollections.iListOf
 import kotlin.test.Test

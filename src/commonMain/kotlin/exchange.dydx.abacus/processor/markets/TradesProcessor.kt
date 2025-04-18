@@ -7,7 +7,7 @@ import exchange.dydx.abacus.output.input.OrderType
 import exchange.dydx.abacus.processor.base.mergeWithIds
 import exchange.dydx.abacus.protocols.LocalizerProtocol
 import exchange.dydx.abacus.protocols.ParserProtocol
-import exchange.dydx.abacus.state.internalstate.InternalMarketState
+import exchange.dydx.abacus.state.InternalMarketState
 import exchange.dydx.abacus.utils.IndexerResponseParsingException
 import exchange.dydx.abacus.utils.Logger
 import exchange.dydx.abacus.utils.parseException

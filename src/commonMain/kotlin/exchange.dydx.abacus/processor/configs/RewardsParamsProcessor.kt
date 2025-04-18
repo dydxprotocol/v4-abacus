@@ -2,7 +2,7 @@ package exchange.dydx.abacus.processor.configs
 
 import exchange.dydx.abacus.processor.base.BaseProcessor
 import exchange.dydx.abacus.protocols.ParserProtocol
-import exchange.dydx.abacus.state.internalstate.InternalRewardsParamsState
+import exchange.dydx.abacus.state.InternalRewardsParamsState
 import indexer.models.chain.OnChainRewardsParamsResponse
 import indexer.models.chain.OnChainTokenPriceResponse
 

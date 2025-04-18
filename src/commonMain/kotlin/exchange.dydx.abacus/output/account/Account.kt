@@ -2,9 +2,9 @@ package exchange.dydx.abacus.output.account
 
 import exchange.dydx.abacus.output.LaunchIncentivePoints
 import exchange.dydx.abacus.protocols.ParserProtocol
-import exchange.dydx.abacus.state.internalstate.InternalAccountBalanceState
-import exchange.dydx.abacus.state.internalstate.InternalAccountState
-import exchange.dydx.abacus.state.internalstate.InternalStakingDelegationState
+import exchange.dydx.abacus.state.InternalAccountBalanceState
+import exchange.dydx.abacus.state.InternalAccountState
+import exchange.dydx.abacus.state.InternalStakingDelegationState
 import exchange.dydx.abacus.state.manager.TokenInfo
 import exchange.dydx.abacus.utils.IList
 import exchange.dydx.abacus.utils.IMap

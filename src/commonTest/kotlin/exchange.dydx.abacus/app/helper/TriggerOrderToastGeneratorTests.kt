@@ -2,7 +2,7 @@ package exchange.dydx.abacus.app.helper
 
 import exchange.dydx.abacus.output.PerpetualState
 import exchange.dydx.abacus.protocols.ToastType
-import exchange.dydx.abacus.state.app.helper.TriggerOrderToastGenerator
+import exchange.dydx.abacus.state.helper.TriggerOrderToastGenerator
 import exchange.dydx.abacus.state.manager.HumanReadableCancelOrderPayload
 import exchange.dydx.abacus.state.manager.HumanReadablePlaceOrderPayload
 import exchange.dydx.abacus.state.manager.HumanReadableTriggerOrdersPayload

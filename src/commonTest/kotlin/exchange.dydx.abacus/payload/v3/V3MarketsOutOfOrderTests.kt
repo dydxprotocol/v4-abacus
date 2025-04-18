@@ -45,82 +45,28 @@ class V3MarketsOutOfOrderTests : V3BaseTests() {
     }
 
     private fun testMarketsSubscribed() {
-        if (perp.staticTyping) {
-            loadMarkets()
+        loadMarkets()
 
-            val markets = perp.internalState.marketsSummary.markets
-            val ethMarket = markets["ETH-USD"]!!
-            assertEquals(1753.2932, ethMarket.perpetualMarket?.oraclePrice)
-            assertEquals(14.47502, ethMarket.perpetualMarket?.priceChange24H)
-            assertEquals("ETH", ethMarket.perpetualMarket?.assetId)
-            assertEquals("ETH-USD", ethMarket.perpetualMarket?.market)
-            assertEquals(0.001, ethMarket.perpetualMarket?.configs?.stepSize)
-            assertEquals(0.03, ethMarket.perpetualMarket?.configs?.maintenanceMarginFraction)
-            assertEquals(0.05, ethMarket.perpetualMarket?.configs?.initialMarginFraction)
-            assertEquals(0.1, ethMarket.perpetualMarket?.configs?.tickSize)
-            assertEquals(true, ethMarket.perpetualMarket?.status?.canTrade)
-            assertEquals(true, ethMarket.perpetualMarket?.status?.canReduce)
-        } else {
-            test(
-                {
-                    loadMarkets()
-                },
-                """
-                {
-                    "markets": {
-                        "markets": {
-                            "ETH-USD": {
-                                "assetId": "ETH",
-                                "market": "ETH-USD",
-                                "oraclePrice": 1753.2932,
-                                "priceChange24H": 14.47502,
-                                "status": {
-                                    "canTrade": true,
-                                    "canReduce": true
-                                },
-                                "configs": {
-                                    "stepSize": 0.001,
-                                    "maintenanceMarginFraction": 0.03,
-                                    "initialMarginFraction": 0.05,
-                                    "tickSize": 0.1
-                                }
-                            },
-                            "SOL-USD": {
-                            }
-                        }
-                    }
-                }
-                """.trimIndent(),
-            )
-        }
+        val markets = perp.internalState.marketsSummary.markets
+        val ethMarket = markets["ETH-USD"]!!
+        assertEquals(1753.2932, ethMarket.perpetualMarket?.oraclePrice)
+        assertEquals(14.47502, ethMarket.perpetualMarket?.priceChange24H)
+        assertEquals("ETH", ethMarket.perpetualMarket?.assetId)
+        assertEquals("ETH-USD", ethMarket.perpetualMarket?.market)
+        assertEquals(0.001, ethMarket.perpetualMarket?.configs?.stepSize)
+        assertEquals(0.03, ethMarket.perpetualMarket?.configs?.maintenanceMarginFraction)
+        assertEquals(0.05, ethMarket.perpetualMarket?.configs?.initialMarginFraction)
+        assertEquals(0.1, ethMarket.perpetualMarket?.configs?.tickSize)
+        assertEquals(true, ethMarket.perpetualMarket?.status?.canTrade)
+        assertEquals(true, ethMarket.perpetualMarket?.status?.canReduce)
     }
 
     private fun testMarketsChanged() {
-        if (perp.staticTyping) {
-            perp.loadMarketsChanged(mock)
+        perp.loadMarketsChanged(mock)
 
-            val markets = perp.internalState.marketsSummary.markets
-            val ethMarket = markets["ETH-USD"]!!
-            assertEquals(1753.2932, ethMarket.perpetualMarket?.oraclePrice)
-            assertEquals(14.47502, ethMarket.perpetualMarket?.priceChange24H)
-        } else {
-            test(
-                {
-                    perp.loadMarketsChanged(mock)
-                },
-                """
-                {
-                    "markets": {
-                        "markets": {
-                            "ETH-USD": {
-                                "oraclePrice": 1753.2932,
-                                "priceChange24H": 14.47502
-                            }
-                        }
-                    }
-                }
-                """.trimIndent(),
-            )
-        }
+        val markets = perp.internalState.marketsSummary.markets
+        val ethMarket = markets["ETH-USD"]!!
+        assertEquals(1753.2932, ethMarket.perpetualMarket?.oraclePrice)
+        assertEquals(14.47502, ethMarket.perpetualMarket?.priceChange24H)
     }
 }

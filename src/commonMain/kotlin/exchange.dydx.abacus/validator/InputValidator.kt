@@ -4,13 +4,12 @@ import exchange.dydx.abacus.output.input.InputType
 import exchange.dydx.abacus.output.input.ValidationError
 import exchange.dydx.abacus.protocols.LocalizerProtocol
 import exchange.dydx.abacus.protocols.ParserProtocol
-import exchange.dydx.abacus.state.app.helper.Formatter
-import exchange.dydx.abacus.state.internalstate.InternalState
+import exchange.dydx.abacus.state.InternalState
+import exchange.dydx.abacus.state.helper.Formatter
 import exchange.dydx.abacus.state.manager.BlockAndTime
 import exchange.dydx.abacus.state.manager.V4Environment
 import exchange.dydx.abacus.utils.NUM_PARENT_SUBACCOUNTS
 import exchange.dydx.abacus.utils.TradeValidationTracker
-import exchange.dydx.abacus.utils.modify
 
 internal class InputValidator(
     localizer: LocalizerProtocol?,
@@ -113,55 +112,6 @@ internal class InputValidator(
         }
     }
 
-    fun validateDeprecated(
-        subaccountNumber: Int?,
-        wallet: Map<String, Any>?,
-        user: Map<String, Any>?,
-        subaccount: Map<String, Any>?,
-        markets: Map<String, Any>?,
-        input: Map<String, Any>?,
-        configs: Map<String, Any>?,
-        currentBlockAndHeight: BlockAndTime?,
-        environment: V4Environment?,
-    ): Map<String, Any>? {
-        return if (input != null) {
-            val transactionType = parser.asString(input["current"]) ?: return input
-            val transaction = parser.asNativeMap(input[transactionType]) ?: return input
-            val isChildSubaccount = subaccountNumber != null && subaccountNumber >= NUM_PARENT_SUBACCOUNTS
-
-            val errors = sortDeprecated(
-                validateTransactionDeprecated(
-                    wallet = wallet,
-                    user = user,
-                    subaccount = subaccount,
-                    markets = markets,
-                    configs = configs,
-                    currentBlockAndHeight = currentBlockAndHeight,
-                    transaction = transaction,
-                    transactionType = transactionType,
-                    environment = environment,
-                ),
-            )
-
-            if (isChildSubaccount) {
-                if (errors != input["childSubaccountErrors"]) {
-                    input.modify("childSubaccountErrors", errors)
-                } else {
-                    input
-                }
-            } else {
-                if (errors != input["errors"]) {
-                    input.modify("errors", errors)
-                } else {
-                    input
-                }
-            }
-        } else {
-            input?.modify("errors", null)
-            input?.modify("childSubaccountErrors", null)
-        }
-    }
-
     private fun validateTransaction(
         internalState: InternalState,
         subaccountNumber: Int?,
@@ -188,43 +138,6 @@ internal class InputValidator(
         return result
     }
 
-    private fun validateTransactionDeprecated(
-        wallet: Map<String, Any>?,
-        user: Map<String, Any>?,
-        subaccount: Map<String, Any>?,
-        markets: Map<String, Any>?,
-        configs: Map<String, Any>?,
-        currentBlockAndHeight: BlockAndTime?,
-        transaction: Map<String, Any>,
-        transactionType: String,
-        environment: V4Environment?,
-    ): List<Any>? {
-        val validators = validatorsForDeprecated(transactionType)
-        return if (validators != null) {
-            val result = mutableListOf<Any>()
-            for (validator in validators) {
-                val validatorErrors =
-                    validator.validateDeprecated(
-                        wallet = wallet,
-                        user = user,
-                        subaccount = subaccount,
-                        markets = markets,
-                        configs = configs,
-                        currentBlockAndHeight = currentBlockAndHeight,
-                        transaction = transaction,
-                        transactionType = transactionType,
-                        environment = environment,
-                    )
-                if (validatorErrors != null) {
-                    result.addAll(validatorErrors)
-                }
-            }
-            if (result.size > 0) result else null
-        } else {
-            null
-        }
-    }
-
     private fun validatorsFor(inputType: InputType): List<ValidatorProtocol>? {
         return when (inputType) {
             InputType.TRADE -> tradeValidators
@@ -232,15 +145,6 @@ internal class InputValidator(
             InputType.CLOSE_POSITION -> closePositionValidators
             InputType.ADJUST_ISOLATED_MARGIN -> null
             InputType.TRIGGER_ORDERS -> triggerOrdersValidators
-        }
-    }
-    private fun validatorsForDeprecated(transactionType: String): List<ValidatorProtocol>? {
-        return when (transactionType) {
-            "closePosition" -> closePositionValidators
-            "transfer" -> transferValidators
-            "trade" -> tradeValidators
-            "triggerOrders" -> triggerOrdersValidators
-            else -> null
         }
     }
 
@@ -285,52 +189,6 @@ internal class InputValidator(
                     }
                 }
             }
-        }
-    }
-
-    private fun sortDeprecated(errors: List<Any>?): List<Any>? {
-        return if (errors != null) {
-            return errors.sortedWith { error1, error2 ->
-                val typeString1 = parser.asString(parser.value(error1, "type"))
-                val typeString2 = parser.asString(parser.value(error2, "type"))
-                if (typeString1 == typeString2) {
-                    val codeString1 = parser.asString(parser.value(error1, "code"))
-                    val codeString2 = parser.asString(parser.value(error2, "code"))
-                    val code1 = if (codeString1 != null) errorCodeLookup[codeString1] else null
-                    val code2 = if (codeString2 != null) errorCodeLookup[codeString2] else null
-                    if (code1 != null) {
-                        if (code2 != null) {
-                            code1 - code2
-                        } else {
-                            1
-                        }
-                    } else {
-                        if (code2 != null) {
-                            -1
-                        } else {
-                            0
-                        }
-                    }
-                } else {
-                    val type1 = if (typeString1 != null) errorTypeLookup[typeString1] else null
-                    val type2 = if (typeString2 != null) errorTypeLookup[typeString2] else null
-                    if (type1 != null) {
-                        if (type2 != null) {
-                            type1 - type2
-                        } else {
-                            1
-                        }
-                    } else {
-                        if (type2 != null) {
-                            -1
-                        } else {
-                            0
-                        }
-                    }
-                }
-            }
-        } else {
-            null
         }
     }
 }

@@ -3,7 +3,7 @@ package exchange.dydx.abacus.processor.markets
 import exchange.dydx.abacus.output.MarketTrade
 import exchange.dydx.abacus.output.MarketTradeResources
 import exchange.dydx.abacus.output.input.OrderSide
-import exchange.dydx.abacus.state.internalstate.InternalMarketState
+import exchange.dydx.abacus.state.InternalMarketState
 import exchange.dydx.abacus.utils.DummyLocalizer
 import exchange.dydx.abacus.utils.Parser
 import indexer.codegen.IndexerOrderSide

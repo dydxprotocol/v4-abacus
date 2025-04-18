@@ -1,7 +1,7 @@
 package exchange.dydx.abacus.output.account
 
 import exchange.dydx.abacus.protocols.ParserProtocol
-import exchange.dydx.abacus.state.internalstate.InternalAccountBalanceState
+import exchange.dydx.abacus.state.InternalAccountBalanceState
 import exchange.dydx.abacus.utils.Logger
 import exchange.dydx.abacus.utils.Numeric
 import kollections.JsExport

@@ -1,7 +1,7 @@
 package exchange.dydx.abacus.processor.configs
 
 import com.ionspin.kotlin.bignum.decimal.toBigDecimal
-import exchange.dydx.abacus.state.internalstate.InternalWithdrawalCapacityState
+import exchange.dydx.abacus.state.InternalWithdrawalCapacityState
 import exchange.dydx.abacus.utils.Parser
 import indexer.models.chain.OnChainLimiterCapacity
 import indexer.models.chain.OnChainWithdrawalCapacityResponse

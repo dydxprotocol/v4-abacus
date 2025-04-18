@@ -1,7 +1,7 @@
 package exchange.dydx.abacus.output.input
 
 import exchange.dydx.abacus.protocols.ParserProtocol
-import exchange.dydx.abacus.state.internalstate.InternalState
+import exchange.dydx.abacus.state.InternalState
 import exchange.dydx.abacus.utils.IList
 import exchange.dydx.abacus.utils.Logger
 import kollections.JsExport

@@ -22,44 +22,16 @@ class V4WalletTests : V4BaseTests() {
     }
 
     private fun testSetWallet() {
-        if (perp.staticTyping) {
-            perp.resetWallet("1234")
+        perp.resetWallet("1234")
 
-            val wallet = perp.internalState.wallet
-            assertEquals("1234", wallet.walletAddress)
-        } else {
-            test(
-                {
-                    perp.resetWallet("1234")
-                },
-                """
-            {
-                "wallet": {
-                    "walletAddress": "1234"
-                }
-            }
-                """.trimIndent(),
-            )
-        }
+        val wallet = perp.internalState.wallet
+        assertEquals("1234", wallet.walletAddress)
     }
 
     private fun testResetWallet() {
-        if (perp.staticTyping) {
-            perp.resetWallet(null)
+        perp.resetWallet(null)
 
-            val wallet = perp.internalState.wallet
-            assertEquals(null, wallet.walletAddress)
-        } else {
-            test(
-                {
-                    perp.resetWallet(null)
-                },
-                """
-                {
-                    "wallet": null
-                }
-                """.trimIndent(),
-            )
-        }
+        val wallet = perp.internalState.wallet
+        assertEquals(null, wallet.walletAddress)
     }
 }

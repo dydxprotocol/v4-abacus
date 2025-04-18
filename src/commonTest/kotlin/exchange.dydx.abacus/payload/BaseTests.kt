@@ -11,8 +11,6 @@ import exchange.dydx.abacus.fakes.FakeTrackingProtocol
 import exchange.dydx.abacus.output.Asset
 import exchange.dydx.abacus.output.Configs
 import exchange.dydx.abacus.output.FeeDiscount
-import exchange.dydx.abacus.output.FeeTier
-import exchange.dydx.abacus.output.LaunchIncentivePoints
 import exchange.dydx.abacus.output.MarketCandle
 import exchange.dydx.abacus.output.MarketCandles
 import exchange.dydx.abacus.output.MarketConfigs
@@ -20,15 +18,12 @@ import exchange.dydx.abacus.output.MarketHistoricalFunding
 import exchange.dydx.abacus.output.MarketOrderbook
 import exchange.dydx.abacus.output.MarketPerpetual
 import exchange.dydx.abacus.output.MarketTrade
-import exchange.dydx.abacus.output.NetworkConfigs
 import exchange.dydx.abacus.output.OrderbookLine
 import exchange.dydx.abacus.output.PerpetualMarket
 import exchange.dydx.abacus.output.PerpetualMarketSummary
 import exchange.dydx.abacus.output.PerpetualMarketType
 import exchange.dydx.abacus.output.PerpetualState
 import exchange.dydx.abacus.output.TradeStatesWithDoubleValues
-import exchange.dydx.abacus.output.TradeStatesWithStringValues
-import exchange.dydx.abacus.output.User
 import exchange.dydx.abacus.output.Wallet
 import exchange.dydx.abacus.output.account.Account
 import exchange.dydx.abacus.output.account.Subaccount
@@ -39,37 +34,26 @@ import exchange.dydx.abacus.output.account.SubaccountOrder
 import exchange.dydx.abacus.output.account.SubaccountPendingPosition
 import exchange.dydx.abacus.output.account.SubaccountPosition
 import exchange.dydx.abacus.output.account.SubaccountTransfer
-import exchange.dydx.abacus.output.input.ClosePositionInput
-import exchange.dydx.abacus.output.input.ClosePositionInputSize
-import exchange.dydx.abacus.output.input.Input
-import exchange.dydx.abacus.output.input.InputType
-import exchange.dydx.abacus.output.input.MarginMode
 import exchange.dydx.abacus.output.input.OrderbookUsage
-import exchange.dydx.abacus.output.input.ReceiptLine
 import exchange.dydx.abacus.output.input.SelectionOption
-import exchange.dydx.abacus.output.input.TradeInput
 import exchange.dydx.abacus.output.input.TradeInputBracket
 import exchange.dydx.abacus.output.input.TradeInputBracketSide
 import exchange.dydx.abacus.output.input.TradeInputGoodUntil
-import exchange.dydx.abacus.output.input.TradeInputMarketOrder
 import exchange.dydx.abacus.output.input.TradeInputOptions
-import exchange.dydx.abacus.output.input.TradeInputPrice
-import exchange.dydx.abacus.output.input.TradeInputSize
 import exchange.dydx.abacus.output.input.TradeInputSummary
 import exchange.dydx.abacus.processor.utils.MarketId
 import exchange.dydx.abacus.protocols.LocalizerProtocol
 import exchange.dydx.abacus.responses.StateResponse
-import exchange.dydx.abacus.state.app.helper.DynamicLocalizer
-import exchange.dydx.abacus.state.internalstate.InternalAccountState
-import exchange.dydx.abacus.state.internalstate.InternalConfigsState
-import exchange.dydx.abacus.state.internalstate.InternalPerpetualPosition
-import exchange.dydx.abacus.state.internalstate.InternalState
-import exchange.dydx.abacus.state.internalstate.InternalSubaccountState
-import exchange.dydx.abacus.state.internalstate.InternalTradeInputOptions
-import exchange.dydx.abacus.state.internalstate.InternalTradeInputState
-import exchange.dydx.abacus.state.internalstate.InternalTradeInputSummary
-import exchange.dydx.abacus.state.model.PerpTradingStateMachine
-import exchange.dydx.abacus.state.model.TradingStateMachine
+import exchange.dydx.abacus.state.InternalAccountState
+import exchange.dydx.abacus.state.InternalConfigsState
+import exchange.dydx.abacus.state.InternalPerpetualPosition
+import exchange.dydx.abacus.state.InternalState
+import exchange.dydx.abacus.state.InternalSubaccountState
+import exchange.dydx.abacus.state.InternalTradeInputOptions
+import exchange.dydx.abacus.state.InternalTradeInputSummary
+import exchange.dydx.abacus.state.helper.DynamicLocalizer
+import exchange.dydx.abacus.state.machine.PerpTradingStateMachine
+import exchange.dydx.abacus.state.machine.TradingStateMachine
 import exchange.dydx.abacus.tests.payloads.AbacusMockData
 import exchange.dydx.abacus.utils.IList
 import exchange.dydx.abacus.utils.IOImplementations
@@ -95,7 +79,6 @@ internal typealias VerificationFunction = (response: StateResponse) -> Unit
 open class BaseTests(
     private val maxSubaccountNumber: Int,
     private val useParentSubaccount: Boolean,
-    private val staticTyping: Boolean = true, // turn on static typing for testing
 ) {
     open val doAsserts = true
     internal val deploymentUri = "https://api.examples.com"
@@ -105,7 +88,6 @@ open class BaseTests(
     internal val trackingProtocol = FakeTrackingProtocol()
     internal var perp = createState(
         useParentSubaccount = useParentSubaccount,
-        staticTyping = staticTyping,
     )
 
     companion object {
@@ -138,7 +120,6 @@ open class BaseTests(
 
     internal open fun createState(
         useParentSubaccount: Boolean,
-        staticTyping: Boolean
     ): PerpTradingStateMachine {
         val ioImplementations = testIOImplementations()
         return PerpTradingStateMachine(
@@ -147,7 +128,6 @@ open class BaseTests(
             formatter = null,
             maxSubaccountNumber = maxSubaccountNumber,
             useParentSubaccount = useParentSubaccount,
-            staticTyping = staticTyping,
             trackingProtocol = trackingProtocol,
         )
     }
@@ -229,9 +209,7 @@ open class BaseTests(
 
     internal open fun verifyState(state: PerpetualState?) {
         verifyConfigs(
-            data = perp.configs,
             obj = state?.configs,
-            staticTyping = perp.staticTyping,
             internalState = perp.internalState.configs,
             trace = "configs",
         )
@@ -239,31 +217,18 @@ open class BaseTests(
         verifyAccountState(
             data = perp.account,
             state = perp.internalState.wallet.account,
-            staticTyping = perp.staticTyping,
             obj = state?.account,
             trace = "account",
         )
-        if (staticTyping) {
-            for ((key, value) in perp.internalState.wallet.account.subaccounts) {
-                assertEquals(value.fills ?: emptyList(), state?.fills?.get("$key") ?: emptyList())
-            }
-        } else {
-            verifySubaccountFillsState(
-                parser.asNativeMap(perp.account?.get("subaccounts")),
-                state?.fills,
-                "fills",
-            )
+
+        for ((key, value) in perp.internalState.wallet.account.subaccounts) {
+            assertEquals(value.fills ?: emptyList(), state?.fills?.get("$key") ?: emptyList())
         }
 
-        if (staticTyping) {
-            for ((key, value) in perp.internalState.wallet.account.subaccounts) {
-                assertEquals(value.transfers ?: emptyList(), state?.transfers?.get("$key") ?: emptyList())
-            }
-        } else {
-            verifySubaccountTransfersState(
-                parser.asNativeMap(perp.account?.get("subaccounts")),
-                state?.transfers,
-                "transfers",
+        for ((key, value) in perp.internalState.wallet.account.subaccounts) {
+            assertEquals(
+                value.transfers ?: emptyList(),
+                state?.transfers?.get("$key") ?: emptyList(),
             )
         }
 
@@ -278,365 +243,34 @@ open class BaseTests(
             ServerTime.now() - perp.historicalPnlDays.days,
             "historicalPnl",
         )
-        if (staticTyping) {
-            assertEquals(perp.internalState.assets.toIMap(), state?.assets ?: emptyMap())
-        } else {
-            verifyAssetsState(perp.assets, state?.assets, "assets")
+
+        assertEquals(perp.internalState.assets.toIMap(), state?.assets ?: emptyMap())
+
+        for ((key, value) in perp.internalState.marketsSummary.markets) {
+            assertEquals(value.perpetualMarket, state?.marketsSummary?.markets?.get(key))
         }
-        if (staticTyping) {
-            for ((key, value) in perp.internalState.marketsSummary.markets) {
-                assertEquals(value.perpetualMarket, state?.marketsSummary?.markets?.get(key))
-            }
-        } else {
-            verifyMarketsState(
-                perp.marketsSummary,
-                perp.assets,
-                state?.marketsSummary,
-                "markets",
-            )
-        }
+
         verifyMarketsHistoricalFundingsState(
             parser.asNativeMap(perp.marketsSummary?.get("markets")),
             state?.historicalFundings,
             "historicalFundings",
         )
-        if (staticTyping) {
-            for ((key, value) in perp.internalState.marketsSummary.markets) {
-                assertEquals(value.trades, state?.trades?.get(key))
-            }
-        } else {
-            verifyMarketsTradesState(
-                parser.asNativeMap(perp.marketsSummary?.get("markets")),
-                state?.trades,
-                "trades",
-            )
+
+        for ((key, value) in perp.internalState.marketsSummary.markets) {
+            assertEquals(value.trades, state?.trades?.get(key))
         }
+
         verifyMarketsCandlesState(
             parser.asNativeMap(perp.marketsSummary?.get("markets")),
             state?.candles,
             "candles",
         )
-        if (staticTyping) {
-            for ((key, value) in perp.internalState.marketsSummary.markets) {
-                assertEquals(value.groupedOrderbook, state?.orderbooks?.get(key))
-            }
-        } else {
-            verifyMarketsOrderbookState(
-                parser.asNativeMap(perp.marketsSummary?.get("markets")),
-                state?.orderbooks,
-                "orderbooks",
-            )
+
+        for ((key, value) in perp.internalState.marketsSummary.markets) {
+            assertEquals(value.groupedOrderbook, state?.orderbooks?.get(key))
         }
-        if (staticTyping) {
-            perp.internalState.input
-        } else {
-            verifyInputStateDeprecated(perp.input, state?.input, "input")
-        }
-    }
 
-    private fun verifyInputState(
-        data: InternalState?,
-        obj: Input?,
-        trace: String
-    ) {
-        if (data != null) {
-            assertNotNull(obj)
-            assertEquals(data.input.currentType, obj.current, "$trace.current")
-            when (obj.current) {
-                InputType.TRADE -> {
-                    verifyInputTradeState(
-                        data = data.input.trade,
-                        obj = obj.trade,
-                        trace = "$trace.trade",
-                    )
-                }
-
-                // TODO: Close position
-                InputType.CLOSE_POSITION -> {
-//                    verifyInputClosePositionState(
-//                        data.input.closePosition,
-//                        obj.closePosition,
-//                        "$trace.closePosition",
-//                    )
-                }
-
-                InputType.TRANSFER -> {}
-                InputType.TRIGGER_ORDERS -> {}
-                InputType.ADJUST_ISOLATED_MARGIN -> {}
-                null -> {}
-            }
-
-            assertEquals(data.input.receiptLines, obj.receiptLines, "$trace.receiptLines")
-        } else {
-            assertNull(obj)
-        }
-    }
-
-    private fun verifyInputStateDeprecated(data: Map<String, Any>?, obj: Input?, trace: String) {
-        if (data != null) {
-            assertNotNull(obj)
-            assertEquals(parser.asString(data["current"]), obj.current?.rawValue, "$trace.current")
-            when (obj.current?.rawValue) {
-                "trade" -> {
-                    verifyInputTradeStateDeprecated(
-                        parser.asNativeMap(data["trade"]),
-                        obj.trade,
-                        "$trace.trade",
-                    )
-                }
-
-                "closePosition" -> {
-                    verifyInputClosePositionState(
-                        parser.asNativeMap(data["closePosition"]),
-                        obj.closePosition,
-                        "$trace.closePosition",
-                    )
-                }
-            }
-
-            verifyInputReceiptLinesState(
-                parser.asList(data["receiptLines"]),
-                obj.receiptLines,
-                "$trace.receiptLines",
-            )
-        } else {
-            assertNull(obj)
-        }
-    }
-
-    private fun verifyInputTradeState(
-        data: InternalTradeInputState?,
-        obj: TradeInput?,
-        trace: String
-    ) {
-        if (data != null) {
-            assertNotNull(obj, "$trace should not be null")
-            assertEquals(data.type, obj.type, "$trace.type $doesntMatchText")
-            assertEquals(data.side, obj.side, "$trace.side $doesntMatchText")
-            assertEquals(data.marketId, obj.marketId, "$trace.marketId $doesntMatchText")
-            assertEquals(data.execution, obj.execution, "$trace.execution $doesntMatchText")
-            assertEquals(data.timeInForce, obj.timeInForce, "$trace.timeInForce $doesntMatchText")
-            assertEquals(data.postOnly, obj.postOnly, "$trace.postOnly $doesntMatchText")
-            assertEquals(data.reduceOnly, obj.reduceOnly, "$trace.reduceOnly $doesntMatchText")
-            assertEquals(data.marginMode, obj.marginMode, "$trace.marginMode $doesntMatchText")
-            assertEquals(data.size, obj.size, "$trace.size $doesntMatchText")
-            assertEquals(data.goodTil, obj.goodTil, "$trace.goodTil $doesntMatchText")
-            assertEquals(data.marketOrder, obj.marketOrder, "$trace.marketOrder $doesntMatchText")
-            verifyInputTradeInputOptionsState(
-                data = data.options,
-                obj = obj.options,
-                trace = "$trace.options",
-            )
-            verifyInputTradeInputSummaryState(
-                data = data.summary,
-                obj = obj.summary,
-                trace = "$trace.summary",
-            )
-            assertEquals(data.brackets, obj.bracket, "$trace.bracket $doesntMatchText")
-        } else {
-            assertNull(obj, "$trace should be null")
-        }
-    }
-
-    private fun verifyInputTradeStateDeprecated(data: Map<String, Any>?, obj: TradeInput?, trace: String) {
-        if (data != null) {
-            assertNotNull(obj, "$trace should not be null")
-            assertEquals(
-                parser.asString(data["type"]),
-                obj.type?.rawValue,
-                "$trace.type $doesntMatchText",
-            )
-            assertEquals(
-                parser.asString(data["side"]),
-                obj.side?.rawValue,
-                "$trace.side $doesntMatchText",
-            )
-            assertEquals(
-                parser.asString(data["marketId"]),
-                obj.marketId,
-                "$trace.marketId $doesntMatchText",
-            )
-            assertEquals(
-                parser.asString(data["execution"]),
-                obj.execution,
-                "$trace.execution $doesntMatchText",
-            )
-            assertEquals(
-                parser.asString(data["timeInForce"]),
-                obj.timeInForce,
-                "$trace.timeInForce $doesntMatchText",
-            )
-            assertEquals(
-                parser.asBool(data["postOnly"]) ?: false,
-                obj.postOnly,
-                "$trace.postOnly $doesntMatchText",
-            )
-            assertEquals(
-                parser.asBool(data["reduceOnly"]) ?: false,
-                obj.reduceOnly,
-                "$trace.reduceOnly $doesntMatchText",
-            )
-            assertEquals(
-                MarginMode.invoke(parser.asString(data["marginMode"])),
-                obj.marginMode,
-                "$trace.marginMode $doesntMatchText",
-            )
-            verifyInputTradeInputSizeState(
-                parser.asNativeMap(data["size"]),
-                obj.size,
-                "$trace.size",
-            )
-            verifyInputTradeInputGoodUntilState(
-                parser.asNativeMap(data["goodTil"]),
-                obj.goodTil,
-                "$trace.goodTil",
-            )
-            verifyInputTradeInputMarketOrderState(
-                parser.asNativeMap(data["marketOrder"]),
-                obj.marketOrder,
-                "$trace.marketOrder",
-            )
-            verifyInputTradeInputOptionsStateDeprecated(
-                parser.asNativeMap(data["options"]),
-                obj.options,
-                "$trace.options",
-            )
-            verifyInputTradeInputSummaryStateDeprecated(
-                parser.asNativeMap(data["summary"]),
-                obj.summary,
-                "$trace.summary",
-            )
-            verifyInputTradeInputBracketState(
-                parser.asNativeMap(data["bracket"]),
-                obj.bracket,
-                "$trace.bracket",
-            )
-        } else {
-            assertNull(obj, "$trace should be null")
-        }
-    }
-
-    private fun verifyInputClosePositionState(
-        data: Map<String, Any>?,
-        obj: ClosePositionInput?,
-        trace: String,
-    ) {
-        if (data != null) {
-            assertNotNull(obj, "$trace should not be null")
-            assertEquals(
-                parser.asString(data["marketId"]),
-                obj.marketId,
-                "$trace.marketId $doesntMatchText",
-            )
-            verifyInputClosePositionInputSizeState(
-                parser.asNativeMap(data["size"]),
-                obj.size,
-                "$trace.size",
-            )
-            verifyInputTradeInputMarketOrderState(
-                parser.asNativeMap(data["marketOrder"]),
-                obj.marketOrder,
-                "$trace.marketOrder",
-            )
-            verifyInputTradeInputSummaryStateDeprecated(
-                parser.asNativeMap(data["summary"]),
-                obj.summary,
-                "$trace.summary",
-            )
-        } else {
-            assertNull(obj, "$trace should be null")
-        }
-    }
-
-    private fun verifyInputClosePositionInputSizeState(
-        data: Map<String, Any>?,
-        obj: ClosePositionInputSize?,
-        trace: String,
-    ) {
-        if (data != null) {
-            assertNotNull(obj)
-            assertEquals(parser.asString(data["input"]), obj.input, "$trace.input $doesntMatchText")
-            assertEquals(parser.asDouble(data["size"]), obj.size, "$trace.size $doesntMatchText")
-            assertEquals(
-                parser.asDouble(data["usdcSize"]),
-                obj.usdcSize,
-                "$trace.usdcSize $doesntMatchText",
-            )
-            assertEquals(
-                parser.asDouble(data["percent"]),
-                obj.percent,
-                "$trace.percent $doesntMatchText",
-            )
-        } else {
-            assertNull(obj)
-        }
-    }
-
-    private fun verifyInputReceiptLinesState(
-        data: List<Any>?,
-        obj: List<ReceiptLine>?,
-        trace: String,
-    ) {
-        assertEquals(data?.size, obj?.size)
-        val size = data?.size
-        if (size != null) {
-            for (i in 0 until size) {
-                val item = parser.asString(data[i])
-                val line = obj?.get(i)
-                assertEquals(item, line?.rawValue)
-            }
-        }
-    }
-
-    private fun verifyInputTradeInputSizeState(
-        data: Map<String, Any>?,
-        obj: TradeInputSize?,
-        trace: String,
-    ) {
-        if (data != null) {
-            assertNotNull(obj)
-            assertEquals(parser.asString(data["input"]), obj.input, "$trace.input $doesntMatchText")
-            assertEquals(parser.asDouble(data["size"]), obj.size, "$trace.size $doesntMatchText")
-            assertEquals(
-                parser.asDouble(data["usdcSize"]),
-                obj.usdcSize,
-                "$trace.usdcSize $doesntMatchText",
-            )
-            assertEquals(
-                parser.asDouble(data["leverage"]),
-                obj.leverage,
-                "$trace.leverage $doesntMatchText",
-            )
-        } else {
-            assertNull(obj)
-        }
-    }
-
-    private fun verifyInputTradeInputPriceState(
-        data: Map<String, Any>?,
-        obj: TradeInputPrice?,
-        trace: String,
-    ) {
-        if (data != null) {
-            assertNotNull(obj)
-            assertEquals(
-                parser.asDouble(data["limitPrice"]),
-                obj.limitPrice,
-                "$trace.limitPrice $doesntMatchText",
-            )
-            assertEquals(
-                parser.asDouble(data["triggerPrice"]),
-                obj.triggerPrice,
-                "$trace.triggerPrice $doesntMatchText",
-            )
-            assertEquals(
-                parser.asDouble(data["trailingPercent"]),
-                obj.trailingPercent,
-                "$trace.trailingPercent $doesntMatchText",
-            )
-        } else {
-            assertNull(obj)
-        }
+        perp.internalState.input
     }
 
     private fun verifyInputTradeInputGoodUntilState(
@@ -651,40 +285,6 @@ open class BaseTests(
                 parser.asDouble(data["duration"]),
                 obj.duration,
                 "$trace.duration $doesntMatchText",
-            )
-        } else {
-            assertNull(obj)
-        }
-    }
-
-    private fun verifyInputTradeInputMarketOrderState(
-        data: Map<String, Any>?,
-        obj: TradeInputMarketOrder?,
-        trace: String,
-    ) {
-        if (data != null) {
-            assertNotNull(obj)
-            assertEquals(parser.asDouble(data["size"]), obj.size, "$trace.size $doesntMatchText")
-            assertEquals(parser.asDouble(data["price"]), obj.price, "$trace.price $doesntMatchText")
-            assertEquals(
-                parser.asDouble(data["usdcSize"]),
-                obj.usdcSize,
-                "$trace.usdcSize $doesntMatchText",
-            )
-            assertEquals(
-                parser.asDouble(data["worstPrice"]),
-                obj.worstPrice,
-                "$trace.worstPrice $doesntMatchText",
-            )
-            assertEquals(
-                parser.asBool(data["filled"]) ?: false,
-                obj.filled,
-                "$trace.filled $doesntMatchText",
-            )
-            verifyInputTradeInputMarketOrderOrderbookUsageState(
-                parser.asList(data["orderbook"]),
-                obj.orderbook,
-                "$trace.orderbook",
             )
         } else {
             assertNull(obj)
@@ -1017,77 +617,18 @@ open class BaseTests(
          */
     }
 
-    private fun verifyNumberState(
-        data: Map<String, Any>?,
-        obj: TradeStatesWithStringValues?,
-        trace: String,
-    ) {
-        if (data != null) {
-            assertNotNull(obj)
-            assertEquals(parser.asString(data["current"]), obj.current, "$trace.current")
-            assertEquals(parser.asString(data["postOrder"]), obj.postOrder, "$trace.postOrder")
-            assertEquals(
-                parser.asString(data["postAllOrders"]),
-                obj.postAllOrders,
-                "$trace.postAllOrders",
-            )
-        } else {
-            assertNull(obj)
-        }
-    }
-
-    private fun verifyWalletUserState(data: Map<String, Any>?, obj: User?, trace: String) {
-        // Not needed for v4
-    }
-
-    private fun verifyLaunchIncentivePointsState(
-        data: Map<String, Any>?,
-        obj: LaunchIncentivePoints?,
-        trace: String
-    ) {
-        if (data != null) {
-            assertNotNull(obj)
-        } else {
-            assertNull(obj)
-        }
-    }
-
     internal open fun verifyAccountState(
         data: Map<String, Any>?,
         state: InternalAccountState?,
-        staticTyping: Boolean,
         obj: Account?,
         trace: String
     ) {
-        if (staticTyping) {
-            verifyAccountSubaccountsState(
-                internalState = state?.subaccounts,
-                obj = obj?.subaccounts,
-                trace = "$trace.subaccounts",
-            )
-            // TODO: Grouped subaccounts
-        } else {
-            if (data != null) {
-                assertNotNull(obj)
-                verifyAccountSubaccountsStateDeprecated(
-                    parser.asNativeMap(data["subaccounts"]),
-                    obj.subaccounts,
-                    "$trace.subaccounts",
-                )
-                verifyAccountSubaccountsStateDeprecated(
-                    parser.asNativeMap(data["groupedSubaccounts"]),
-                    obj.groupedSubaccounts,
-                    "$trace.groupedSubaccounts",
-                )
-                verifyLaunchIncentivePointsState(
-                    parser.asNativeMap(data["launchIncentivePoints"]),
-                    obj.launchIncentivePoints,
-                    "$trace.launchIncentivePoints",
-                )
-            } else {
-                assertNull(obj)
-            }
-        }
+        verifyAccountSubaccountsState(
+            internalState = state?.subaccounts,
+            obj = obj?.subaccounts,
+            trace = "$trace.subaccounts",
+        )
+        // TODO: Grouped subaccounts
     }
 
     private fun verifyAccountSubaccountsState(
@@ -1104,24 +645,6 @@ open class BaseTests(
                     obj = obj[key.toString()],
                     trace = "$trace.$key",
                 )
-            }
-        } else {
-            assertTrue {
-                (obj == null || obj.size == 0)
-            }
-        }
-    }
-
-    private fun verifyAccountSubaccountsStateDeprecated(
-        data: Map<String, Any>?,
-        obj: Map<String, Subaccount>?,
-        trace: String,
-    ) {
-        if (data != null) {
-            assertNotNull(obj)
-            assertEquals(data.size, obj.size, "$trace.size $doesntMatchText")
-            for ((key, itemData) in data) {
-                verifyAccountSubaccountStateDeprecated(parser.asNativeMap(itemData), obj[key], "$trace.$key")
             }
         } else {
             assertTrue {
@@ -2154,106 +1677,11 @@ open class BaseTests(
     }
 
     private fun verifyConfigs(
-        data: Map<String, Any>?,
         obj: Configs?,
-        staticTyping: Boolean,
         internalState: InternalConfigsState?,
         trace: String,
     ) {
-        if (staticTyping) {
-            assertEquals(internalState?.feeTiers, obj?.feeTiers, "$trace.feeTiers")
-        } else {
-            if (data != null) {
-                assertNotNull(obj)
-                verifyConfigsNetwork(
-                    parser.asNativeMap(data["network"]),
-                    obj.network,
-                    "$trace.network",
-                )
-                verifyConfigsFeeTiers(
-                    parser.asList(data["feeTiers"]),
-                    obj.feeTiers,
-                    "$trace.feeTiers",
-                )
-                verifyConfigsFeeDiscounts(
-                    parser.asList(data["feeDiscounts"]),
-                    obj.feeDiscounts,
-                    "$trace.feeDiscounts",
-                )
-            } else {
-                assertNull(obj)
-            }
-        }
-//        assertEquals(
-//            parser.asDouble(data?.get("volume24HUSDC")),
-//            obj?.volume24HUSDC,
-//            "$trace.volume24HUSDC"
-//        )
-//        assertEquals(
-//            parser.asDouble(data?.get("openInterestUSDC")),
-//            obj?.openInterestUSDC,
-//            "$trace.openInterestUSDC"
-//        )
-//        verifyMarkets(parser.asNativeMap(data?.get("markets")), obj?.markets, "$trace.markets")
-    }
-
-    private fun verifyConfigsNetwork(
-        data: Map<String, Any>?,
-        obj: NetworkConfigs?,
-        trace: String,
-    ) {
-    }
-
-    private fun verifyConfigsFeeTiers(
-        data: List<Any>?,
-        obj: List<FeeTier>?,
-        trace: String,
-    ) {
-        if (data != null) {
-            assertNotNull(obj)
-            assertTrue { data.size >= obj.size }
-            for (i in obj.indices) {
-                verifyConfigsFeeTier(parser.asNativeMap(data[i]), obj[i], "$trace.$i")
-            }
-        } else {
-            assertNull(obj)
-        }
-    }
-
-    private fun verifyConfigsFeeTier(
-        data: Map<String, Any>?,
-        obj: FeeTier?,
-        trace: String,
-    ) {
-        if (data != null) {
-            assertNotNull(obj)
-            assertEquals(parser.asDouble(data["maker"]), obj.maker, "$trace.maker")
-            assertEquals(parser.asDouble(data["taker"]), obj.taker, "$trace.taker")
-            assertEquals(parser.asString(data["id"]), obj.id, "$trace.id")
-            assertEquals(parser.asString(data["tier"]), obj.tier, "$trace.tier")
-            assertEquals(parser.asString(data["symbol"]), obj.symbol, "$trace.symbol")
-            assertEquals(parser.asInt(data["volume"]), obj.volume, "$trace.volume")
-            assertEquals(parser.asDouble(data["totalShare"]), obj.totalShare, "$trace.totalShare")
-            assertEquals(parser.asDouble(data["makerShare"]), obj.makerShare, "$trace.makerShare")
-        } else {
-            assertNull(obj)
-        }
-    }
-
-    private fun verifyConfigsFeeDiscounts(
-        data: List<Any>?,
-        obj: List<FeeDiscount>?,
-        trace: String,
-    ) {
-        if (data != null) {
-            assertNotNull(obj)
-            assertEquals(data.size, obj.size)
-            for (i in obj.indices) {
-                verifyConfigsFeeDiscount(parser.asNativeMap(data[i]), obj[i], "$trace.$i")
-            }
-        } else {
-            assertNull(obj)
-        }
+        assertEquals(internalState?.feeTiers, obj?.feeTiers, "$trace.feeTiers")
     }
 
     private fun verifyConfigsFeeDiscount(

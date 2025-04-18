@@ -2,7 +2,7 @@ package exchange.dydx.abacus.processor.wallet.account
 
 import exchange.dydx.abacus.processor.base.BaseProcessor
 import exchange.dydx.abacus.protocols.ParserProtocol
-import exchange.dydx.abacus.state.internalstate.InternalAccountBalanceState
+import exchange.dydx.abacus.state.InternalAccountBalanceState
 import indexer.models.chain.OnChainAccountBalanceObject
 
 internal interface AccountBalancesProcessorProtocol {

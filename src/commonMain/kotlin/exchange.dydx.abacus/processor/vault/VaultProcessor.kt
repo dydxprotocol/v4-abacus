@@ -6,8 +6,8 @@ import exchange.dydx.abacus.processor.wallet.account.AssetPositionProcessor
 import exchange.dydx.abacus.processor.wallet.account.PerpetualPositionProcessor
 import exchange.dydx.abacus.protocols.LocalizerProtocol
 import exchange.dydx.abacus.protocols.ParserProtocol
-import exchange.dydx.abacus.state.internalstate.InternalVaultPositionState
-import exchange.dydx.abacus.state.internalstate.InternalVaultState
+import exchange.dydx.abacus.state.InternalVaultPositionState
+import exchange.dydx.abacus.state.InternalVaultState
 import exchange.dydx.abacus.state.manager.V4Environment
 import indexer.codegen.IndexerMegavaultHistoricalPnlResponse
 import indexer.codegen.IndexerMegavaultPositionResponse

@@ -1,7 +1,7 @@
 package exchange.dydx.abacus.processor.wallet.account
 
 import exchange.dydx.abacus.output.account.PositionSide
-import exchange.dydx.abacus.state.internalstate.InternalAssetPositionState
+import exchange.dydx.abacus.state.InternalAssetPositionState
 import exchange.dydx.abacus.utils.Parser
 import indexer.codegen.IndexerAssetPositionResponseObject
 import indexer.codegen.IndexerPositionSide

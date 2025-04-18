@@ -1,6 +1,6 @@
 package exchange.dydx.abacus.tests.payloads
 
-import exchange.dydx.abacus.state.app.adaptors.AbUrl
+import exchange.dydx.abacus.state.helper.AbUrl
 import exchange.dydx.abacus.state.manager.EnvironmentEndpoints
 import exchange.dydx.abacus.state.manager.EnvironmentFeatureFlags
 import exchange.dydx.abacus.state.manager.EnvironmentLinks

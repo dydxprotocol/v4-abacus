@@ -1,6 +1,6 @@
 package exchange.dydx.abacus.output
 
-import exchange.dydx.abacus.state.internalstate.InternalWalletState
+import exchange.dydx.abacus.state.InternalWalletState
 import exchange.dydx.abacus.utils.IList
 import exchange.dydx.abacus.utils.IMap
 import exchange.dydx.abacus.utils.Logger

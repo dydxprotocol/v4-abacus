@@ -3,8 +3,8 @@ package exchange.dydx.abacus.calculator
 import exchange.dydx.abacus.output.input.TransferInputSummary
 import exchange.dydx.abacus.output.input.TransferType
 import exchange.dydx.abacus.protocols.ParserProtocol
-import exchange.dydx.abacus.state.internalstate.InternalTransferInputState
-import exchange.dydx.abacus.state.internalstate.InternalWalletState
+import exchange.dydx.abacus.state.InternalTransferInputState
+import exchange.dydx.abacus.state.InternalWalletState
 
 internal class TransferInputCalculator(
     private val parser: ParserProtocol,

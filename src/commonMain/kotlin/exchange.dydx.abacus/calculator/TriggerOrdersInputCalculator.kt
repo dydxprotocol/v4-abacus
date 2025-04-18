@@ -6,10 +6,10 @@ import exchange.dydx.abacus.output.input.OrderSide
 import exchange.dydx.abacus.output.input.OrderType
 import exchange.dydx.abacus.output.input.TriggerOrderInputSummary
 import exchange.dydx.abacus.output.input.TriggerPrice
-import exchange.dydx.abacus.state.internalstate.InternalAccountState
-import exchange.dydx.abacus.state.internalstate.InternalPerpetualPosition
-import exchange.dydx.abacus.state.internalstate.InternalTriggerOrderState
-import exchange.dydx.abacus.state.internalstate.InternalTriggerOrdersInputState
+import exchange.dydx.abacus.state.InternalAccountState
+import exchange.dydx.abacus.state.InternalPerpetualPosition
+import exchange.dydx.abacus.state.InternalTriggerOrderState
+import exchange.dydx.abacus.state.InternalTriggerOrdersInputState
 import exchange.dydx.abacus.utils.Numeric
 import indexer.codegen.IndexerPositionSide
 import kotlin.math.max

@@ -2,7 +2,7 @@ package exchange.dydx.abacus.processor.launchIncentive
 
 import exchange.dydx.abacus.processor.base.BaseProcessor
 import exchange.dydx.abacus.protocols.ParserProtocol
-import exchange.dydx.abacus.state.internalstate.InternalLaunchIncentiveState
+import exchange.dydx.abacus.state.InternalLaunchIncentiveState
 import indexer.models.configs.ConfigsLaunchIncentiveResponse
 
 internal class LaunchIncentiveProcessor(

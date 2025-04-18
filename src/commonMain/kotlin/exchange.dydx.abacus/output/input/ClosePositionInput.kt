@@ -1,7 +1,7 @@
 package exchange.dydx.abacus.output.input
 
 import exchange.dydx.abacus.protocols.ParserProtocol
-import exchange.dydx.abacus.state.internalstate.InternalTradeInputState
+import exchange.dydx.abacus.state.InternalTradeInputState
 import exchange.dydx.abacus.utils.Logger
 import kollections.JsExport
 import kotlinx.serialization.Serializable

@@ -4,10 +4,10 @@ import exchange.dydx.abacus.output.input.InputType
 import exchange.dydx.abacus.output.input.ValidationError
 import exchange.dydx.abacus.protocols.LocalizerProtocol
 import exchange.dydx.abacus.protocols.ParserProtocol
-import exchange.dydx.abacus.state.app.helper.Formatter
-import exchange.dydx.abacus.state.internalstate.InternalState
+import exchange.dydx.abacus.state.InternalState
+import exchange.dydx.abacus.state.helper.Formatter
+import exchange.dydx.abacus.state.machine.TradeInputField
 import exchange.dydx.abacus.state.manager.V4Environment
-import exchange.dydx.abacus.state.model.TradeInputField
 import exchange.dydx.abacus.validator.BaseInputValidator
 import exchange.dydx.abacus.validator.PositionChange
 import exchange.dydx.abacus.validator.TradeValidatorProtocol
@@ -123,17 +123,5 @@ internal class TradeFieldsValidator(
         }
 
         return errors
-    }
-
-    override fun validateTradeDeprecated(
-        subaccount: Map<String, Any>?,
-        market: Map<String, Any>?,
-        configs: Map<String, Any>?,
-        trade: Map<String, Any>,
-        change: PositionChange,
-        restricted: Boolean,
-        environment: V4Environment?
-    ): List<Any>? {
-        return null
     }
 }

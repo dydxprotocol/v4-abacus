@@ -9,9 +9,9 @@ import exchange.dydx.abacus.output.input.TradeInputGoodUntil
 import exchange.dydx.abacus.output.input.TradeInputPrice
 import exchange.dydx.abacus.output.input.TradeInputSize
 import exchange.dydx.abacus.protocols.ParserProtocol
-import exchange.dydx.abacus.state.internalstate.InternalTradeInputState
-import exchange.dydx.abacus.state.internalstate.safeCreate
-import exchange.dydx.abacus.state.model.TradeInputField
+import exchange.dydx.abacus.state.InternalTradeInputState
+import exchange.dydx.abacus.state.machine.TradeInputField
+import exchange.dydx.abacus.state.safeCreate
 
 //
 // Contains the helper functions for each of the trade input fields

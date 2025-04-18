@@ -3,7 +3,7 @@ import RpcConfigsProcessor
 import exchange.dydx.abacus.output.input.SelectionOption
 import exchange.dydx.abacus.output.input.TransferInputChainResource
 import exchange.dydx.abacus.output.input.TransferInputTokenResource
-import exchange.dydx.abacus.state.internalstate.InternalTransferInputState
+import exchange.dydx.abacus.state.InternalTransferInputState
 import exchange.dydx.abacus.state.manager.RpcConfigs
 import exchange.dydx.abacus.tests.payloads.RpcMock
 import exchange.dydx.abacus.tests.payloads.SkipChainsMock
