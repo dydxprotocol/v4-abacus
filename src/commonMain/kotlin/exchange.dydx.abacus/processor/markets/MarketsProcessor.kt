@@ -51,7 +51,7 @@ internal class MarketsProcessor(
             marketState.perpetualMarket = receivedMarket
             existing.markets[marketId] = marketState
         }
-        return existing
+        return updateMarketIsNew(existing)
     }
 
     override fun processChannelData(
@@ -86,7 +86,7 @@ internal class MarketsProcessor(
                 }
             }
         }
-        return existing
+        return updateMarketIsNew(existing)
     }
 
     override fun processChannelBatchData(
@@ -96,7 +96,7 @@ internal class MarketsProcessor(
         for (response in content ?: listOf()) {
             processChannelData(existing, response)
         }
-        return existing
+        return updateMarketIsNew(existing)
     }
 
     override fun processSparklines(
@@ -115,6 +115,31 @@ internal class MarketsProcessor(
                 marketState.perpetualMarket = receivedMarket
                 existing.markets[marketId] = marketState
             }
+        }
+        return existing
+    }
+
+    private fun updateMarketIsNew(
+        existing: InternalMarketSummaryState,
+    ): InternalMarketSummaryState {
+        val allClobIds: List<String> = existing.markets.values
+            .mapNotNull { it.perpetualMarket?.configs?.clobPairId }
+            .sortedByDescending { parser.asLong(it) }
+        if (allClobIds.count() < 5) {
+            return existing
+        }
+        val clobIds = allClobIds.subList(0, 4)
+
+        for ((marketId, marketState) in existing.markets) {
+            val isNew = clobIds.contains(marketState.perpetualMarket?.configs?.clobPairId)
+            val perpetual = marketState.perpetualMarket?.perpetual
+            val newPerpetual = marketState.perpetualMarket?.perpetual?.copy(
+                isNew = isNew || perpetual?.isNew == true,
+            )
+            marketState.perpetualMarket = marketState.perpetualMarket?.copy(
+                perpetual = newPerpetual,
+            )
+            existing.markets[marketId] = marketState
         }
         return existing
     }
