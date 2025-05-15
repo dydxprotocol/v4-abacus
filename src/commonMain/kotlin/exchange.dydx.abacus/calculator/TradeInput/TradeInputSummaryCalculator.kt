@@ -342,6 +342,9 @@ internal class TradeInputSummaryCalculator {
         return if (trade.side == OrderSide.Sell) Numeric.double.POSITIVE else Numeric.double.NEGATIVE
     }
 
+    private val RATE_LOST_TO_REV_SHARES = 0.4; // megavault and ops
+    private val MAX_POSSIBLE_TAKER_REV_SHARE = 0.5; // affiliates
+
     private fun calculateTakerReward(
         usdcSize: Double?,
         fee: Double?,
@@ -363,9 +366,14 @@ internal class TradeInputSummaryCalculator {
             tokenPrice > 0.0
         ) {
             val feeMultiplier = feeMultiplierPpm / QUANTUM_MULTIPLIER
-            return feeMultiplier * (fee - maxMakerRebate * notional) / (
+            val reward = feeMultiplier * (fee - maxMakerRebate * notional - fee * MAX_POSSIBLE_TAKER_REV_SHARE) * RATE_LOST_TO_REV_SHARES / (
                 tokenPrice * 10.0.pow(tokenPriceExponent)
                 )
+            return if (reward > 0.0) {
+                reward
+            } else {
+                0.0
+            }
         }
         return null
     }
@@ -386,7 +394,7 @@ internal class TradeInputSummaryCalculator {
             tokenPrice > 0.0
         ) {
             val feeMultiplier = feeMultiplierPpm / QUANTUM_MULTIPLIER
-            return fee * feeMultiplier / (tokenPrice * 10.0.pow(tokenPriceExponent))
+            return fee * feeMultiplier * MAX_POSSIBLE_TAKER_REV_SHARE / (tokenPrice * 10.0.pow(tokenPriceExponent))
         }
         return null
     }
