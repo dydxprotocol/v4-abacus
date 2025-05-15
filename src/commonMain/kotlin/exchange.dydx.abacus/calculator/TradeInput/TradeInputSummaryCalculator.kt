@@ -342,8 +342,13 @@ internal class TradeInputSummaryCalculator {
         return if (trade.side == OrderSide.Sell) Numeric.double.POSITIVE else Numeric.double.NEGATIVE
     }
 
-    private val RATE_LOST_TO_REV_SHARES = 0.4; // megavault and ops
-    private val MAX_POSSIBLE_TAKER_REV_SHARE = 0.5; // affiliates
+    // megavault and ops
+    @Suppress("LocalVariableName", "PropertyName", "VariableNaming")
+    private val RATE_LOST_TO_REV_SHARES = 0.4
+
+    // affiliates
+    @Suppress("LocalVariableName", "PropertyName", "VariableNaming")
+    private val MAX_POSSIBLE_TAKER_REV_SHARE = 0.5
 
     private fun calculateTakerReward(
         usdcSize: Double?,
