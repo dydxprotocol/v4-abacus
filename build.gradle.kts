@@ -40,6 +40,7 @@ allprojects {
                         "ktlint_standard_backing-property-naming" to "disabled",
                         "ktlint_standard_filename" to "disabled",
                         "ktlint_standard_function-naming" to "disabled",
+                        "ktlint_standard_property-naming" to "disabled",
                     )
                 )
 
@@ -52,7 +53,7 @@ allprojects {
 }
 
 group = "exchange.dydx.abacus"
-version = "1.14.2"
+version = "1.14.3"
 
 repositories {
     google()
