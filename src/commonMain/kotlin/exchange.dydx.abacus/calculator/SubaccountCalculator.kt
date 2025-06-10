@@ -435,9 +435,7 @@ internal class SubaccountCalculator(
                                 }
 
                                 MarginMode.Cross -> {
-                                    val maintenanceMarginFraction =
-                                        configs?.maintenanceMarginFraction ?: Numeric.double.ZERO
-                                    calculated.marginValue = maintenanceMarginFraction * notional
+                                    calculated.marginValue = adjustedImf * notional
                                 }
 
                                 else -> {
