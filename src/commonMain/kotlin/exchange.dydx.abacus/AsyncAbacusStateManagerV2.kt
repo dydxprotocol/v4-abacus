@@ -3,7 +3,6 @@ package exchange.dydx.abacus
 import exchange.dydx.abacus.di.AbacusScope
 import exchange.dydx.abacus.di.Deployment
 import exchange.dydx.abacus.di.DeploymentUri
-import exchange.dydx.abacus.output.ComplianceAction
 import exchange.dydx.abacus.output.Documentation
 import exchange.dydx.abacus.output.PerpetualState
 import exchange.dydx.abacus.output.Restriction
@@ -743,16 +742,6 @@ class AsyncAbacusStateManagerV2(
             trackTransactionError("closeAllPositions", error)
             callback(false, error, null)
             null
-        }
-    }
-
-    override fun triggerCompliance(action: ComplianceAction, callback: TransactionCallback) {
-        try {
-            adaptor?.triggerCompliance(action, callback)
-        } catch (e: Exception) {
-            val error = V4TransactionErrors.Companion.error(null, e.toString())
-            trackTransactionError("triggerCompliance", error)
-            callback(false, error, null)
         }
     }
 

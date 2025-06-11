@@ -1,6 +1,5 @@
 package exchange.dydx.abacus
 
-import exchange.dydx.abacus.output.ComplianceAction
 import exchange.dydx.abacus.output.Documentation
 import exchange.dydx.abacus.output.PerpetualState
 import exchange.dydx.abacus.output.Restriction
@@ -115,9 +114,6 @@ interface AsyncAbacusStateManagerProtocol {
 
     // Screen for restrictions
     fun screen(address: String, callback: (restriction: Restriction) -> Unit)
-
-    // Trigger update for compliance
-    fun triggerCompliance(action: ComplianceAction, callback: TransactionCallback)
 
     // Get chain data from id. Necessary to know chain name based on chain id
     fun getChainById(chainId: String): TransferChainInfo?

@@ -6,7 +6,6 @@ import exchange.dydx.abacus.app.manager.TestChain
 import exchange.dydx.abacus.app.manager.TestRest
 import exchange.dydx.abacus.app.manager.TestState
 import exchange.dydx.abacus.app.manager.TestWebSocket
-import exchange.dydx.abacus.output.ComplianceAction
 import exchange.dydx.abacus.output.ComplianceStatus
 import exchange.dydx.abacus.output.Restriction
 import exchange.dydx.abacus.payload.BaseTests
@@ -153,10 +152,6 @@ class V4RestrictionsTests : NetworkTests() {
                 }
             """.trimIndent(),
         )
-
-        stateManager.triggerCompliance(ComplianceAction.CONNECT) { successful, error, data ->
-            print("")
-        }
 
         assertEquals(
             ComplianceStatus.CLOSE_ONLY,

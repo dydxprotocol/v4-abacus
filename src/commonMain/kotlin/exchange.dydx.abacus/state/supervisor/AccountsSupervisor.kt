@@ -1,6 +1,5 @@
 package exchange.dydx.abacus.state.supervisor
 
-import exchange.dydx.abacus.output.ComplianceAction
 import exchange.dydx.abacus.output.Notification
 import exchange.dydx.abacus.output.Restriction
 import exchange.dydx.abacus.output.UsageRestriction
@@ -253,10 +252,10 @@ internal var AccountsSupervisor.walletConnectionType: WalletConnectionType?
 
 internal var AccountsSupervisor.sourceAddress: String?
     get() {
-        return account?.sourceAddress
+        return account?.screener?.sourceAddress
     }
     set(value) {
-        account?.sourceAddress = value
+        account?.screener?.sourceAddress = value
     }
 
 internal var AccountsSupervisor.subaccountNumber: Int
@@ -274,7 +273,7 @@ internal val AccountsSupervisor.connectedSubaccountNumber: Int?
 
 internal val AccountsSupervisor.addressRestriction: UsageRestriction?
     get() {
-        return account?.addressRestriction
+        return account?.screener?.addressRestriction
     }
 
 internal val AccountsSupervisor.notifications: IMap<String, Notification>
@@ -400,12 +399,5 @@ internal fun AccountsSupervisor.screen(
     address: String,
     callback: (restriction: Restriction) -> Unit
 ) {
-    account?.screen(address, callback)
-}
-
-internal fun AccountsSupervisor.triggerCompliance(
-    action: ComplianceAction,
-    callback: TransactionCallback?
-) {
-    account?.triggerCompliance(action, callback)
+    account?.screener?.screen(address, callback)
 }
