@@ -8,7 +8,6 @@ import exchange.dydx.abacus.app.manager.TestState
 import exchange.dydx.abacus.app.manager.TestWebSocket
 import exchange.dydx.abacus.payload.BaseTests
 import exchange.dydx.abacus.protocols.TransactionCallback
-import exchange.dydx.abacus.setAddresses
 import exchange.dydx.abacus.state.machine.ClosePositionInputField
 import exchange.dydx.abacus.state.machine.TradeInputField
 import exchange.dydx.abacus.state.machine.TriggerOrdersInputField
@@ -90,7 +89,7 @@ class V4TransactionTests : NetworkTests() {
         testWebSocket?.simulateReceived(mock.accountsChannel.v4_subscribed)
         stateManager.market = "ETH-USD"
         testWebSocket?.simulateReceived(mock.orderbookChannel.load_test_2_subscribed)
-        stateManager.setAddresses(null, testCosmoAddress)
+        stateManager.setAddresses(null, testCosmoAddress, true)
     }
 
     private fun tradeInput(isShortTerm: Boolean, size: String = "0.01", limitPrice: String = "2000") {
@@ -437,7 +436,7 @@ class V4TransactionTests : NetworkTests() {
         testWebSocket?.simulateReceived(mock.marketsChannel.v4_subscribed_r1)
         stateManager.market = "ETH-USD"
         testWebSocket?.simulateReceived(mock.orderbookChannel.load_test_2_subscribed)
-        stateManager.setAddresses(null, "dydx155va0m7wz5n8zcqscn9afswwt04n4usj46wvp5")
+        stateManager.setAddresses(null, "dydx155va0m7wz5n8zcqscn9afswwt04n4usj46wvp5", true)
 
         if (withPositions) {
             testWebSocket?.simulateReceived(mock.v4ParentSubaccountsMock.subscribed_with_positions)

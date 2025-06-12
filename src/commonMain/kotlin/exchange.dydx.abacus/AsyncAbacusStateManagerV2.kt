@@ -133,8 +133,7 @@ class AsyncAbacusStateManagerV2(
                 field?.dispose()
 
                 value?.market = market
-                value?.accountAddress = accountAddress
-                value?.sourceAddress = sourceAddress
+                value?.setAddresses(source = sourceAddress, account = accountAddress, isNew = true)
                 value?.subaccountNumber = subaccountNumber
                 value?.orderbookGrouping = orderbookGrouping
                 value?.historicalTradingRewardPeriod = historicalTradingRewardPeriod
@@ -181,12 +180,6 @@ class AsyncAbacusStateManagerV2(
         }
 
     override var accountAddress: String? = null
-        set(value) {
-            field = value
-            ioImplementations.threading?.async(ThreadingType.abacus) {
-                adaptor?.accountAddress = field
-            }
-        }
 
     override var walletConnectionType: WalletConnectionType? = WalletConnectionType.Ethereum
         set(value) {
@@ -197,12 +190,6 @@ class AsyncAbacusStateManagerV2(
         }
 
     override var sourceAddress: String? = null
-        set(value) {
-            field = value
-            ioImplementations.threading?.async(ThreadingType.abacus) {
-                adaptor?.sourceAddress = field
-            }
-        }
 
     override var subaccountNumber: Int = 0
         set(value) {
@@ -211,6 +198,12 @@ class AsyncAbacusStateManagerV2(
                 adaptor?.subaccountNumber = field
             }
         }
+
+    override fun setAddresses(source: String?, account: String?, isNew: Boolean) {
+        ioImplementations.threading?.async(ThreadingType.abacus) {
+            adaptor?.setAddresses(source, account, isNew)
+        }
+    }
 
     override var historicalPnlPeriod: HistoricalPnlPeriod = HistoricalPnlPeriod.Period7d
         set(value) {
@@ -261,6 +254,7 @@ class AsyncAbacusStateManagerV2(
             )
         }
     }
+
     private var started: Boolean = false
         set(value) {
             if (field != value) {

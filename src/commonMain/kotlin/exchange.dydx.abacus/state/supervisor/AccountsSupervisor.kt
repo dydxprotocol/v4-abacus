@@ -38,7 +38,7 @@ internal class AccountsSupervisor(
     helper: NetworkHelper,
     analyticsUtils: AnalyticsUtils,
     private val configs: AccountConfigs,
-    private val screening: Boolean,
+    val screening: Boolean,
 ) : NetworkSupervisor(stateMachine, helper, analyticsUtils) {
     internal val accounts = mutableMapOf<String, AccountSupervisor>()
 
@@ -92,7 +92,7 @@ internal class AccountsSupervisor(
             }
         }
 
-    fun subscribeToAccount(address: String) {
+    fun subscribeToAccount(address: String, screening: Boolean) {
         val accountSupervisor = accounts[address]
         accountSupervisor?.retain() ?: run {
             val newAccountSupervisor =
@@ -210,6 +210,9 @@ internal class AccountsSupervisor(
 
         return Pair(address, subaccountNumber)
     }
+
+    var sourceAddress: String? = null
+    var accountAddress: String? = null
 }
 
 // Extension properties to help with current singular account
@@ -219,43 +222,12 @@ private val AccountsSupervisor.account: AccountSupervisor?
         return if (accounts.count() == 1) accounts.values.firstOrNull() else null
     }
 
-internal var AccountsSupervisor.accountAddress: String?
-    get() {
-        return account?.accountAddress
-    }
-    set(value) {
-        if (value != accountAddress) {
-            val stateResponse = stateMachine.resetWallet(value)
-            helper.ioImplementations.threading?.async(ThreadingType.main) {
-                helper.stateNotification?.stateChanged(
-                    stateResponse.state,
-                    stateResponse.changes,
-                )
-            }
-            accounts.keys.filter { it != value }.forEach {
-                accounts[it]?.forceRelease()
-                accounts.remove(it)
-            }
-            if (accounts.contains(value).not() && value != null) {
-                subscribeToAccount(value)
-            }
-        }
-    }
-
 internal var AccountsSupervisor.walletConnectionType: WalletConnectionType?
     get() {
         return account?.walletConnectionType
     }
     set(value) {
         account?.walletConnectionType = value
-    }
-
-internal var AccountsSupervisor.sourceAddress: String?
-    get() {
-        return account?.screener?.sourceAddress
-    }
-    set(value) {
-        account?.screener?.sourceAddress = value
     }
 
 internal var AccountsSupervisor.subaccountNumber: Int
@@ -280,6 +252,31 @@ internal val AccountsSupervisor.notifications: IMap<String, Notification>
     get() {
         return account?.notifications ?: iMapOf()
     }
+
+internal fun AccountsSupervisor.setAddresses(sourceAddress: String?, accountAddress: String?, isNew: Boolean) {
+    if (accountAddress != this.accountAddress) {
+        this.accountAddress = accountAddress
+        val stateResponse = stateMachine.resetWallet(accountAddress)
+        helper.ioImplementations.threading?.async(ThreadingType.main) {
+            helper.stateNotification?.stateChanged(
+                stateResponse.state,
+                stateResponse.changes,
+            )
+        }
+        accounts.keys.filter { it != accountAddress }.forEach {
+            accounts[it]?.forceRelease()
+            accounts.remove(it)
+        }
+        if (accounts.contains(accountAddress).not() && accountAddress != null) {
+            subscribeToAccount(accountAddress, screening = this.screening && isNew)
+        }
+    }
+
+    if (sourceAddress != this.sourceAddress) {
+        this.sourceAddress = sourceAddress
+        account?.screener?.sourceAddress = sourceAddress
+    }
+}
 
 internal fun AccountsSupervisor.trade(data: String?, type: TradeInputField?) {
     account?.trade(data, type)

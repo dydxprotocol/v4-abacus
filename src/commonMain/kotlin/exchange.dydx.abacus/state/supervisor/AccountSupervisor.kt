@@ -52,7 +52,6 @@ import kotlinx.datetime.Clock
 import kotlinx.datetime.Instant
 import kotlin.Boolean
 import kotlin.collections.mutableMapOf
-import kotlin.coroutines.EmptyCoroutineContext.get
 import kotlin.time.Duration.Companion.days
 
 internal open class AccountSupervisor(
@@ -71,7 +70,7 @@ internal open class AccountSupervisor(
         stateMachine = stateMachine,
         helper = helper,
         analyticsUtils = analyticsUtils,
-        screening = screening,
+        screeningUpdate = screening,
         accountAddress = accountAddress,
         complianceUpdated = {
             if (subaccounts.isEmpty()) {

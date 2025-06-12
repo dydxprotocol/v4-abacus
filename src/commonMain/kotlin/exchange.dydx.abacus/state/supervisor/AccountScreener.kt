@@ -30,7 +30,7 @@ internal class AccountScreener(
     stateMachine: TradingStateMachine,
     helper: NetworkHelper,
     analyticsUtils: AnalyticsUtils,
-    private val screening: Boolean,
+    private val screeningUpdate: Boolean, // do compliance screening and update user compliance status
     internal val accountAddress: String,
     private val complianceUpdated: () -> Unit,
 ) : DynamicNetworkSupervisor(stateMachine, helper, analyticsUtils) {
@@ -104,8 +104,8 @@ internal class AccountScreener(
         }
 
     init {
-        if (screening) {
-            screenAccountAddress()
+        screenAccountAddress()
+        if (screeningUpdate) {
             complianceScreen(DydxAddress(accountAddress), ComplianceAction.CONNECT)
         }
     }
@@ -401,13 +401,13 @@ internal class AccountScreener(
     private var complianceScreeningAddress: String? = null
 
     private fun doComplianceScreening() {
-        if (screening) {
-            val sourceAddress = sourceAddress
-            if (sourceAddress != null && indexerConnected && complianceScreeningAddress != sourceAddress) {
-                screenSourceAddress()
+        val sourceAddress = sourceAddress
+        if (sourceAddress != null && indexerConnected && complianceScreeningAddress != sourceAddress) {
+            screenSourceAddress()
+            if (screeningUpdate) {
                 complianceScreen(EvmAddress(sourceAddress))
-                complianceScreeningAddress = sourceAddress
             }
+            complianceScreeningAddress = sourceAddress
         }
     }
 
