@@ -315,7 +315,7 @@ internal class AccountScreener(
                         sourceAddressRestriction = restriction
                     }
                     else -> {
-                        throw Exception("Unexpected restriction value")
+                        throw IllegalArgumentException("Unexpected restriction value")
                     }
                 }
                 rerunAddressScreeningDelay(sourceAddressRestriction)?.let {
@@ -346,7 +346,7 @@ internal class AccountScreener(
                     accountAddressRestriction = restriction
                 }
                 else -> {
-                    throw Exception("Unexpected restriction value")
+                    throw IllegalArgumentException("Unexpected restriction value")
                 }
             }
             rerunAddressScreeningDelay(accountAddressRestriction)?.let {
