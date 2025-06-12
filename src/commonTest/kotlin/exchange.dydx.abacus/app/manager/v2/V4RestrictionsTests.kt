@@ -6,11 +6,9 @@ import exchange.dydx.abacus.app.manager.TestChain
 import exchange.dydx.abacus.app.manager.TestRest
 import exchange.dydx.abacus.app.manager.TestState
 import exchange.dydx.abacus.app.manager.TestWebSocket
-import exchange.dydx.abacus.output.ComplianceAction
 import exchange.dydx.abacus.output.ComplianceStatus
 import exchange.dydx.abacus.output.Restriction
 import exchange.dydx.abacus.payload.BaseTests
-import exchange.dydx.abacus.setAddresses
 import exchange.dydx.abacus.state.supervisor.AppConfigsV2
 import exchange.dydx.abacus.tests.payloads.AbacusMockData
 import kotlin.test.BeforeTest
@@ -74,7 +72,7 @@ class V4RestrictionsTests : NetworkTests() {
 
     private fun setStateMachineConnectedWithMarketsAndSubaccounts(stateManager: AsyncAbacusStateManagerV2) {
         setStateMachineConnectedWithMarkets(stateManager)
-        stateManager.setAddresses(null, testCosmoAddress)
+        stateManager.setAddresses(null, testCosmoAddress, false)
     }
 
     @Test
@@ -130,7 +128,7 @@ class V4RestrictionsTests : NetworkTests() {
         )
 
         setStateMachineConnected(stateManager)
-        stateManager.setAddresses(null, testCosmoAddress)
+        stateManager.setAddresses(null, testCosmoAddress, true)
 
         testRest?.setResponse(
             "https://indexer.v4staging.dydx.exchange/v4/compliance/screen/$testCosmoAddress",
@@ -153,10 +151,6 @@ class V4RestrictionsTests : NetworkTests() {
                 }
             """.trimIndent(),
         )
-
-        stateManager.triggerCompliance(ComplianceAction.CONNECT) { successful, error, data ->
-            print("")
-        }
 
         assertEquals(
             ComplianceStatus.CLOSE_ONLY,

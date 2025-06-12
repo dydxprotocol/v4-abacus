@@ -7,7 +7,6 @@ import exchange.dydx.abacus.app.manager.TestRest
 import exchange.dydx.abacus.app.manager.TestState
 import exchange.dydx.abacus.app.manager.TestWebSocket
 import exchange.dydx.abacus.payload.BaseTests
-import exchange.dydx.abacus.setAddresses
 import exchange.dydx.abacus.state.StateManagerAdaptorV2
 import exchange.dydx.abacus.state.supervisor.AccountConfigs
 import exchange.dydx.abacus.state.supervisor.AppConfigsV2
@@ -84,7 +83,7 @@ class V4ForegroundCycleTests : NetworkTests() {
 
     private fun setStateMachineConnectedWithMarketsAndSubaccounts(stateManager: AsyncAbacusStateManagerV2) {
         setStateMachineConnectedWithMarkets(stateManager)
-        stateManager.setAddresses(null, testCosmoAddress)
+        stateManager.setAddresses(null, testCosmoAddress, false)
     }
 
     @Test
@@ -343,7 +342,7 @@ class V4ForegroundCycleTests : NetworkTests() {
         setStateMachineConnected(stateManager)
 
         val testAddress = "0xsecondaryFakeAddress"
-        stateManager.setAddresses(null, testAddress)
+        stateManager.setAddresses(null, testAddress, false)
 
         compareExpectedRequests(
             """
@@ -360,7 +359,6 @@ class V4ForegroundCycleTests : NetworkTests() {
                     "https://api.examples.com/configs/exchanges.json",
                     "https://api.dydx.exchange/v4/geo",
                     "https://indexer.v4staging.dydx.exchange/v4/screen?address=0xsecondaryFakeAddress",
-                    "https://indexer.v4staging.dydx.exchange/v4/compliance/screen/0xsecondaryFakeAddress",
                     "https://dydx.exchange/v4-launch-incentive/query/api/dydx/points/0xsecondaryFakeAddress?n=2",
                     "https://indexer.v4staging.dydx.exchange/v4/addresses/0xsecondaryFakeAddress",
                     "https://indexer.v4staging.dydx.exchange/v4/historicalTradingRewardAggregations/0xsecondaryFakeAddress?period=DAILY"
@@ -400,7 +398,7 @@ class V4ForegroundCycleTests : NetworkTests() {
         setStateMachineReadyToConnect(stateManager)
         setStateMachineConnected(stateManager)
 
-        stateManager.setAddresses(null, testAddress)
+        stateManager.setAddresses(null, testAddress, false)
 
         compareExpectedRequests(
             """
@@ -417,7 +415,6 @@ class V4ForegroundCycleTests : NetworkTests() {
                     "https://api.examples.com/configs/exchanges.json",
                     "https://api.dydx.exchange/v4/geo",
                     "https://indexer.v4staging.dydx.exchange/v4/screen?address=cosmos1fq8q55896ljfjj7v3x0qd0z3sr78wmes940uhm",
-                    "https://indexer.v4staging.dydx.exchange/v4/compliance/screen/cosmos1fq8q55896ljfjj7v3x0qd0z3sr78wmes940uhm",
                     "https://dydx.exchange/v4-launch-incentive/query/api/dydx/points/cosmos1fq8q55896ljfjj7v3x0qd0z3sr78wmes940uhm?n=2",
                     "https://indexer.v4staging.dydx.exchange/v4/addresses/cosmos1fq8q55896ljfjj7v3x0qd0z3sr78wmes940uhm",
                     "https://indexer.v4staging.dydx.exchange/v4/fills?address=cosmos1fq8q55896ljfjj7v3x0qd0z3sr78wmes940uhm&subaccountNumber=0",
@@ -482,7 +479,7 @@ class V4ForegroundCycleTests : NetworkTests() {
         setStateMachineReadyToConnect(stateManager)
         setStateMachineConnected(stateManager)
 
-        stateManager.setAddresses(null, testAddress)
+        stateManager.setAddresses(null, testAddress, false)
 
         compareExpectedRequests(
             """
@@ -513,7 +510,7 @@ class V4ForegroundCycleTests : NetworkTests() {
         setStateMachineReadyToConnect(stateManager)
         setStateMachineConnected(stateManager)
 
-        stateManager.setAddresses(null, testAddress)
+        stateManager.setAddresses(null, testAddress, false)
 
         compareExpectedRequests(
             """
@@ -530,7 +527,6 @@ class V4ForegroundCycleTests : NetworkTests() {
                     "https://api.examples.com/configs/exchanges.json",
                     "https://api.dydx.exchange/v4/geo",
                     "https://indexer.v4staging.dydx.exchange/v4/screen?address=cosmos1fq8q55896ljfjj7v3x0qd0z3sr78wmes940uhm",
-                    "https://indexer.v4staging.dydx.exchange/v4/compliance/screen/cosmos1fq8q55896ljfjj7v3x0qd0z3sr78wmes940uhm",
                     "https://dydx.exchange/v4-launch-incentive/query/api/dydx/points/cosmos1fq8q55896ljfjj7v3x0qd0z3sr78wmes940uhm?n=2",
                     "https://indexer.v4staging.dydx.exchange/v4/addresses/cosmos1fq8q55896ljfjj7v3x0qd0z3sr78wmes940uhm",
                     "https://indexer.v4staging.dydx.exchange/v4/fills?address=cosmos1fq8q55896ljfjj7v3x0qd0z3sr78wmes940uhm&subaccountNumber=0",
@@ -559,11 +555,11 @@ class V4ForegroundCycleTests : NetworkTests() {
         setStateMachineReadyToConnect(stateManager)
         setStateMachineConnected(stateManager)
 
-        stateManager.setAddresses(null, testAddress)
+        stateManager.setAddresses(null, testAddress, false)
 
         testWebSocket?.simulateConnected(true)
         testWebSocket?.simulateReceived(mock.accountsChannel.v4_subscribed)
-        stateManager.setAddresses(null, secondAddress)
+        stateManager.setAddresses(null, secondAddress, true)
 
         compareExpectedRequests(
             """
@@ -580,7 +576,6 @@ class V4ForegroundCycleTests : NetworkTests() {
                     "https://api.examples.com/configs/exchanges.json",
                     "https://api.dydx.exchange/v4/geo",
                     "https://indexer.v4staging.dydx.exchange/v4/screen?address=cosmos1fq8q55896ljfjj7v3x0qd0z3sr78wmes940uhm",
-                    "https://indexer.v4staging.dydx.exchange/v4/compliance/screen/cosmos1fq8q55896ljfjj7v3x0qd0z3sr78wmes940uhm",
                     "https://dydx.exchange/v4-launch-incentive/query/api/dydx/points/cosmos1fq8q55896ljfjj7v3x0qd0z3sr78wmes940uhm?n=2",
                     "https://indexer.v4staging.dydx.exchange/v4/addresses/cosmos1fq8q55896ljfjj7v3x0qd0z3sr78wmes940uhm",
                     "https://indexer.v4staging.dydx.exchange/v4/fills?address=cosmos1fq8q55896ljfjj7v3x0qd0z3sr78wmes940uhm&subaccountNumber=0",
@@ -634,7 +629,7 @@ class V4ForegroundCycleTests : NetworkTests() {
     }
 
     @Test
-    fun settingWalletCosmoAddressToNullShoulUnsubscribeFromSubaccountsChannel() {
+    fun settingWalletCosmoAddressToNullShouldUnsubscribeFromSubaccountsChannel() {
         reset()
 
         val testAddress = "cosmos1fq8q55896ljfjj7v3x0qd0z3sr78wmes940uhm"
@@ -647,10 +642,10 @@ class V4ForegroundCycleTests : NetworkTests() {
         setStateMachineReadyToConnect(stateManager)
         setStateMachineConnected(stateManager)
 
-        stateManager.setAddresses(null, testAddress)
+        stateManager.setAddresses(null, testAddress, false)
 
         testWebSocket?.simulateReceived(mock.accountsChannel.v4_subscribed)
-        stateManager.setAddresses(null, null)
+        stateManager.setAddresses(null, null, false)
 
         compareExpectedRequests(
             """
@@ -667,7 +662,6 @@ class V4ForegroundCycleTests : NetworkTests() {
                     "https://api.examples.com/configs/exchanges.json",
                     "https://api.dydx.exchange/v4/geo",
                     "https://indexer.v4staging.dydx.exchange/v4/screen?address=cosmos1fq8q55896ljfjj7v3x0qd0z3sr78wmes940uhm",
-                    "https://indexer.v4staging.dydx.exchange/v4/compliance/screen/cosmos1fq8q55896ljfjj7v3x0qd0z3sr78wmes940uhm",
                     "https://dydx.exchange/v4-launch-incentive/query/api/dydx/points/cosmos1fq8q55896ljfjj7v3x0qd0z3sr78wmes940uhm?n=2",
                     "https://indexer.v4staging.dydx.exchange/v4/addresses/cosmos1fq8q55896ljfjj7v3x0qd0z3sr78wmes940uhm",
                     "https://indexer.v4staging.dydx.exchange/v4/fills?address=cosmos1fq8q55896ljfjj7v3x0qd0z3sr78wmes940uhm&subaccountNumber=0",

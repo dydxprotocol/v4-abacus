@@ -3,7 +3,6 @@ package exchange.dydx.abacus
 import exchange.dydx.abacus.di.AbacusScope
 import exchange.dydx.abacus.di.Deployment
 import exchange.dydx.abacus.di.DeploymentUri
-import exchange.dydx.abacus.output.ComplianceAction
 import exchange.dydx.abacus.output.Documentation
 import exchange.dydx.abacus.output.PerpetualState
 import exchange.dydx.abacus.output.Restriction
@@ -134,8 +133,7 @@ class AsyncAbacusStateManagerV2(
                 field?.dispose()
 
                 value?.market = market
-                value?.accountAddress = accountAddress
-                value?.sourceAddress = sourceAddress
+                value?.setAddresses(source = sourceAddress, account = accountAddress, isNew = true)
                 value?.subaccountNumber = subaccountNumber
                 value?.orderbookGrouping = orderbookGrouping
                 value?.historicalTradingRewardPeriod = historicalTradingRewardPeriod
@@ -182,12 +180,6 @@ class AsyncAbacusStateManagerV2(
         }
 
     override var accountAddress: String? = null
-        set(value) {
-            field = value
-            ioImplementations.threading?.async(ThreadingType.abacus) {
-                adaptor?.accountAddress = field
-            }
-        }
 
     override var walletConnectionType: WalletConnectionType? = WalletConnectionType.Ethereum
         set(value) {
@@ -198,12 +190,6 @@ class AsyncAbacusStateManagerV2(
         }
 
     override var sourceAddress: String? = null
-        set(value) {
-            field = value
-            ioImplementations.threading?.async(ThreadingType.abacus) {
-                adaptor?.sourceAddress = field
-            }
-        }
 
     override var subaccountNumber: Int = 0
         set(value) {
@@ -212,6 +198,12 @@ class AsyncAbacusStateManagerV2(
                 adaptor?.subaccountNumber = field
             }
         }
+
+    override fun setAddresses(source: String?, account: String?, isNew: Boolean) {
+        ioImplementations.threading?.async(ThreadingType.abacus) {
+            adaptor?.setAddresses(source, account, isNew)
+        }
+    }
 
     override var historicalPnlPeriod: HistoricalPnlPeriod = HistoricalPnlPeriod.Period7d
         set(value) {
@@ -262,6 +254,7 @@ class AsyncAbacusStateManagerV2(
             )
         }
     }
+
     private var started: Boolean = false
         set(value) {
             if (field != value) {
@@ -743,16 +736,6 @@ class AsyncAbacusStateManagerV2(
             trackTransactionError("closeAllPositions", error)
             callback(false, error, null)
             null
-        }
-    }
-
-    override fun triggerCompliance(action: ComplianceAction, callback: TransactionCallback) {
-        try {
-            adaptor?.triggerCompliance(action, callback)
-        } catch (e: Exception) {
-            val error = V4TransactionErrors.Companion.error(null, e.toString())
-            trackTransactionError("triggerCompliance", error)
-            callback(false, error, null)
         }
     }
 

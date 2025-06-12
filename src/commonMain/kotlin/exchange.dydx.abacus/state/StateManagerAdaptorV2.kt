@@ -1,7 +1,6 @@
 package exchange.dydx.abacus.state
 
 import exchange.dydx.abacus.output.Compliance
-import exchange.dydx.abacus.output.ComplianceAction
 import exchange.dydx.abacus.output.ComplianceStatus
 import exchange.dydx.abacus.output.Notification
 import exchange.dydx.abacus.output.PerpetualState
@@ -54,7 +53,6 @@ import exchange.dydx.abacus.state.supervisor.NetworkHelper
 import exchange.dydx.abacus.state.supervisor.OnboardingSupervisor
 import exchange.dydx.abacus.state.supervisor.SystemSupervisor
 import exchange.dydx.abacus.state.supervisor.VaultSupervisor
-import exchange.dydx.abacus.state.supervisor.accountAddress
 import exchange.dydx.abacus.state.supervisor.addressRestriction
 import exchange.dydx.abacus.state.supervisor.adjustIsolatedMargin
 import exchange.dydx.abacus.state.supervisor.adjustIsolatedMarginPayload
@@ -79,12 +77,11 @@ import exchange.dydx.abacus.state.supervisor.orderCanceled
 import exchange.dydx.abacus.state.supervisor.placeOrderPayload
 import exchange.dydx.abacus.state.supervisor.refresh
 import exchange.dydx.abacus.state.supervisor.screen
-import exchange.dydx.abacus.state.supervisor.sourceAddress
+import exchange.dydx.abacus.state.supervisor.setAddresses
 import exchange.dydx.abacus.state.supervisor.stopWatchingLastOrder
 import exchange.dydx.abacus.state.supervisor.subaccountNumber
 import exchange.dydx.abacus.state.supervisor.subaccountTransferPayload
 import exchange.dydx.abacus.state.supervisor.trade
-import exchange.dydx.abacus.state.supervisor.triggerCompliance
 import exchange.dydx.abacus.state.supervisor.triggerOrders
 import exchange.dydx.abacus.state.supervisor.triggerOrdersPayload
 import exchange.dydx.abacus.state.supervisor.walletConnectionType
@@ -285,13 +282,9 @@ internal class StateManagerAdaptorV2(
             markets.orderbookGrouping = value
         }
 
-    internal var accountAddress: String?
+    internal val accountAddress: String?
         get() {
             return accounts.accountAddress
-        }
-        set(value) {
-            accounts.accountAddress = value
-            vault.accountAddress = value
         }
 
     internal var walletConnectionType: WalletConnectionType?
@@ -303,12 +296,9 @@ internal class StateManagerAdaptorV2(
             onboarding.walletConnectionType = value
         }
 
-    internal var sourceAddress: String?
+    internal val sourceAddress: String?
         get() {
             return accounts.sourceAddress
-        }
-        set(value) {
-            accounts.sourceAddress = value
         }
 
     internal var historicalPnlPeriod: HistoricalPnlPeriod
@@ -352,6 +342,11 @@ internal class StateManagerAdaptorV2(
         get() {
             return connections.validatorState
         }
+
+    internal fun setAddresses(source: String?, account: String?, isNew: Boolean) {
+        accounts.setAddresses(sourceAddress = source, accountAddress = account, isNew = isNew)
+        vault.accountAddress = account
+    }
 
     private fun didSetReadyToConnect(readyToConnect: Boolean) {
         connections.readyToConnect = readyToConnect
@@ -678,10 +673,6 @@ internal class StateManagerAdaptorV2(
 
     internal fun screen(address: String, callback: (restriction: Restriction) -> Unit) {
         accounts.screen(address, callback)
-    }
-
-    internal fun triggerCompliance(action: ComplianceAction, callback: TransactionCallback?) {
-        accounts.triggerCompliance(action, callback)
     }
 
     internal fun registerPushNotification(token: String, languageCode: String?) {
