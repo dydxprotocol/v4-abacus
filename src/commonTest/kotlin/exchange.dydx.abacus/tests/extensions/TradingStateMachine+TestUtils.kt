@@ -11,7 +11,6 @@ import exchange.dydx.abacus.state.helper.NetworkParam
 import exchange.dydx.abacus.state.machine.TradingStateMachine
 import exchange.dydx.abacus.state.machine.account
 import exchange.dydx.abacus.state.machine.candles
-import exchange.dydx.abacus.state.machine.fills
 import exchange.dydx.abacus.state.machine.historicalFundings
 import exchange.dydx.abacus.state.machine.historicalPnl
 import exchange.dydx.abacus.state.machine.onChainEquityTiers
@@ -25,6 +24,7 @@ import exchange.dydx.abacus.state.machine.receivedBatchedMarketsChanges
 import exchange.dydx.abacus.state.machine.receivedBatchedTradesChanges
 import exchange.dydx.abacus.state.machine.receivedCandles
 import exchange.dydx.abacus.state.machine.receivedCandlesChanges
+import exchange.dydx.abacus.state.machine.receivedFills
 import exchange.dydx.abacus.state.machine.receivedMarkets
 import exchange.dydx.abacus.state.machine.receivedMarketsChanges
 import exchange.dydx.abacus.state.machine.receivedOrderbook
@@ -32,8 +32,8 @@ import exchange.dydx.abacus.state.machine.receivedSubaccountSubscribed
 import exchange.dydx.abacus.state.machine.receivedSubaccountsChanges
 import exchange.dydx.abacus.state.machine.receivedTrades
 import exchange.dydx.abacus.state.machine.receivedTradesChanges
+import exchange.dydx.abacus.state.machine.receivedTransfers
 import exchange.dydx.abacus.state.machine.sparklines
-import exchange.dydx.abacus.state.machine.transfers
 import exchange.dydx.abacus.state.manager.BlockAndTime
 import exchange.dydx.abacus.tests.payloads.AbacusMockData
 import exchange.dydx.abacus.utils.ServerTime
@@ -639,4 +639,22 @@ fun TradingStateMachine.rest(
 
     val errors = if (error != null) iListOf(error) else null
     return StateResponse(state, changes, errors)
+}
+
+private fun TradingStateMachine.transfers(payload: String, subaccountNumber: Int): StateChanges {
+    val json = parser.decodeJsonObject(payload)
+    return if (json != null) {
+        receivedTransfers(json, subaccountNumber)
+    } else {
+        StateChanges.noChange
+    }
+}
+
+private fun TradingStateMachine.fills(payload: String, subaccountNumber: Int): StateChanges {
+    val json = parser.decodeJsonObject(payload)
+    return if (json != null) {
+        receivedFills(json, subaccountNumber)
+    } else {
+        StateChanges.noChange
+    }
 }

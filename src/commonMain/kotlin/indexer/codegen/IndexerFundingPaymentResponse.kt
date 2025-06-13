@@ -16,21 +16,17 @@ import kotlin.js.JsExport
 
 /**
  *
- * @param equity
- * @param totalPnl
- * @param netTransfers
- * @param createdAt
- * @param blockHeight
- * @param blockTime
+ * @param pageSize
+ * @param totalResults
+ * @param offset
+ * @param fundingPayments
  */
 @JsExport
 @Serializable
-data class IndexerPnlTicksResponseObject(
+data class IndexerFundingPaymentResponse(
 
-    val equity: kotlin.String? = null,
-    val totalPnl: kotlin.String? = null,
-    val netTransfers: kotlin.String? = null,
-    val createdAt: kotlin.String? = null,
-    val blockHeight: kotlin.String? = null,
-    val blockTime: IndexerIsoString? = null
+    val pageSize: kotlin.Int? = null,
+    val totalResults: kotlin.Int? = null,
+    val offset: kotlin.Int? = null,
+    val fundingPayments: kotlin.Array<IndexerFundingPaymentResponseObject>? = null
 )

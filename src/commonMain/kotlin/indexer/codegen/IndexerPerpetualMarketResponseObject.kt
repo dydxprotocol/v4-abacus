@@ -37,6 +37,7 @@ import kotlin.js.JsExport
  * @param openInterestLowerCap
  * @param openInterestUpperCap
  * @param baseOpenInterest
+ * @param defaultFundingRate1H
  */
 @JsExport
 @Serializable
@@ -62,5 +63,6 @@ data class IndexerPerpetualMarketResponseObject(
     val marketType: IndexerPerpetualMarketType? = null,
     val openInterestLowerCap: kotlin.String? = null,
     val openInterestUpperCap: kotlin.String? = null,
-    val baseOpenInterest: kotlin.String? = null
+    val baseOpenInterest: kotlin.String? = null,
+    val defaultFundingRate1H: kotlin.String? = null
 )

@@ -84,6 +84,7 @@ data class SubaccountConfigs(
     val retrieveFills: Boolean,
     val retrieveTransfers: Boolean,
     val retrieveHistoricalPnls: Boolean,
+    val retrieveFundingPayments: Boolean,
     val subscribeToSubaccount: Boolean,
     val useParentSubaccount: Boolean,
     var notifications: List<NotificationProviderType> =
@@ -99,6 +100,7 @@ data class SubaccountConfigs(
             retrieveFills = true,
             retrieveTransfers = true,
             retrieveHistoricalPnls = true,
+            retrieveFundingPayments = true,
             subscribeToSubaccount = true,
             useParentSubaccount = false,
         )
@@ -106,6 +108,7 @@ data class SubaccountConfigs(
             retrieveFills = true,
             retrieveTransfers = true,
             retrieveHistoricalPnls = true,
+            retrieveFundingPayments = true,
             subscribeToSubaccount = true,
             useParentSubaccount = true,
         )
@@ -113,6 +116,7 @@ data class SubaccountConfigs(
             retrieveFills = false,
             retrieveTransfers = false,
             retrieveHistoricalPnls = false,
+            retrieveFundingPayments = false,
             subscribeToSubaccount = true,
             useParentSubaccount = false,
         )

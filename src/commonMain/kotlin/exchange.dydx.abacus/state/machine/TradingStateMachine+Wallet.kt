@@ -147,15 +147,6 @@ internal fun TradingStateMachine.onChainUserStats(payload: String): StateChanges
     }
 }
 
-internal fun TradingStateMachine.fills(payload: String, subaccountNumber: Int): StateChanges {
-    val json = parser.decodeJsonObject(payload)
-    return if (json != null) {
-        receivedFills(json, subaccountNumber)
-    } else {
-        StateChanges.noChange
-    }
-}
-
 internal fun TradingStateMachine.receivedFills(
     payload: Map<String, Any>,
     subaccountNumber: Int,
@@ -173,15 +164,6 @@ internal fun TradingStateMachine.receivedFills(
         StateChanges(iListOf(Changes.fills), null, iListOf(subaccountNumber))
     } else {
         StateChanges(iListOf<Changes>())
-    }
-}
-
-internal fun TradingStateMachine.transfers(payload: String, subaccountNumber: Int): StateChanges {
-    val json = parser.decodeJsonObject(payload)
-    return if (json != null) {
-        receivedTransfers(json, subaccountNumber)
-    } else {
-        StateChanges.noChange
     }
 }
 

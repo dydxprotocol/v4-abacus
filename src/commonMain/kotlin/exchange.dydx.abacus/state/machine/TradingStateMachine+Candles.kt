@@ -9,7 +9,6 @@ import indexer.codegen.IndexerCandleResponseObject
 import kollections.iListOf
 import kollections.toIList
 
-// Called in test code only
 internal fun TradingStateMachine.candles(payload: String): StateChanges {
     val json = parser.decodeJsonObject(payload)
     return if (json != null) {

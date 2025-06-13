@@ -42,14 +42,12 @@ internal class VaultMocks {
         ticker = "BTC-USD",
         historicalPnl = arrayOf(
             IndexerPnlTicksResponseObject(
-                id = "1",
                 equity = "10500.0",
                 totalPnl = "500.0",
                 netTransfers = "0.0",
                 createdAt = now.minus(1.hours).toString(),
             ),
             IndexerPnlTicksResponseObject(
-                id = "2",
                 equity = "10000.0",
                 totalPnl = "0.0",
                 netTransfers = "0.0",
