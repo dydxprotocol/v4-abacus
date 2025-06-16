@@ -1,16 +1,16 @@
 package exchange.dydx.abacus.processor.wallet.account
 
-import exchange.dydx.abacus.output.account.FundingPayment
 import exchange.dydx.abacus.output.account.PositionSide
+import exchange.dydx.abacus.output.account.SubaccountFundingPayment
 import exchange.dydx.abacus.processor.base.BaseProcessor
 import exchange.dydx.abacus.protocols.ParserProtocol
 import indexer.codegen.IndexerFundingPaymentResponseObject
 
 internal interface FundingPaymentProcessorProtocol {
     fun process(
-        existing: FundingPayment?,
+        existing: SubaccountFundingPayment?,
         payload: IndexerFundingPaymentResponseObject,
-    ): FundingPayment?
+    ): SubaccountFundingPayment?
 }
 
 internal class FundingPaymentProcessor(
@@ -18,9 +18,9 @@ internal class FundingPaymentProcessor(
 ) : BaseProcessor(parser), FundingPaymentProcessorProtocol {
 
     override fun process(
-        existing: FundingPayment?,
+        existing: SubaccountFundingPayment?,
         payload: IndexerFundingPaymentResponseObject
-    ): FundingPayment? {
+    ): SubaccountFundingPayment? {
         val createdAt = parser.asDatetime(payload.createdAt) ?: return null
         val ticker = parser.asString(payload.ticker) ?: return null
         val oraclePrice = parser.asDouble(payload.oraclePrice) ?: return null
@@ -29,14 +29,14 @@ internal class FundingPaymentProcessor(
         val rate = parser.asDouble(payload.rate) ?: return null
         val payment = parser.asDouble(payload.payment) ?: return null
 
-        return FundingPayment(
-            createdAtInMilliseconds = createdAt.toEpochMilliseconds().toDouble(),
-            ticker = ticker,
-            oraclePrice = oraclePrice,
-            size = size,
-            side = side,
-            rate = rate,
+        return SubaccountFundingPayment(
+            marketId = ticker,
             payment = payment,
+            rate = rate,
+            positionSize = size,
+            price = oraclePrice,
+            effectiveAtMilliSeconds = createdAt.toEpochMilliseconds().toDouble(),
+            side = side,
         )
     }
 }

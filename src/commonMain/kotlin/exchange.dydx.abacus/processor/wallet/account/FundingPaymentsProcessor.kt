@@ -1,6 +1,6 @@
 package exchange.dydx.abacus.processor.wallet.account
 
-import exchange.dydx.abacus.output.account.FundingPayment
+import exchange.dydx.abacus.output.account.SubaccountFundingPayment
 import exchange.dydx.abacus.processor.base.BaseProcessor
 import exchange.dydx.abacus.protocols.ParserProtocol
 import indexer.codegen.IndexerFundingPaymentResponseObject
@@ -11,10 +11,10 @@ internal class FundingPaymentsProcessor(
     private val paymentProcessor: FundingPaymentProcessor = FundingPaymentProcessor(parser = parser)
 ) : BaseProcessor(parser) {
     fun process(
-        existing: List<FundingPayment>?,
+        existing: List<SubaccountFundingPayment>?,
         payload: List<IndexerFundingPaymentResponseObject>,
-    ): List<FundingPayment>? {
-        val new = payload.reversed().mapNotNull { eachPayload ->
+    ): List<SubaccountFundingPayment>? {
+        val new = payload.mapNotNull { eachPayload ->
             paymentProcessor.process(
                 existing = null,
                 payload = eachPayload,
@@ -25,7 +25,7 @@ internal class FundingPaymentsProcessor(
             existing = existing,
             incoming = new,
             timeField = { item ->
-                item?.createdAtInMilliseconds?.toLong()?.let {
+                item?.effectiveAtMilliSeconds?.toLong()?.let {
                     Instant.fromEpochMilliseconds(it)
                 }
             },

@@ -15,10 +15,10 @@ import exchange.dydx.abacus.output.MarketOrderbook
 import exchange.dydx.abacus.output.MarketTrade
 import exchange.dydx.abacus.output.PerpetualMarket
 import exchange.dydx.abacus.output.WithdrawalGating
-import exchange.dydx.abacus.output.account.FundingPayment
 import exchange.dydx.abacus.output.account.PositionSide
 import exchange.dydx.abacus.output.account.StakingRewards
 import exchange.dydx.abacus.output.account.SubaccountFill
+import exchange.dydx.abacus.output.account.SubaccountFundingPayment
 import exchange.dydx.abacus.output.account.SubaccountHistoricalPNL
 import exchange.dydx.abacus.output.account.SubaccountOrder
 import exchange.dydx.abacus.output.account.SubaccountPositionResources
@@ -317,7 +317,7 @@ internal data class InternalSubaccountState(
     var orders: List<SubaccountOrder>? = null,
     var transfers: List<SubaccountTransfer>? = null,
     var historicalPNLs: List<SubaccountHistoricalPNL>? = null,
-    var fundingPayments: List<FundingPayment>? = null,
+    var fundingPayments: List<SubaccountFundingPayment>? = null,
     var positions: Map<String, InternalPerpetualPosition>? = null,
     var assetPositions: Map<String, InternalAssetPositionState>? = null,
     var subaccountNumber: Int,

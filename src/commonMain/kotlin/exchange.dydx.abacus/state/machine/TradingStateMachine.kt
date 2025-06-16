@@ -796,10 +796,11 @@ open class TradingStateMachine(
             if (changes.changes.contains(Changes.fundingPayments)) {
                 val modifiedFundingPayments = fundingPayments?.toIMutableMap() ?: mutableMapOf()
                 var subaccountFundingPayments = fundingPayments?.get(subaccountText)
-                subaccountFundingPayments = SubaccountFundingPayment.create(
-                    subaccountFundingPayments,
-                    parser,
-                    subaccountFundingPayments(subaccountNumber) as? IList<Map<String, Any>>,
+                val newPayments =
+                    internalState.wallet.account.subaccounts[subaccountNumber]?.fundingPayments?.toIList()
+                subaccountFundingPayments = SubaccountFundingPayment.merge(
+                    existing = subaccountFundingPayments,
+                    new = newPayments,
                 )
                 modifiedFundingPayments.typedSafeSet(subaccountText, subaccountFundingPayments)
                 fundingPayments = modifiedFundingPayments
