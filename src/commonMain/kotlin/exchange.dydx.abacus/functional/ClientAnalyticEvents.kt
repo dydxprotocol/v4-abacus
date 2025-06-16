@@ -154,7 +154,7 @@ class ClientTrackableEventType {
         override val name: String get() = "DepositInitiated"
         override val customParameters: Map<String, Any> get() = mapOf(
             "sourceAssetDenom" to transferInput.token,
-            "sourceAssetChainID" to transferInput.chain,
+            "sourceAssetChainId" to transferInput.chain,
             "amountIn" to transferInput.size?.size,
             "amountOut" to summary?.toAmount,
             "usdAmountOut" to summary?.toAmountUSDC,
@@ -211,7 +211,7 @@ class ClientTrackableEventType {
         override val name: String get() = "WithdrawInitiated"
         override val customParameters: Map<String, Any> get() = mapOf(
             "sourceAssetDenom" to transferInput.token,
-            "sourceAssetChainID" to transferInput.chain,
+            "sourceAssetChainId" to transferInput.chain,
             "amountIn" to transferInput.size?.size,
             "amountOut" to summary?.toAmount,
             "usdAmountOut" to summary?.toAmountUSDC,
