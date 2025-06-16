@@ -18,6 +18,7 @@ import exchange.dydx.abacus.state.machine.TradingStateMachine
 import exchange.dydx.abacus.state.machine.TriggerOrdersInputField
 import exchange.dydx.abacus.state.machine.adjustIsolatedMargin
 import exchange.dydx.abacus.state.machine.closePosition
+import exchange.dydx.abacus.state.machine.fundingPayments
 import exchange.dydx.abacus.state.machine.historicalPnl
 import exchange.dydx.abacus.state.machine.receivedBatchSubaccountsChanges
 import exchange.dydx.abacus.state.machine.receivedFills
@@ -39,6 +40,7 @@ import exchange.dydx.abacus.state.manager.HumanReadableSubaccountTransferPayload
 import exchange.dydx.abacus.state.manager.HumanReadableTriggerOrdersPayload
 import exchange.dydx.abacus.state.manager.HumanReadableWithdrawPayload
 import exchange.dydx.abacus.state.manager.TransactionQueue
+import exchange.dydx.abacus.state.manager.configs.V4StateManagerConfigs.Companion.configs
 import exchange.dydx.abacus.state.manager.notification.NotificationsProvider
 import exchange.dydx.abacus.utils.AnalyticsUtils
 import exchange.dydx.abacus.utils.IList
@@ -139,6 +141,9 @@ internal class SubaccountSupervisor(
             if (configs.retrieveHistoricalPnls) {
                 retrieveHistoricalPnls()
             }
+            if (configs.retrieveFundingPayments) {
+                retrieveFundingPayments()
+            }
         }
     }
 
@@ -194,9 +199,9 @@ internal class SubaccountSupervisor(
         if (url != null) {
             helper.get(url, params, null, callback = { _, response, httpCode, _ ->
                 if (helper.success(httpCode) && response != null) {
-                    val tranfers = helper.parser.decodeJsonObject(response)
-                    if (tranfers != null && tranfers.size != 0) {
-                        update(stateMachine.receivedTransfers(tranfers, subaccountNumber), oldState)
+                    val transfers = helper.parser.decodeJsonObject(response)
+                    if (transfers != null && transfers.size != 0) {
+                        update(stateMachine.receivedTransfers(transfers, subaccountNumber), oldState)
                     }
                 }
             })
@@ -247,6 +252,20 @@ internal class SubaccountSupervisor(
                 }
             }
         }
+    }
+
+    internal fun retrieveFundingPayments() {
+        val oldState = stateMachine.state
+        val url =
+            helper.configs.privateApiUrl(if (configs.useParentSubaccount) "parent-funding-payment" else "funding-payment")
+                ?: return
+        val params =
+            if (configs.useParentSubaccount) parentSubaccountParams() else subaccountParams()
+        helper.get(url, params, null, callback = { _, response, httpCode, _ ->
+            if (helper.success(httpCode) && response != null) {
+                update(stateMachine.fundingPayments(response, subaccountNumber), oldState)
+            }
+        })
     }
 
     @Throws(Exception::class)
@@ -623,6 +642,9 @@ internal class SubaccountSupervisor(
                 }
                 if (configs.retrieveHistoricalPnls) {
                     retrieveHistoricalPnls()
+                }
+                if (configs.retrieveFundingPayments) {
+                    retrieveFundingPayments()
                 }
             }
             if (socketConnected) {

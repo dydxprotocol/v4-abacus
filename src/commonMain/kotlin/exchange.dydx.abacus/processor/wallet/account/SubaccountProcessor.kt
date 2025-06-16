@@ -11,6 +11,7 @@ import exchange.dydx.abacus.state.InternalSubaccountCalculated
 import exchange.dydx.abacus.state.InternalSubaccountState
 import exchange.dydx.abacus.state.manager.BlockAndTime
 import indexer.codegen.IndexerAssetPositionResponseObject
+import indexer.codegen.IndexerFundingPaymentResponseObject
 import indexer.codegen.IndexerPerpetualPositionResponseObject
 import indexer.codegen.IndexerPerpetualPositionStatus
 import indexer.codegen.IndexerPnlTicksResponseObject
@@ -30,6 +31,7 @@ internal open class SubaccountProcessor(
     private val fillsProcessor = FillsProcessor(parser, localizer)
     private val transfersProcessor = TransfersProcessor(parser, localizer)
     private val historicalPNLsProcessor = HistoricalPNLsProcessor(parser)
+    private val fundingPaymentProcessor = FundingPaymentsProcessor(parser)
     private val subaccountCalculator = SubaccountCalculator(parser)
 
     internal fun processSubscribed(
@@ -254,6 +256,20 @@ internal open class SubaccountProcessor(
         )
         if (existing.historicalPNLs != newHistoricalPNLs) {
             existing.historicalPNLs = newHistoricalPNLs
+        }
+        return existing
+    }
+
+    internal fun processFundingPayments(
+        existing: InternalSubaccountState,
+        payload: List<IndexerFundingPaymentResponseObject>?,
+    ): InternalSubaccountState {
+        val newFundingPayments = fundingPaymentProcessor.process(
+            existing = existing.fundingPayments,
+            payload = payload ?: emptyList(),
+        )
+        if (existing.fundingPayments != newFundingPayments) {
+            existing.fundingPayments = newFundingPayments
         }
         return existing
     }

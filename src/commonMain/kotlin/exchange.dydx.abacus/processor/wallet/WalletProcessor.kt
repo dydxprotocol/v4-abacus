@@ -11,6 +11,7 @@ import exchange.dydx.abacus.state.manager.BlockAndTime
 import exchange.dydx.abacus.state.manager.HistoricalTradingRewardsPeriod
 import exchange.dydx.abacus.utils.mutable
 import exchange.dydx.abacus.utils.safeSet
+import indexer.codegen.IndexerFundingPaymentResponseObject
 import indexer.codegen.IndexerHistoricalTradingRewardAggregation
 import indexer.codegen.IndexerPnlTicksResponseObject
 import indexer.codegen.IndexerTransferResponseObject
@@ -174,6 +175,19 @@ internal class WalletProcessor(
         subaccountNumber: Int,
     ): InternalWalletState {
         existing.account = v4accountProcessor.processHistoricalPnls(
+            existing = existing.account,
+            payload = payload,
+            subaccountNumber = subaccountNumber,
+        )
+        return existing
+    }
+
+    internal fun processFundingPayments(
+        existing: InternalWalletState,
+        payload: List<IndexerFundingPaymentResponseObject>?,
+        subaccountNumber: Int,
+    ): InternalWalletState {
+        existing.account = v4accountProcessor.processFundingPayments(
             existing = existing.account,
             payload = payload,
             subaccountNumber = subaccountNumber,
