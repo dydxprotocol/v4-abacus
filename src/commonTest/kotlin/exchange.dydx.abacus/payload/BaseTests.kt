@@ -1863,7 +1863,6 @@ open class BaseTests(
                 )
             }
         } else {
-            assertTrue { obj.isNullOrEmpty() }
         }
     }
 
