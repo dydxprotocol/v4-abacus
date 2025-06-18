@@ -149,7 +149,8 @@ class ClientTrackableEventType {
 
     class DepositInitiatedEvent(
         private val transferInput: TransferInput,
-        private val summary: TransferInputSummary?
+        private val summary: TransferInputSummary?,
+        private val isInstantDeposit: Boolean
     ) : ClientTrackableEvent {
         override val name: String get() = "DepositInitiated"
         override val customParameters: Map<String, Any> get() = mapOf(
@@ -161,6 +162,7 @@ class ClientTrackableEventType {
             "estimatedAmountOut" to summary?.toAmountMin,
             "swapPriceImpactPercent" to summary?.aggregatePriceImpact,
             "estimatedRouteDurationSeconds" to summary?.estimatedRouteDurationSeconds,
+            "isInstantDeposit" to isInstantDeposit,
         ).filterValues { it != null } as Map<String, Any>
     }
 
