@@ -40,6 +40,8 @@ class V4StateManagerConfigs(
                          "fills":"/v4/fills",
                          "historical-pnl":"/v4/historical-pnl",
                          "parent-historical-pnl":"/v4/historical-pnl/parentSubaccountNumber",
+                         "funding-payment": "/v4/fundingPayments",
+                         "parent-funding-payment": "/v4/fundingPayments/parentSubaccount", 
                          "transfers":"/v4/transfers",
                          "historicalTradingRewardAggregations":"/v4/historicalTradingRewardAggregations",
                          "parent-fills":"/v4/fills/parentSubaccountNumber",

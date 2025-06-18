@@ -190,14 +190,12 @@ class VaultTests {
             ticker = "BTC-USD",
             historicalPnl = arrayOf(
                 IndexerPnlTicksResponseObject(
-                    id = "1",
                     equity = "10500.0",
                     totalPnl = "500.0",
                     netTransfers = "0.0",
                     createdAt = Instant.fromEpochMilliseconds(1659465600000).toString(),
                 ),
                 IndexerPnlTicksResponseObject(
-                    id = "2",
                     equity = "10000.0",
                     totalPnl = "0.0",
                     netTransfers = "0.0",
@@ -276,14 +274,12 @@ class VaultTests {
             ticker = "BTC-USD",
             historicalPnl = arrayOf(
                 IndexerPnlTicksResponseObject(
-                    id = "1",
                     equity = "10500.0",
                     totalPnl = "500.0",
                     netTransfers = "0.0",
                     createdAt = Instant.fromEpochMilliseconds(1659465600000).toString(),
                 ),
                 IndexerPnlTicksResponseObject(
-                    id = "2",
                     equity = "10000.0",
                     totalPnl = "0.0",
                     netTransfers = "0.0",

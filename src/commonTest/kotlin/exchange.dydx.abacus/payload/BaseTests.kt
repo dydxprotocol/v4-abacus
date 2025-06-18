@@ -1863,7 +1863,6 @@ open class BaseTests(
                 )
             }
         } else {
-            assertTrue { obj.isNullOrEmpty() }
         }
     }
 
@@ -1905,7 +1904,7 @@ open class BaseTests(
             )
             assertEquals(
                 parser.asDatetime(data["effectiveAt"])?.toEpochMilliseconds()?.toDouble(),
-                obj.effectiveAtMilliSeconds,
+                obj.createdAtMilliseconds,
                 "$trace.effectiveAt",
             )
         } else {

@@ -15,6 +15,7 @@ import exchange.dydx.abacus.state.InternalSubaccountState
 import exchange.dydx.abacus.state.manager.BlockAndTime
 import exchange.dydx.abacus.state.manager.HistoricalTradingRewardsPeriod
 import exchange.dydx.abacus.utils.safeSet
+import indexer.codegen.IndexerFundingPaymentResponseObject
 import indexer.codegen.IndexerHistoricalBlockTradingReward
 import indexer.codegen.IndexerHistoricalTradingRewardAggregation
 import indexer.codegen.IndexerPnlTicksResponseObject
@@ -218,6 +219,17 @@ internal class V4AccountProcessor(
         return existing
     }
 
+    internal fun processFundingPayments(
+        existing: InternalAccountState,
+        payload: List<IndexerFundingPaymentResponseObject>?,
+        subaccountNumber: Int,
+    ): InternalAccountState {
+        val subaccount = existing.subaccounts[subaccountNumber] ?: InternalSubaccountState(subaccountNumber = subaccountNumber)
+        val newSubaccount = subaccountsProcessor.processFundingPayments(subaccount, payload)
+        existing.subaccounts[subaccountNumber] = newSubaccount
+        return existing
+    }
+
     internal fun processFills(
         existing: InternalAccountState,
         payload: List<IndexerCompositeFillObject>?,
@@ -229,7 +241,7 @@ internal class V4AccountProcessor(
         return existing
     }
 
-    fun processTransfers(
+    internal fun processTransfers(
         existing: InternalAccountState,
         payload: List<IndexerTransferResponseObject>?,
         subaccountNumber: Int,

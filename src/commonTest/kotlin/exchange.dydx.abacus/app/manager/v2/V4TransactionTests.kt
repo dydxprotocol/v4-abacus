@@ -43,7 +43,7 @@ class V4TransactionTests : NetworkTests() {
                 stateMachine = v4Adapter!!.stateMachine,
                 helper = v4Adapter!!.networkHelper,
                 analyticsUtils = v4Adapter!!.analyticsUtils,
-                configs = SubaccountConfigs(true, true, true, true, false),
+                configs = SubaccountConfigs(true, true, true, true, true, false),
                 accountAddress = testCosmoAddress,
                 subaccountNumber = 0,
             )
