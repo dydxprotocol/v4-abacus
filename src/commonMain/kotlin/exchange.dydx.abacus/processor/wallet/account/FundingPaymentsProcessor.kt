@@ -25,7 +25,7 @@ internal class FundingPaymentsProcessor(
             existing = existing,
             incoming = new,
             timeField = { item ->
-                item?.effectiveAtMilliSeconds?.toLong()?.let {
+                item?.createdAtMilliseconds?.toLong()?.let {
                     Instant.fromEpochMilliseconds(it)
                 }
             },

@@ -6,7 +6,7 @@ data class SubaccountFundingPayment(
 &emsp;val rate: Double,  
 &emsp;val positionSize: Double,  
 &emsp;val price: Double?,  
-&emsp;val effectiveAtMilliSeconds: Double  
+&emsp;val createdAtMilliseconds: Double  
 )
 
 ## marketId
@@ -29,6 +29,6 @@ Position size at the moment of payment
 
 price
 
-## effectiveAtMilliSeconds
+## createdAtMilliseconds
 
 Timestamp of the funding payment

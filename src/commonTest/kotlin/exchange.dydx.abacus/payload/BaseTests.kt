@@ -1904,7 +1904,7 @@ open class BaseTests(
             )
             assertEquals(
                 parser.asDatetime(data["effectiveAt"])?.toEpochMilliseconds()?.toDouble(),
-                obj.effectiveAtMilliSeconds,
+                obj.createdAtMilliseconds,
                 "$trace.effectiveAt",
             )
         } else {

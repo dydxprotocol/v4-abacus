@@ -14,7 +14,7 @@ data class SubaccountFundingPayment(
     val rate: Double,
     val positionSize: Double,
     val price: Double?,
-    val effectiveAtMilliSeconds: Double,
+    val createdAtMilliseconds: Double,
     val side: PositionSide,
 ) {
     companion object {
@@ -26,7 +26,7 @@ data class SubaccountFundingPayment(
                 existing = existing,
                 new = new,
                 comparison = { obj, newItem ->
-                    ParsingHelper.compare(obj.effectiveAtMilliSeconds, newItem.effectiveAtMilliSeconds, true)
+                    ParsingHelper.compare(obj.createdAtMilliseconds, newItem.createdAtMilliseconds, true)
                 },
                 syncItems = true,
             ).toIList()

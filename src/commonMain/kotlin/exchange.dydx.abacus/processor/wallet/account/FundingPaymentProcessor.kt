@@ -35,7 +35,7 @@ internal class FundingPaymentProcessor(
             rate = rate,
             positionSize = size,
             price = oraclePrice,
-            effectiveAtMilliSeconds = createdAt.toEpochMilliseconds().toDouble(),
+            createdAtMilliseconds = createdAt.toEpochMilliseconds().toDouble(),
             side = side,
         )
     }
