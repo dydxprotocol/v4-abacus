@@ -62,8 +62,8 @@ import kotlinx.serialization.json.Json
 import kotlinx.serialization.json.JsonElement
 import kotlinx.serialization.json.jsonObject
 
-private val OSMOSIS_SWAP_VENUE = "osmosis-1"
-private val NEUTRON_SWAP_VENUE = "neutron-1"
+private const val OSMOSIS_SWAP_VENUE = "osmosis-1"
+private const val NEUTRON_SWAP_VENUE = "neutron-1"
 
 private val SMART_SWAP_OPTIONS = mapOf(
     "evm_swaps" to true,
