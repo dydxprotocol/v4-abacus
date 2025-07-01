@@ -532,12 +532,23 @@ internal fun TriggerPrice.Companion.safeCreate(existing: TriggerPrice?): Trigger
     )
 }
 
+internal data class InternalTransferVenueState(
+    val chain_id: String? = null,
+    val name: String? = null,
+) {
+    fun toMap(): Map<String, Any> =
+        mapOf(
+            "chain_id" to (chain_id ?: ""),
+            "name" to (name ?: ""),
+        )
+}
+
 internal data class InternalTransferInputState(
     var chains: List<SelectionOption>? = null,
     var tokens: List<SelectionOption>? = null,
     var chainResources: Map<String, TransferInputChainResource>? = null,
     var tokenResources: Map<String, TransferInputTokenResource>? = null,
-    var evmSwapVenues: List<Any?> = listOf(),
+    var swapVenues: List<InternalTransferVenueState> = listOf(),
 
     var type: TransferType? = null,
     var size: TransferInputSize? = null,

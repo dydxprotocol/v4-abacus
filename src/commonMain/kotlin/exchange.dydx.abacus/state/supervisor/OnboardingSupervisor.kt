@@ -62,15 +62,8 @@ import kotlinx.serialization.json.Json
 import kotlinx.serialization.json.JsonElement
 import kotlinx.serialization.json.jsonObject
 
-private val OSMOSIS_SWAP_VENUE = mapOf(
-    "name" to "osmosis-poolmanager",
-    "chain_id" to "osmosis-1",
-)
-
-private val NEUTRON_SWAP_VENUE = mapOf(
-    "name" to "neutron-astroport",
-    "chain_id" to "neutron-1",
-)
+private val OSMOSIS_SWAP_VENUE = "osmosis-1"
+private val NEUTRON_SWAP_VENUE = "neutron-1"
 
 private val SMART_SWAP_OPTIONS = mapOf(
     "evm_swaps" to true,
@@ -285,12 +278,12 @@ internal class OnboardingSupervisor(
         }
         val fromAmountString = helper.parser.asString(fromAmount) ?: return
 
-        val nonEvmSwapVenues = listOf(
-            OSMOSIS_SWAP_VENUE,
-            NEUTRON_SWAP_VENUE,
-        )
-        val evmSwapVenues = stateMachine.internalState.input.transfer.evmSwapVenues
-        val swapVenues = evmSwapVenues + nonEvmSwapVenues
+        val allSwapVenues = stateMachine.internalState.input.transfer.swapVenues
+        val swapVenues = allSwapVenues.filter {
+            it.chain_id == OSMOSIS_SWAP_VENUE || it.chain_id == NEUTRON_SWAP_VENUE || it.chain_id == fromChain
+        }.map {
+            it.toMap()
+        }
 
         val chainId = helper.environment.dydxChainId ?: return
         val nativeChainUSDCDenom = helper.environment.tokens["usdc"]?.denom ?: return
@@ -397,12 +390,13 @@ internal class OnboardingSupervisor(
         val fromAmountString = helper.parser.asString(fromAmount) ?: return
         val url = helper.configs.skipV2MsgsDirect()
 
-        val nonEvmSwapVenues = listOf(
-            OSMOSIS_SWAP_VENUE,
-            NEUTRON_SWAP_VENUE,
-        )
-        val evmSwapVenues = stateMachine.internalState.input.transfer.evmSwapVenues
-        val swapVenues = evmSwapVenues + nonEvmSwapVenues
+        val allSwapVenues = stateMachine.internalState.input.transfer.swapVenues
+        val swapVenues = allSwapVenues.filter {
+            it.chain_id == OSMOSIS_SWAP_VENUE || it.chain_id == NEUTRON_SWAP_VENUE || it.chain_id == fromChain
+        }.map {
+            it.toMap()
+        }
+
         val options = mapOf(
             "bridges" to listOf(
                 IBC_BRIDGE_ID,
@@ -837,6 +831,13 @@ internal class OnboardingSupervisor(
         val fromToken = helper.environment.tokens["usdc"]?.denom ?: return
         val fromAmountString = helper.parser.asString(fromAmount) ?: return
         val url = helper.configs.skipV2MsgsDirect()
+        val allSwapVenues = stateMachine.internalState.input.transfer.swapVenues
+        val swapVenues = allSwapVenues.filter {
+            it.chain_id == OSMOSIS_SWAP_VENUE || it.chain_id == NEUTRON_SWAP_VENUE
+        }.map {
+            it.toMap()
+        }
+
         val body: Map<String, Any> = mapOf(
             "amount_in" to fromAmountString,
             "source_asset_denom" to fromToken,
@@ -850,10 +851,7 @@ internal class OnboardingSupervisor(
                 neutronChainId to accountAddress.toNeutronAddress(),
                 toChain to toAddress,
             ),
-            "swap_venues" to listOf(
-                OSMOSIS_SWAP_VENUE,
-                NEUTRON_SWAP_VENUE,
-            ),
+            "swap_venues" to swapVenues,
             "bridges" to listOf(
                 IBC_BRIDGE_ID,
                 AXELAR_BRIDGE_ID,
