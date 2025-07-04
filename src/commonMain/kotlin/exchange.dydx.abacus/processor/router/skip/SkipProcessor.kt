@@ -9,15 +9,13 @@ import exchange.dydx.abacus.processor.base.BaseProcessor
 import exchange.dydx.abacus.processor.router.ChainType
 import exchange.dydx.abacus.protocols.ParserProtocol
 import exchange.dydx.abacus.state.InternalTransferInputState
+import exchange.dydx.abacus.state.InternalTransferVenueState
 import exchange.dydx.abacus.state.manager.CctpConfig.cctpChainIds
 import exchange.dydx.abacus.state.safeCreate
 import exchange.dydx.abacus.utils.ETHEREUM_CHAIN_ID
 import exchange.dydx.abacus.utils.NATIVE_TOKEN_DEFAULT_ADDRESS
 import exchange.dydx.abacus.utils.mutable
 import exchange.dydx.abacus.utils.safeSet
-
-//   Skip only supports uniswap evm swaps right now. We can expand this later
-private const val UNISWAP_SUFFIX = "uniswap"
 
 internal class SkipProcessor(
     parser: ParserProtocol,
@@ -66,17 +64,15 @@ internal class SkipProcessor(
         payload: Map<String, Any>
     ) {
         val venues = parser.asNativeList(payload.get("venues"))
-        val evmSwapVenues = venues?.filter {
-            parser.asString(parser.asMap(it)?.get("name"))?.endsWith(UNISWAP_SUFFIX) == true
-        }?.map {
+        val swapVenues = venues?.map {
             val swapVenue = parser.asMap(it)
-            mapOf(
-                "name" to parser.asString(swapVenue?.get("name")),
-                "chain_id" to parser.asString(swapVenue?.get("chain_id")),
+            InternalTransferVenueState(
+                name = parser.asString(swapVenue?.get("name")),
+                chain_id = parser.asString(swapVenue?.get("chain_id")),
             )
         }
-        if (evmSwapVenues != null) {
-            this.internalState.evmSwapVenues = evmSwapVenues
+        if (swapVenues != null) {
+            this.internalState.swapVenues = swapVenues
         }
     }
 

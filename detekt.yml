@@ -9,6 +9,8 @@ naming:
     active: false
   EnumNaming:
     active: false
+  ConstructorParameterNaming:
+    active: false
 
 complexity:
   CognitiveComplexMethod:
