@@ -66,6 +66,7 @@ class AbacusMockData {
             metadataService = null,
             nobleValidator = null,
             geo = null,
+            solanaRpcUrl = null,
         ),
         links = EnvironmentLinks(
             tos = "https://dydx.exchange/v4-terms",
