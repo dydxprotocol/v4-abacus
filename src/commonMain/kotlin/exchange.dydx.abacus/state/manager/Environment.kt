@@ -37,6 +37,7 @@ data class EnvironmentEndpoints(
     val metadataService: String?,
     val nobleValidator: String?,
     val geo: String?,
+    val solanaRpcUrl: String?,
 ) {
     companion object {
         fun parse(
@@ -54,6 +55,7 @@ data class EnvironmentEndpoints(
             val metadataService = parser.asString(data["metadataService"])
             val nobleValidator = parser.asString(data["nobleValidator"])
             val geo = parser.asString(data["geo"])
+            val solanaRpcUrl = parser.asString(data["solanaRpcUrl"])
             return EnvironmentEndpoints(
                 indexers = indexers,
                 validators = validators,
@@ -62,6 +64,7 @@ data class EnvironmentEndpoints(
                 metadataService = metadataService,
                 nobleValidator = nobleValidator,
                 geo = geo,
+                solanaRpcUrl = solanaRpcUrl,
             )
         }
     }
