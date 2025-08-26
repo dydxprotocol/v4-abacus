@@ -53,7 +53,7 @@ allprojects {
 }
 
 group = "exchange.dydx.abacus"
-version = "1.14.9"
+version = "1.14.10"
 
 repositories {
     google()
@@ -63,8 +63,7 @@ repositories {
 kotlin {
     jvm {
         compilations.all {
-            kotlinOptions.jvmTarget = "1.8"
-            kotlinOptions.freeCompilerArgs += "-Xjdk-release=1.8"
+            kotlinOptions.jvmTarget = "17"
             kotlinOptions.moduleName = "abacus"
         }
 
