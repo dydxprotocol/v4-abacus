@@ -150,7 +150,7 @@ internal class ClosePositionInputProcessor(
             }
             ClosePositionInputField.useLimit -> {
                 val useLimitClose =
-                    (parser.asBool(data) ?: false) && StatsigConfig.ff_enable_limit_close
+                    (parser.asBool(data) ?: false)
 
                 if (useLimitClose) {
                     trade.type = OrderType.Limit

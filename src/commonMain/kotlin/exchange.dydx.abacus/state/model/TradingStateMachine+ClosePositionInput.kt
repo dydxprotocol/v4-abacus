@@ -140,7 +140,7 @@ fun TradingStateMachine.closePosition(
                 )
             }
             ClosePositionInputField.useLimit.rawValue -> {
-                val useLimitClose = (parser.asBool(data) ?: false) && StatsigConfig.ff_enable_limit_close
+                val useLimitClose = (parser.asBool(data) ?: false)
                 trade.safeSet(typeText, useLimitClose)
 
                 if (useLimitClose) {
