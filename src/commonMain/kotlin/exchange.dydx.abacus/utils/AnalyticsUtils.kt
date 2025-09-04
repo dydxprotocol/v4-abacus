@@ -138,6 +138,7 @@ class AnalyticsUtils {
             "timeInForce" to payload.timeInForce,
             "triggerPrice" to payload.triggerPrice,
             "type" to payload.type,
+            "volume" to payload.price * payload.size,
         ) as IMap<String, Any>?
     }
 
@@ -244,6 +245,7 @@ class AnalyticsUtils {
             "postOnly" to order.postOnly,
             "reduceOnly" to order.reduceOnly,
             "cancelReason" to order.cancelReason,
+            "volume" to order.price * order.size,
         ) as IMap<String, Any>?
     }
 }
