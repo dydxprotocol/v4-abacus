@@ -156,6 +156,10 @@ internal class ClosePositionInputProcessor(
                     trade.type = OrderType.Limit
                     trade.timeInForce = "GTT"
 
+                    if (trade.reduceOnly == true) {
+                        trade.timeInForce = "IOC"
+                    }
+
                     trade.marketId?.let { marketId ->
                         val limitPrice = getMidMarketPrice(marketSummaryState, marketId)
                         trade.price = TradeInputPrice.safeCreate(trade.price).copy(limitPrice = limitPrice)
