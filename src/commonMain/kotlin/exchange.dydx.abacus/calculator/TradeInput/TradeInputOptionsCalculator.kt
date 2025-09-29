@@ -79,51 +79,51 @@ internal class TradeInputOptionsCalculator(
         return when (trade.type) {
             OrderType.Market -> {
                 return when (trade.marginMode) {
-                    MarginMode.Isolated -> listOf(
+                    MarginMode.Isolated -> listOfNotNull(
                         sizeField(),
                         balancePercentField(),
                         bracketsField(),
                         marginModeField(market, account, subaccount),
                         reduceOnlyField(),
-                    ).filterNotNull()
+                    )
 
-                    else -> listOf(
+                    else -> listOfNotNull(
                         sizeField(),
                         leverageField(),
                         balancePercentField(),
                         bracketsField(),
                         marginModeField(market, account, subaccount),
                         reduceOnlyField(),
-                    ).filterNotNull()
+                    )
                 }
             }
 
             OrderType.Limit -> {
                 when (trade.timeInForce) {
                     "GTT" ->
-                        listOf(
+                        listOfNotNull(
                             sizeField(),
                             limitPriceField(),
                             timeInForceField(),
                             goodTilField(),
                             postOnlyField(),
                             marginModeField(market, account, subaccount),
-                        ).filterNotNull()
+                        )
 
                     else ->
-                        listOf(
+                        listOfNotNull(
                             sizeField(),
                             limitPriceField(),
                             timeInForceField(),
                             marginModeField(market, account, subaccount),
                             reduceOnlyField(),
-                        ).filterNotNull()
+                        )
                 }
             }
 
             OrderType.StopLimit, OrderType.TakeProfitLimit -> {
                 val execution = trade.execution
-                listOf(
+                listOfNotNull(
                     sizeField(),
                     limitPriceField(),
                     triggerPriceField(),
@@ -134,28 +134,28 @@ internal class TradeInputOptionsCalculator(
                         "IOC" -> reduceOnlyField()
                         else -> null
                     },
-                ).filterNotNull()
+                )
             }
 
             OrderType.StopMarket, OrderType.TakeProfitMarket -> {
-                listOf(
+                listOfNotNull(
                     sizeField(),
                     triggerPriceField(),
                     goodTilField(),
                     executionField(includesDefaultAndPostOnly = false),
                     marginModeField(market, account, subaccount),
                     reduceOnlyField(),
-                ).filterNotNull()
+                )
             }
 
             OrderType.TrailingStop -> {
-                listOf(
+                listOfNotNull(
                     sizeField(),
                     trailingPercentField(),
                     goodTilField(),
                     executionField(includesDefaultAndPostOnly = false),
                     marginModeField(market, account, subaccount),
-                ).filterNotNull()
+                )
             }
 
             OrderType.Liquidated,
