@@ -260,8 +260,7 @@ class ClientTrackableEventType {
         ).filterValues { it != null } as Map<String, Any>
     }
 
-    class FiatDepositShowInputEvent(
-    ): ClientTrackableEvent {
+    class FiatDepositShowInputEvent() : ClientTrackableEvent {
         override val name: String get() = "FiatDepositShowInput"
         override val customParameters: Map<String, Any> get() = emptyMap()
     }
@@ -270,7 +269,7 @@ class ClientTrackableEventType {
         private val amountUsd: Double?,
         private val depositAddress: String?,
         private val provider: String,
-    ): ClientTrackableEvent {
+    ) : ClientTrackableEvent {
         override val name: String get() = "FiatDepositRouteToProviderCompleted"
         override val customParameters: Map<String, Any> get() = mapOf(
             "amountUsd" to amountUsd,
@@ -282,7 +281,7 @@ class ClientTrackableEventType {
     class FiatDepositRouteToProviderErrorEvent(
         private val message: String?,
         private val provider: String,
-    ): ClientTrackableEvent {
+    ) : ClientTrackableEvent {
         override val name: String get() = "FiatDepositRouteToProviderError"
         override val customParameters: Map<String, Any> get() = mapOf(
             "message" to message,
@@ -293,7 +292,7 @@ class ClientTrackableEventType {
     class FiatDepositMoonPayCallbackEvent(
         private val callbackName: String,
         private val data: Map<String, Any>? = null,
-    ): ClientTrackableEvent {
+    ) : ClientTrackableEvent {
         override val name: String get() = "FiatDepositMoonPayCallback"
         override val customParameters: Map<String, Any> get() = mapOf(
             "callbackName" to callbackName,
