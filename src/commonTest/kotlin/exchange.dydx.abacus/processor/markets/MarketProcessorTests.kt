@@ -61,6 +61,7 @@ class MarketProcessorTests {
 
         val outputMock = PerpetualMarket(
             id = "BTC-USD",
+            clobPairId = "1",
             assetId = "BTC",
             market = "BTC-USD",
             displayId = "BTC-USD",

@@ -5,6 +5,7 @@ import exchange.dydx.abacus.protocols.QueryType
 import exchange.dydx.abacus.state.machine.TradingStateMachine
 import exchange.dydx.abacus.state.machine.launchIncentiveSeasons
 import exchange.dydx.abacus.state.machine.onChainEquityTiers
+import exchange.dydx.abacus.state.machine.onChainFeeDiscounts
 import exchange.dydx.abacus.state.machine.onChainFeeTiers
 import exchange.dydx.abacus.state.machine.onChainRewardTokenPrice
 import exchange.dydx.abacus.state.machine.onChainRewardsParams
@@ -59,6 +60,9 @@ internal class SystemSupervisor(
             }
             if (configs.retrieveFeeTiers) {
                 retrieveFeeTiers()
+            }
+            if (configs.retrieveFeeDiscount) {
+                retrieveFeeDiscounts()
             }
             if (configs.retrieveRewardsParams) {
                 retrieveRewardsParams()
@@ -139,6 +143,13 @@ internal class SystemSupervisor(
         helper.getOnChain(QueryType.FeeTiers, null) { response ->
             val oldState = stateMachine.state
             update(stateMachine.onChainFeeTiers(response), oldState)
+        }
+    }
+
+    private fun retrieveFeeDiscounts() {
+        helper.getOnChain(QueryType.FeeDiscounts, null) { response ->
+            val oldState = stateMachine.state
+            update(stateMachine.onChainFeeDiscounts(response), oldState)
         }
     }
 

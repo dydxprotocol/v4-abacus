@@ -122,6 +122,7 @@ class V4ForegroundCycleTests : NetworkTests() {
                 [
                    "getEquityTiers",
                    "getFeeTiers",
+                   "getAllPerpMarketFeeDiscounts",
                    "getRewardsParams",
                    "getHeight"
                 ]
@@ -210,6 +211,7 @@ class V4ForegroundCycleTests : NetworkTests() {
                 [
                    "getEquityTiers",
                    "getFeeTiers",
+                   "getAllPerpMarketFeeDiscounts",
                    "getRewardsParams",
                    "getHeight"
                 ]
@@ -372,6 +374,7 @@ class V4ForegroundCycleTests : NetworkTests() {
                 [
                    "getEquityTiers",
                    "getFeeTiers",
+                   "getAllPerpMarketFeeDiscounts",
                    "getRewardsParams",
                    "getHeight",
                    "getAccountBalances",
@@ -442,6 +445,7 @@ class V4ForegroundCycleTests : NetworkTests() {
                 [
                    "getEquityTiers",
                    "getFeeTiers",
+                   "getAllPerpMarketFeeDiscounts",
                    "getRewardsParams",
                    "getHeight",
                    "getUserFeeTier",
@@ -611,6 +615,7 @@ class V4ForegroundCycleTests : NetworkTests() {
                 [
                    "getEquityTiers",
                    "getFeeTiers",
+                   "getAllPerpMarketFeeDiscounts",
                    "getRewardsParams",
                    "getHeight",
                    "getUserFeeTier",
@@ -693,6 +698,7 @@ class V4ForegroundCycleTests : NetworkTests() {
                 [
                    "getEquityTiers",
                    "getFeeTiers",
+                   "getAllPerpMarketFeeDiscounts",
                    "getRewardsParams",
                    "getHeight",
                    "getUserFeeTier",

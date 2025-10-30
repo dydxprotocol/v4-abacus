@@ -16,13 +16,17 @@ import kotlin.js.JsExport
 
 /**
  *
- * Values: LIMIT,LIQUIDATED,DELEVERAGED,TWAPSUBORDER
+ * @param pageSize
+ * @param totalResults
+ * @param offset
+ * @param pnl
  */
 @JsExport
 @Serializable
-enum class IndexerTradeType(val value: kotlin.String) {
-    LIMIT("LIMIT"), // :/
-    LIQUIDATED("LIQUIDATED"), // :/
-    DELEVERAGED("DELEVERAGED"), // :/
-    TWAPSUBORDER("TWAP_SUBORDER"); // :/
-}
+data class IndexerPnlResponse(
+
+    val pageSize: kotlin.Int? = null,
+    val totalResults: kotlin.Int? = null,
+    val offset: kotlin.Int? = null,
+    val pnl: kotlin.Array<IndexerPnlResponseObject>? = null
+)

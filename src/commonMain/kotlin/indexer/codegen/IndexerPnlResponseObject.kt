@@ -16,13 +16,19 @@ import kotlin.js.JsExport
 
 /**
  *
- * Values: LIMIT,LIQUIDATED,DELEVERAGED,TWAPSUBORDER
+ * @param equity
+ * @param netTransfers
+ * @param totalPnl
+ * @param createdAt
+ * @param createdAtHeight
  */
 @JsExport
 @Serializable
-enum class IndexerTradeType(val value: kotlin.String) {
-    LIMIT("LIMIT"), // :/
-    LIQUIDATED("LIQUIDATED"), // :/
-    DELEVERAGED("DELEVERAGED"), // :/
-    TWAPSUBORDER("TWAP_SUBORDER"); // :/
-}
+data class IndexerPnlResponseObject(
+
+    val equity: kotlin.String? = null,
+    val netTransfers: kotlin.String? = null,
+    val totalPnl: kotlin.String? = null,
+    val createdAt: kotlin.String? = null,
+    val createdAtHeight: kotlin.String? = null
+)
