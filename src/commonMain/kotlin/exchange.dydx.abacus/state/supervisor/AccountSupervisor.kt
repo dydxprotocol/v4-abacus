@@ -23,6 +23,7 @@ import exchange.dydx.abacus.state.machine.onChainDelegations
 import exchange.dydx.abacus.state.machine.onChainStakingRewards
 import exchange.dydx.abacus.state.machine.onChainUnbonding
 import exchange.dydx.abacus.state.machine.onChainUserFeeTier
+import exchange.dydx.abacus.state.machine.onChainUserStakingTier
 import exchange.dydx.abacus.state.machine.onChainUserStats
 import exchange.dydx.abacus.state.manager.ApiData
 import exchange.dydx.abacus.state.manager.AutoSweepConfig
@@ -256,6 +257,9 @@ internal open class AccountSupervisor(
                 if (configs.retrieveUserStats) {
                     retrieveUserStats()
                 }
+                if (configs.retrieveUserStakingTier) {
+                    retrieveUserStakingTier()
+                }
             }
             if (configs.retrieveBalances) {
                 retrieveBalances()
@@ -355,6 +359,15 @@ internal open class AccountSupervisor(
         helper.getOnChain(QueryType.UserStats, paramsInJson) { response ->
             val oldState = stateMachine.state
             update(stateMachine.onChainUserStats(response), oldState)
+        }
+    }
+
+    private fun retrieveUserStakingTier() {
+        val params = iMapOf("address" to accountAddress)
+        val paramsInJson = helper.jsonEncoder.encode(params)
+        helper.getOnChain(QueryType.UserStakingTier, paramsInJson) { response ->
+            val oldState = stateMachine.state
+            update(stateMachine.onChainUserStakingTier(response), oldState)
         }
     }
 

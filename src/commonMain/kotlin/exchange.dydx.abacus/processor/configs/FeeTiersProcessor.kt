@@ -8,7 +8,6 @@ import exchange.dydx.abacus.protocols.ParserProtocol
 import exchange.dydx.abacus.state.InternalMarketFeeDiscountState
 import exchange.dydx.abacus.utils.QUANTUM_MULTIPLIER
 import indexer.models.chain.OnChainFeeDiscountsParams
-import indexer.models.chain.OnChainFeeDiscountsResponse
 import indexer.models.chain.OnChainFeeTier
 
 internal interface FeeTiersProcessorProtocol {
@@ -72,7 +71,7 @@ internal class FeeTiersProcessor(
             val feeDiscountState = InternalMarketFeeDiscountState(
                 startTime = feeDiscount.startTime,
                 endTime = feeDiscount.endTime,
-                chargePercent = feeDiscount.chargePpm?.div(1000000.0)
+                chargePercent = feeDiscount.chargePpm?.div(QUANTUM_MULTIPLIER),
             )
             marketFeeDiscounts[feeDiscount.clobPairId.toString()] = feeDiscountState
         }

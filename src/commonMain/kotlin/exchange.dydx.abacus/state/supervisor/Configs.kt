@@ -134,6 +134,7 @@ data class AccountConfigs(
     val retrieveSubaccounts: Boolean,
     val retrieveHistoricalTradingRewards: Boolean,
     val retrieveLaunchIncentivePoints: Boolean,
+    val retrieveUserStakingTier: Boolean,
     val transferNobleBalances: Boolean,
     val subaccountConfigs: SubaccountConfigs,
 
@@ -146,6 +147,7 @@ data class AccountConfigs(
             retrieveSubaccounts = true,
             retrieveHistoricalTradingRewards = true,
             retrieveLaunchIncentivePoints = true,
+            retrieveUserStakingTier = true,
             transferNobleBalances = true,
             subaccountConfigs = SubaccountConfigs.forApp,
         )
@@ -156,6 +158,7 @@ data class AccountConfigs(
             retrieveSubaccounts = true,
             retrieveHistoricalTradingRewards = true,
             retrieveLaunchIncentivePoints = true,
+            retrieveUserStakingTier = true,
             transferNobleBalances = true,
             subaccountConfigs = SubaccountConfigs.forAppWithIsolatedMargins,
         )
@@ -166,6 +169,7 @@ data class AccountConfigs(
             retrieveSubaccounts = true,
             retrieveHistoricalTradingRewards = true,
             retrieveLaunchIncentivePoints = true,
+            retrieveUserStakingTier = true,
             transferNobleBalances = true,
             subaccountConfigs = SubaccountConfigs.forProgrammaticTraders,
         )

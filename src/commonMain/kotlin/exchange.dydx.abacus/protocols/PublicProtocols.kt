@@ -125,6 +125,7 @@ enum class QueryType(val rawValue: String) {
     FeeTiers("getFeeTiers"),
     FeeDiscounts("getAllPerpMarketFeeDiscounts"),
     UserFeeTier("getUserFeeTier"),
+    UserStakingTier("getUserStakingTier"),
     UserStats("getUserStats"),
     OptimalNode("getOptimalNode"),
     OptimalIndexer("getOptimalIndexer"),

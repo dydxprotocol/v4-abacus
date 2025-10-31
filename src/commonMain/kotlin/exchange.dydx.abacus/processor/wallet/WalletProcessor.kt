@@ -21,6 +21,7 @@ import indexer.models.chain.OnChainDelegationResponse
 import indexer.models.chain.OnChainStakingRewardsResponse
 import indexer.models.chain.OnChainUnbondingResponse
 import indexer.models.chain.OnChainUserFeeTierResponse
+import indexer.models.chain.OnChainUserStakingTierResponse
 import indexer.models.chain.OnChainUserStatsResponse
 import indexer.models.configs.ConfigsLaunchIncentivePoints
 
@@ -163,6 +164,17 @@ internal class WalletProcessor(
         payload: OnChainUserStatsResponse?,
     ): InternalWalletState {
         existing.user = userProcessor.processOnChainUserStats(
+            existing = existing.user,
+            payload = payload,
+        )
+        return existing
+    }
+
+    internal fun processOnChainUserStakingTier(
+        existing: InternalWalletState,
+        payload: OnChainUserStakingTierResponse?,
+    ): InternalWalletState {
+        existing.user = userProcessor.processOnChainUserStakingTier(
             existing = existing.user,
             payload = payload,
         )

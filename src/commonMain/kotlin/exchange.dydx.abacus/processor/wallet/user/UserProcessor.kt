@@ -5,6 +5,7 @@ import exchange.dydx.abacus.protocols.ParserProtocol
 import exchange.dydx.abacus.state.InternalUserState
 import exchange.dydx.abacus.utils.QUANTUM_MULTIPLIER
 import indexer.models.chain.OnChainUserFeeTier
+import indexer.models.chain.OnChainUserStakingTierResponse
 import indexer.models.chain.OnChainUserStatsResponse
 
 internal interface UserProcessorProtocol {
@@ -16,6 +17,11 @@ internal interface UserProcessorProtocol {
     fun processOnChainUserStats(
         existing: InternalUserState?,
         payload: OnChainUserStatsResponse?,
+    ): InternalUserState
+
+    fun processOnChainUserStakingTier(
+        existing: InternalUserState?,
+        payload: OnChainUserStakingTierResponse?,
     ): InternalUserState
 }
 
@@ -51,6 +57,18 @@ internal class UserProcessor(
         val takerNotional = parser.asDouble(payload?.takerNotional)
         if (takerNotional != null) {
             internalState.takerVolume30D = takerNotional / QUANTUM_MULTIPLIER
+        }
+        return internalState
+    }
+
+    override fun processOnChainUserStakingTier(
+        existing: InternalUserState?,
+        payload: OnChainUserStakingTierResponse?,
+    ): InternalUserState {
+        val internalState = existing ?: InternalUserState()
+        val discountPpm = parser.asDouble(payload?.discountPpm)
+        if (discountPpm != null) {
+            internalState.userStakingTierDiscountPercent = discountPpm / QUANTUM_MULTIPLIER
         }
         return internalState
     }

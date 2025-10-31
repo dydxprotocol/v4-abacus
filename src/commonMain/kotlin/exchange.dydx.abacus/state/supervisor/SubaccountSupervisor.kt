@@ -254,7 +254,7 @@ internal class SubaccountSupervisor(
         }
     }
 
-    internal fun retrieveFundingPayments() {
+    private fun retrieveFundingPayments() {
         val oldState = stateMachine.state
         val url =
             helper.configs.privateApiUrl(if (configs.useParentSubaccount) "parent-funding-payment" else "funding-payment")

@@ -15,6 +15,7 @@ import indexer.models.chain.OnChainDelegationResponse
 import indexer.models.chain.OnChainStakingRewardsResponse
 import indexer.models.chain.OnChainUnbondingResponse
 import indexer.models.chain.OnChainUserFeeTierResponse
+import indexer.models.chain.OnChainUserStakingTierResponse
 import indexer.models.chain.OnChainUserStatsResponse
 import kollections.iListOf
 import kollections.iMutableListOf
@@ -140,6 +141,18 @@ internal fun TradingStateMachine.onChainUserStats(payload: String): StateChanges
     val payload = parser.asTypedObject<OnChainUserStatsResponse>(json)
     val oldValue = internalState.wallet.user?.copy()
     walletProcessor.processOnChainUserStats(internalState.wallet, payload)
+    return if (oldValue != internalState.wallet.user) {
+        StateChanges(iListOf(Changes.wallet), null)
+    } else {
+        StateChanges(iListOf())
+    }
+}
+
+internal fun TradingStateMachine.onChainUserStakingTier(payload: String): StateChanges {
+    val json = parser.decodeJsonObject(payload)
+    val payload = parser.asTypedObject<OnChainUserStakingTierResponse>(json)
+    val oldValue = internalState.wallet.user?.copy()
+    walletProcessor.processOnChainUserStakingTier(internalState.wallet, payload)
     return if (oldValue != internalState.wallet.user) {
         StateChanges(iListOf(Changes.wallet), null)
     } else {

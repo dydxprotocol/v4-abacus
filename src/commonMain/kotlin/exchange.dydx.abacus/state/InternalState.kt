@@ -236,7 +236,7 @@ internal data class InternalOrderbookTick(
 internal data class InternalConfigsState(
     var equityTiers: EquityTiers? = null,
     var feeTiers: List<FeeTier>? = null,
-    var allMarketFeeDiscounts: Map<String, InternalMarketFeeDiscountState>? = null,    // clobPairId is the key
+    var allMarketFeeDiscounts: Map<String, InternalMarketFeeDiscountState>? = null, // clobPairId is the key
     var withdrawalGating: WithdrawalGating? = null,
     var withdrawalCapacity: InternalWithdrawalCapacityState? = null,
     var rpcMap: ChainRpcMap? = null,
@@ -286,6 +286,7 @@ internal data class InternalUserState(
     var takerFeeRate: Double? = null,
     var makerVolume30D: Double? = null,
     var takerVolume30D: Double? = null,
+    var userStakingTierDiscountPercent: Double? = null,
 
     var restricted: Boolean = false, // TODO: Not being used
 )
