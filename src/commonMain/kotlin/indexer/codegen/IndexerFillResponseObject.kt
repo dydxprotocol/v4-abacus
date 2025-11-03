@@ -31,6 +31,10 @@ import kotlin.js.JsExport
  * @param orderId
  * @param clientMetadata
  * @param subaccountNumber
+ * @param builderFee
+ * @param builderAddress
+ * @param orderRouterAddress
+ * @param orderRouterFee
  */
 @JsExport
 @Serializable
@@ -50,5 +54,9 @@ data class IndexerFillResponseObject(
     val createdAtHeight: kotlin.String? = null,
     val orderId: kotlin.String? = null,
     val clientMetadata: kotlin.String? = null,
-    val subaccountNumber: kotlin.Int? = null
+    val subaccountNumber: kotlin.Int? = null,
+    val builderFee: kotlin.String? = null,
+    val builderAddress: kotlin.String? = null,
+    val orderRouterAddress: kotlin.String? = null,
+    val orderRouterFee: kotlin.String? = null
 )

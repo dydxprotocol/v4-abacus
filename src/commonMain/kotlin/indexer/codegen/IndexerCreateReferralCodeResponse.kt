@@ -16,13 +16,11 @@ import kotlin.js.JsExport
 
 /**
  *
- * Values: LIMIT,LIQUIDATED,DELEVERAGED,TWAPSUBORDER
+ * @param referralCode
  */
 @JsExport
 @Serializable
-enum class IndexerTradeType(val value: kotlin.String) {
-    LIMIT("LIMIT"), // :/
-    LIQUIDATED("LIQUIDATED"), // :/
-    DELEVERAGED("DELEVERAGED"), // :/
-    TWAPSUBORDER("TWAP_SUBORDER"); // :/
-}
+data class IndexerCreateReferralCodeResponse(
+
+    val referralCode: kotlin.String? = null
+)

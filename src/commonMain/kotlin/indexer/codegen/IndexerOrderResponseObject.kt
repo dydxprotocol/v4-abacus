@@ -32,6 +32,12 @@ import kotlin.js.JsExport
  * @param createdAtHeight
  * @param clientMetadata
  * @param triggerPrice
+ * @param builderAddress
+ * @param feePpm
+ * @param orderRouterAddress
+ * @param duration
+ * @param interval
+ * @param priceTolerance
  * @param timeInForce
  * @param status
  * @param postOnly
@@ -60,6 +66,12 @@ data class IndexerOrderResponseObject(
     val createdAtHeight: kotlin.String? = null,
     val clientMetadata: kotlin.String? = null,
     val triggerPrice: kotlin.String? = null,
+    val builderAddress: kotlin.String? = null,
+    val feePpm: kotlin.String? = null,
+    val orderRouterAddress: kotlin.String? = null,
+    val duration: kotlin.String? = null,
+    val interval: kotlin.String? = null,
+    val priceTolerance: kotlin.String? = null,
     val timeInForce: IndexerAPITimeInForce? = null,
     val status: IndexerAPIOrderStatus? = null,
     val postOnly: kotlin.Boolean? = null,

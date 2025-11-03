@@ -7,6 +7,7 @@ import exchange.dydx.abacus.protocols.LocalizerProtocol
 import exchange.dydx.abacus.protocols.ParserProtocol
 import exchange.dydx.abacus.state.InternalConfigsState
 import indexer.models.chain.OnChainEquityTiersResponse
+import indexer.models.chain.OnChainFeeDiscountsResponse
 import indexer.models.chain.OnChainFeeTiersResponse
 import indexer.models.chain.OnChainWithdrawalAndTransferGatingStatusResponse
 import indexer.models.chain.OnChainWithdrawalCapacityResponse
@@ -20,6 +21,11 @@ internal interface ConfigsProcessorProtocol : BaseProcessorProtocol {
     fun processOnChainFeeTiers(
         existing: InternalConfigsState,
         payload: OnChainFeeTiersResponse?
+    ): InternalConfigsState
+
+    fun processOnChainFeeDiscounts(
+        existing: InternalConfigsState,
+        payload: OnChainFeeDiscountsResponse?
     ): InternalConfigsState
 
     fun processWithdrawalGating(
@@ -54,6 +60,14 @@ internal class ConfigsProcessor(
         payload: OnChainFeeTiersResponse?,
     ): InternalConfigsState {
         existing.feeTiers = feeTiersProcessor.process(payload?.params?.tiers)
+        return existing
+    }
+
+    override fun processOnChainFeeDiscounts(
+        existing: InternalConfigsState,
+        payload: OnChainFeeDiscountsResponse?
+    ): InternalConfigsState {
+        existing.allMarketFeeDiscounts = feeTiersProcessor.processFeeDiscounts(payload?.params)
         return existing
     }
 

@@ -206,6 +206,7 @@ class VaultTests {
 
         val market = PerpetualMarket(
             id = "BTC-USD",
+            clobPairId = null,
             assetId = "0",
             market = "BTC-USD",
             displayId = null,
@@ -290,6 +291,7 @@ class VaultTests {
 
         val market = PerpetualMarket(
             id = "BTC-USD",
+            clobPairId = null,
             assetId = "0",
             market = "BTC-USD",
             displayId = null,

@@ -5,13 +5,19 @@ import exchange.dydx.abacus.output.FeeTierResources
 import exchange.dydx.abacus.processor.base.BaseProcessor
 import exchange.dydx.abacus.protocols.LocalizerProtocol
 import exchange.dydx.abacus.protocols.ParserProtocol
+import exchange.dydx.abacus.state.InternalMarketFeeDiscountState
 import exchange.dydx.abacus.utils.QUANTUM_MULTIPLIER
+import indexer.models.chain.OnChainFeeDiscountsParams
 import indexer.models.chain.OnChainFeeTier
 
 internal interface FeeTiersProcessorProtocol {
     fun process(
         payload: List<OnChainFeeTier>?
     ): List<FeeTier>?
+
+    fun processFeeDiscounts(
+        payload: List<OnChainFeeDiscountsParams>?
+    ): Map<String, InternalMarketFeeDiscountState>?
 }
 
 internal class FeeTiersProcessor(
@@ -55,5 +61,20 @@ internal class FeeTiersProcessor(
                 null
             }
         }
+    }
+
+    override fun processFeeDiscounts(
+        payload: List<OnChainFeeDiscountsParams>?
+    ): Map<String, InternalMarketFeeDiscountState>? {
+        val marketFeeDiscounts = mutableMapOf<String, InternalMarketFeeDiscountState>()
+        for (feeDiscount in payload ?: emptyList()) {
+            val feeDiscountState = InternalMarketFeeDiscountState(
+                startTime = feeDiscount.startTime,
+                endTime = feeDiscount.endTime,
+                chargePercent = feeDiscount.chargePpm?.div(QUANTUM_MULTIPLIER),
+            )
+            marketFeeDiscounts[feeDiscount.clobPairId.toString()] = feeDiscountState
+        }
+        return marketFeeDiscounts
     }
 }

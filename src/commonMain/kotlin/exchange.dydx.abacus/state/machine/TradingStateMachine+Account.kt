@@ -22,20 +22,14 @@ internal fun TradingStateMachine.account(payload: String): StateChanges {
         null
     }
     return if (json != null) {
-        receivedAccount(json)
+        walletProcessor.processAccount(
+            internalState = internalState.wallet,
+            payload = json,
+        )
+        return StateChanges(iListOf(Changes.subaccount, Changes.tradingRewards))
     } else {
         StateChanges(iListOf<Changes>(), null, null)
     }
-}
-
-private fun TradingStateMachine.receivedAccount(
-    payload: Map<String, Any>
-): StateChanges {
-    walletProcessor.processAccount(
-        internalState = internalState.wallet,
-        payload = payload,
-    )
-    return StateChanges(iListOf(Changes.subaccount, Changes.tradingRewards))
 }
 
 internal fun TradingStateMachine.updateHeight(

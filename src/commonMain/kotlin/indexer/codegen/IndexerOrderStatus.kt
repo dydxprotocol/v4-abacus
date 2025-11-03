@@ -16,7 +16,7 @@ import kotlin.js.JsExport
 
 /**
  *
- * Values: OPEN,FILLED,CANCELED,BEST_EFFORT_CANCELED,UNTRIGGERED
+ * Values: OPEN,FILLED,CANCELED,BEST_EFFORT_CANCELED,UNTRIGGERED,ERROR
  */
 @JsExport
 @Serializable
@@ -25,5 +25,6 @@ enum class IndexerOrderStatus(val value: kotlin.String) {
     FILLED("FILLED"), // :/
     CANCELED("CANCELED"), // :/
     BEST_EFFORT_CANCELED("BEST_EFFORT_CANCELED"), // :/
-    UNTRIGGERED("UNTRIGGERED"); // :/
+    UNTRIGGERED("UNTRIGGERED"), // :/
+    ERROR("ERROR"); // :/
 }

@@ -16,7 +16,7 @@ import kotlin.js.JsExport
 
 /**
  *
- * Values: LIMIT,LIQUIDATED,LIQUIDATION,DELEVERAGED,OFFSETTING
+ * Values: LIMIT,LIQUIDATED,LIQUIDATION,DELEVERAGED,OFFSETTING,TWAPSUBORDER
  */
 @JsExport
 @Serializable
@@ -25,5 +25,6 @@ enum class IndexerFillType(val value: kotlin.String) {
     LIQUIDATED("LIQUIDATED"), // :/
     LIQUIDATION("LIQUIDATION"), // :/
     DELEVERAGED("DELEVERAGED"), // :/
-    OFFSETTING("OFFSETTING"); // :/
+    OFFSETTING("OFFSETTING"), // :/
+    TWAPSUBORDER("TWAP_SUBORDER"); // :/
 }

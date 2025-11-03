@@ -205,6 +205,7 @@ the object may contain empty fields until both payloads are received and process
 @Serializable
 data class PerpetualMarket(
     val id: String,
+    val clobPairId: String?,
     val assetId: String,
     val market: String?,
     val displayId: String?,
@@ -264,6 +265,7 @@ data class PerpetualMarketSummary(
                 } else {
                     val market = PerpetualMarket(
                         id = marketId,
+                        clobPairId = null,
                         assetId = asset.id,
                         market = asset.name,
                         displayId = asset.displayableAssetId,

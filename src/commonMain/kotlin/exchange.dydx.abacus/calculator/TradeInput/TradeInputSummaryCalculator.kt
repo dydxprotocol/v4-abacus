@@ -13,6 +13,7 @@ import exchange.dydx.abacus.output.FeeTier
 import exchange.dydx.abacus.output.input.MarginMode
 import exchange.dydx.abacus.output.input.OrderSide
 import exchange.dydx.abacus.output.input.OrderType
+import exchange.dydx.abacus.state.InternalMarketFeeDiscountState
 import exchange.dydx.abacus.state.InternalMarketState
 import exchange.dydx.abacus.state.InternalRewardsParamsState
 import exchange.dydx.abacus.state.InternalSubaccountState
@@ -22,6 +23,7 @@ import exchange.dydx.abacus.state.InternalUserState
 import exchange.dydx.abacus.utils.Numeric
 import exchange.dydx.abacus.utils.QUANTUM_MULTIPLIER
 import exchange.dydx.abacus.utils.Rounder
+import kotlinx.datetime.Clock
 import kotlin.math.abs
 import kotlin.math.pow
 
@@ -33,25 +35,43 @@ internal class TradeInputSummaryCalculator {
         market: InternalMarketState?,
         rewardsParams: InternalRewardsParamsState?,
         feeTiers: List<FeeTier>?,
+        marketFeeDiscountState: InternalMarketFeeDiscountState?,
     ): InternalTradeInputState {
         trade.summary = when (trade.type) {
             OrderType.Market -> {
-                calculateForMarketOrder(trade, subaccount, user, market, rewardsParams, feeTiers)
+                calculateForMarketOrder(
+                    trade = trade,
+                    subaccount = subaccount,
+                    user = user,
+                    market = market,
+                    rewardsParams = rewardsParams,
+                    feeTiers = feeTiers,
+                    marketFeeDiscountState = marketFeeDiscountState,
+                )
             }
 
             OrderType.StopMarket, OrderType.TakeProfitMarket -> {
                 calculateForStopTakeProfitMarketOrder(
-                    trade,
-                    subaccount,
-                    user,
-                    market,
-                    rewardsParams,
-                    feeTiers,
+                    trade = trade,
+                    subaccount = subaccount,
+                    user = user,
+                    market = market,
+                    rewardsParams = rewardsParams,
+                    feeTiers = feeTiers,
+                    marketFeeDiscountState = marketFeeDiscountState,
                 )
             }
 
             OrderType.Limit, OrderType.StopLimit, OrderType.TakeProfitLimit -> {
-                calculateForLimitOrder(trade, subaccount, user, market, rewardsParams, feeTiers)
+                calculateForLimitOrder(
+                    trade = trade,
+                    subaccount = subaccount,
+                    user = user,
+                    market = market,
+                    rewardsParams = rewardsParams,
+                    feeTiers = feeTiers,
+                    marketFeeDiscountState = marketFeeDiscountState,
+                )
             }
 
             else -> null
@@ -67,6 +87,7 @@ internal class TradeInputSummaryCalculator {
         market: InternalMarketState?,
         rewardsParams: InternalRewardsParamsState?,
         feeTiers: List<FeeTier>?,
+        marketFeeDiscountState: InternalMarketFeeDiscountState?,
     ): InternalTradeInputSummary? {
         val marketOrder = trade.marketOrder ?: return null
         val multiplier = getMultiplier(trade)
@@ -90,8 +111,10 @@ internal class TradeInputSummaryCalculator {
         val size = marketOrder.size
         val usdcSize =
             if (price != null && size != null) (price * size) else null
-        val fee =
+        val baseFee =
             if (usdcSize != null && feeRate != null) (usdcSize * feeRate) else null
+        val fee = calculateFeeDiscount(baseFee, user, marketFeeDiscountState)
+
         val total =
             if (usdcSize != null) {
                 usdcSize * multiplier + (fee ?: Numeric.double.ZERO) * Numeric.double.NEGATIVE
@@ -148,6 +171,7 @@ internal class TradeInputSummaryCalculator {
         market: InternalMarketState?,
         rewardsParams: InternalRewardsParamsState?,
         feeTiers: List<FeeTier>?,
+        marketFeeDiscountState: InternalMarketFeeDiscountState?,
     ): InternalTradeInputSummary? {
         val marketOrder = trade.marketOrder ?: return null
         val multiplier = getMultiplier(trade)
@@ -210,8 +234,10 @@ internal class TradeInputSummaryCalculator {
         val size = marketOrder.size
         val usdcSize =
             if (price != null && size != null) (price * size) else null
-        val fee =
+        val baseFee =
             if (usdcSize != null && feeRate != null) (usdcSize * feeRate) else null
+        val fee = calculateFeeDiscount(baseFee, user, marketFeeDiscountState)
+
         val total =
             if (usdcSize != null) {
                 usdcSize * multiplier + (fee ?: Numeric.double.ZERO) * Numeric.double.NEGATIVE
@@ -250,6 +276,7 @@ internal class TradeInputSummaryCalculator {
         market: InternalMarketState?,
         rewardsParams: InternalRewardsParamsState?,
         feeTiers: List<FeeTier>?,
+        marketFeeDiscountState: InternalMarketFeeDiscountState?,
     ): InternalTradeInputSummary {
         val multiplier = getMultiplier(trade)
 
@@ -264,8 +291,10 @@ internal class TradeInputSummaryCalculator {
         val size = trade.size?.size
         val usdcSize =
             if (price != null && size != null) (price * size) else null
-        val fee =
+        val baseFee =
             if (usdcSize != null && feeRate != null) (usdcSize * feeRate) else null
+        val fee = calculateFeeDiscount(baseFee, user, marketFeeDiscountState)
+
         val total =
             if (usdcSize != null) {
                 usdcSize * multiplier + (fee ?: Numeric.double.ZERO) * Numeric.double.NEGATIVE
@@ -486,4 +515,34 @@ internal class TradeInputSummaryCalculator {
         val postOrderLeverage = position.calculated[CalculationPeriod.post]?.leverage
         return postOrderLeverage ?: currentLeverage
     }
+
+    private fun calculateFeeDiscount(
+        fee: Double?,
+        user: InternalUserState?,
+        marketFeeDiscount: InternalMarketFeeDiscountState?,
+    ): Double? {
+        if (fee == null) return fee
+
+        var finalFee = fee
+        if (marketFeeDiscount != null && marketFeeDiscount.isApplicable && marketFeeDiscount.chargePercent != null) {
+            finalFee *= marketFeeDiscount.chargePercent
+        }
+        val userStakingTierDiscountPercent = user?.userStakingTierDiscountPercent
+        if (userStakingTierDiscountPercent != null) {
+            finalFee *= (1 - userStakingTierDiscountPercent)
+        }
+        return finalFee
+    }
 }
+
+private val InternalMarketFeeDiscountState.isApplicable: Boolean
+    get() {
+        val now = Clock.System.now()
+        if (this.startTime != null && this.startTime > now) {
+            return false
+        }
+        if (this.endTime != null && this.endTime < now) {
+            return false
+        }
+        return true
+    }

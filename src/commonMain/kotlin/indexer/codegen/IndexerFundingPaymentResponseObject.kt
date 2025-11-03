@@ -26,6 +26,7 @@ import kotlin.js.JsExport
  * @param rate
  * @param payment
  * @param subaccountNumber
+ * @param fundingIndex
  */
 @JsExport
 @Serializable
@@ -40,5 +41,6 @@ data class IndexerFundingPaymentResponseObject(
     val side: kotlin.String? = null,
     val rate: kotlin.String? = null,
     val payment: kotlin.String? = null,
-    val subaccountNumber: kotlin.String? = null
+    val subaccountNumber: kotlin.String? = null,
+    val fundingIndex: kotlin.String? = null
 )

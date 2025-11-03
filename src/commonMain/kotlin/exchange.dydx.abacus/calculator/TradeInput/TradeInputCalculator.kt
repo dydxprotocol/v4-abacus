@@ -11,6 +11,7 @@ import exchange.dydx.abacus.output.input.TradeInputSize
 import exchange.dydx.abacus.protocols.ParserProtocol
 import exchange.dydx.abacus.state.InternalAccountState
 import exchange.dydx.abacus.state.InternalConfigsState
+import exchange.dydx.abacus.state.InternalMarketFeeDiscountState
 import exchange.dydx.abacus.state.InternalMarketState
 import exchange.dydx.abacus.state.InternalMarketSummaryState
 import exchange.dydx.abacus.state.InternalRewardsParamsState
@@ -123,6 +124,7 @@ internal class TradeInputCalculator(
             market = markets[trade.marketId],
             rewardsParams = rewardsParams,
             feeTiers = configs.feeTiers,
+            allMarketFeeDiscounts = configs.allMarketFeeDiscounts,
         )
 
         accountTransformer.applyTradeToAccount(
@@ -179,10 +181,18 @@ internal class TradeInputCalculator(
         market: InternalMarketState?,
         rewardsParams: InternalRewardsParamsState?,
         feeTiers: List<FeeTier>?,
+        allMarketFeeDiscounts: Map<String, InternalMarketFeeDiscountState>?,
     ): InternalTradeInputState {
         val marketId = market?.perpetualMarket?.id
         val position = if (marketId != null) {
             subaccount?.openPositions?.get(marketId)
+        } else {
+            null
+        }
+
+        val clobPairId = market?.perpetualMarket?.clobPairId
+        val marketFeeDiscountState = if (clobPairId != null) {
+            allMarketFeeDiscounts?.get(clobPairId)
         } else {
             null
         }
@@ -202,6 +212,7 @@ internal class TradeInputCalculator(
             market = market,
             rewardsParams = rewardsParams,
             feeTiers = feeTiers,
+            marketFeeDiscountState = marketFeeDiscountState,
         )
 
         return trade

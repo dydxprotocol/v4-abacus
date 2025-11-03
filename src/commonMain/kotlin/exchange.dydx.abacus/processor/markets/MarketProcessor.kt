@@ -102,6 +102,7 @@ internal class MarketProcessor(
         try {
             val newValue = PerpetualMarket(
                 id = name,
+                clobPairId = payload.clobPairId,
                 assetId = MarketId.getAssetId(name) ?: parseException(payload),
                 oraclePrice = oraclePrice,
                 market = name,
