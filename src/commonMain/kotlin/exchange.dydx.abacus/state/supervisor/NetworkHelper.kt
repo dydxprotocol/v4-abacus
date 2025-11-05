@@ -255,6 +255,10 @@ class NetworkHelper(
                             }
 
                             else -> {
+                                val geoStatus = parsedHeaders?.get("geo-origin-status")
+                                if (geoStatus == "restricted") {
+                                    indexerRestriction = UsageRestriction.http403Restriction
+                                }
                                 callback(fullUrl, response, httpCode, parsedHeaders)
                             }
                         }
