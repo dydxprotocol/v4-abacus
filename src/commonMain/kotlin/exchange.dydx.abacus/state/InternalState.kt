@@ -14,6 +14,8 @@ import exchange.dydx.abacus.output.MarketHistoricalFunding
 import exchange.dydx.abacus.output.MarketOrderbook
 import exchange.dydx.abacus.output.MarketTrade
 import exchange.dydx.abacus.output.PerpetualMarket
+import exchange.dydx.abacus.output.FeeLeaderboardEntry
+import exchange.dydx.abacus.output.RebateLeaderboardEntry
 import exchange.dydx.abacus.output.WithdrawalGating
 import exchange.dydx.abacus.output.account.PositionSide
 import exchange.dydx.abacus.output.account.StakingRewards
@@ -75,6 +77,8 @@ internal data class InternalState(
     val marketsSummary: InternalMarketSummaryState = InternalMarketSummaryState(),
     val input: InternalInputState = InternalInputState(),
     var vault: InternalVaultState? = null,
+    val feeLeaderboard: InternalFeeLeaderboardState = InternalFeeLeaderboardState(),
+    val rebateLeaderboard: InternalRebateLeaderboardState = InternalRebateLeaderboardState()
 )
 
 internal data class InternalInputState(
@@ -486,6 +490,14 @@ internal data class InternalRewardsParamsState(
 
 internal data class InternalLaunchIncentiveState(
     var seasons: List<LaunchIncentiveSeason>? = null,
+)
+
+internal data class InternalFeeLeaderboardState(
+    var leaderboard: List<FeeLeaderboardEntry>? = null
+)
+
+internal data class InternalRebateLeaderboardState(
+    var leaderboard: List<RebateLeaderboardEntry>? = null
 )
 
 internal fun TradeInputSize.Companion.safeCreate(existing: TradeInputSize?): TradeInputSize {

@@ -44,7 +44,9 @@ data class PerpetualState(
     val restriction: UsageRestriction?,
     val launchIncentive: LaunchIncentive?,
     val compliance: Compliance?,
-    val vault: Vault?
+    val vault: Vault?,
+    val feeLeaderboard: FeeLeaderboard?,
+    val rebateLeaderboard: RebateLeaderboard?
 ) {
     internal companion object {
         fun newState(): PerpetualState {
@@ -70,6 +72,8 @@ data class PerpetualState(
                 launchIncentive = null,
                 compliance = null,
                 vault = null,
+                feeLeaderboard = null,
+                rebateLeaderboard = null
             )
         }
     }
