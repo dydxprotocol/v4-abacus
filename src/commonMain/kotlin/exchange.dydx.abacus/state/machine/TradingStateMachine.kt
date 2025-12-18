@@ -18,6 +18,8 @@ import exchange.dydx.abacus.output.MarketCandle
 import exchange.dydx.abacus.output.MarketCandles
 import exchange.dydx.abacus.output.PerpetualMarketSummary
 import exchange.dydx.abacus.output.PerpetualState
+import exchange.dydx.abacus.output.FeeLeaderboard
+import exchange.dydx.abacus.output.RebateLeaderboard
 import exchange.dydx.abacus.output.TransferStatus
 import exchange.dydx.abacus.output.Vault
 import exchange.dydx.abacus.output.Wallet
@@ -35,6 +37,8 @@ import exchange.dydx.abacus.processor.configs.RewardsParamsProcessor
 import exchange.dydx.abacus.processor.input.ClosePositionInputProcessor
 import exchange.dydx.abacus.processor.input.TradeInputProcessor
 import exchange.dydx.abacus.processor.launchIncentive.LaunchIncentiveProcessor
+import exchange.dydx.abacus.processor.leaderboards.FeeLeaderboardProcessor
+import exchange.dydx.abacus.processor.leaderboards.RebateLeaderboardProcessor
 import exchange.dydx.abacus.processor.markets.MarketsSummaryProcessor
 import exchange.dydx.abacus.processor.router.skip.SkipProcessor
 import exchange.dydx.abacus.processor.vault.VaultProcessor
@@ -118,6 +122,8 @@ open class TradingStateMachine(
     internal val launchIncentiveProcessor = LaunchIncentiveProcessor(parser)
     internal val tradeInputProcessor = TradeInputProcessor(parser)
     internal val closePositionInputProcessor = ClosePositionInputProcessor(parser)
+    internal val feeLeaderboardProcessor = FeeLeaderboardProcessor(parser)
+    internal val rebateLeaderboardProcessor = RebateLeaderboardProcessor(parser)
 
     internal val marketsCalculator = MarketCalculator(parser)
     internal val accountCalculator = AccountCalculator(parser, useParentSubaccount)
@@ -384,7 +390,9 @@ open class TradingStateMachine(
                 Changes.trackStatuses,
                 Changes.orderbook,
                 Changes.launchIncentive,
-                Changes.vault
+                Changes.vault,
+                Changes.feeLeaderboard,
+                Changes.rebateLeaderboard
                 -> true
 
                 Changes.wallet -> state?.wallet != wallet
@@ -599,6 +607,8 @@ open class TradingStateMachine(
         var launchIncentive = state?.launchIncentive
         val geo = state?.compliance
         var vault = state?.vault
+        var surgeLeaderboard = state?.feeLeaderboard
+        var rebateLeaderboard = state?.rebateLeaderboard
 
         if (changes.changes.contains(Changes.markets)) {
             marketsSummary =
@@ -856,6 +866,16 @@ open class TradingStateMachine(
                 ),
             )
         }
+        if (changes.changes.contains(Changes.feeLeaderboard)) {
+            surgeLeaderboard = FeeLeaderboard(
+                leaderboard = internalState.feeLeaderboard.leaderboard?.toIList() ?: iListOf()
+            )
+        }
+        if (changes.changes.contains(Changes.rebateLeaderboard)) {
+            rebateLeaderboard = RebateLeaderboard(
+                leaderboard = internalState.rebateLeaderboard.leaderboard?.toIList() ?: iListOf()
+            )
+        }
         if (changes.changes.contains(Changes.vault) || changes.changes.contains(Changes.markets)) {
             if (internalState.vault != null) {
                 val positions = VaultCalculator.calculateVaultPositionsInternal(
@@ -903,6 +923,8 @@ open class TradingStateMachine(
             launchIncentive = launchIncentive,
             compliance = geo,
             vault = vault,
+            feeLeaderboard = surgeLeaderboard,
+            rebateLeaderboard = rebateLeaderboard
         )
     }
 

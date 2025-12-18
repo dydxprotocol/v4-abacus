@@ -25,6 +25,7 @@ import exchange.dydx.abacus.state.machine.onChainUnbonding
 import exchange.dydx.abacus.state.machine.onChainUserFeeTier
 import exchange.dydx.abacus.state.machine.onChainUserStakingTier
 import exchange.dydx.abacus.state.machine.onChainUserStats
+import exchange.dydx.abacus.state.machine.feeLeaderboard
 import exchange.dydx.abacus.state.manager.ApiData
 import exchange.dydx.abacus.state.manager.AutoSweepConfig
 import exchange.dydx.abacus.state.manager.BlockAndTime
@@ -219,6 +220,9 @@ internal open class AccountSupervisor(
         if (readyToConnect) {
             if (configs.retrieveLaunchIncentivePoints) {
                 retrieveLaunchIncentivePoints()
+            }
+            if (configs.retrieveFeeLeaderboard) {
+                retrieveFeeLeaderboard()
             }
         }
     }
@@ -548,6 +552,19 @@ internal open class AccountSupervisor(
                     val oldState = stateMachine.state
                     update(stateMachine.launchIncentivePoints(season, response), oldState)
                 }
+            }
+        }
+    }
+
+    private fun retrieveFeeLeaderboard() {
+        val url = "https://pp-external-api-ffb2ad95ef03.herokuapp.com/api/dydx-fee-leaderboard"
+        helper.get(
+            url = url,
+            params = iMapOf("perPage" to "100", "address" to accountAddress)
+        ) { _, response, httpCode, _ ->
+            if (helper.success(httpCode) && response != null) {
+                val oldState = stateMachine.state
+                update(stateMachine.feeLeaderboard(response), oldState)
             }
         }
     }

@@ -38,6 +38,8 @@ enum class Changes(val rawValue: String) {
 
     launchIncentive("launchIncentive"),
     vault("vault"),
+    feeLeaderboard("feeLeaderboard"),
+    rebateLeaderboard("rebateLeaderboard")
     ;
 
     companion object {
