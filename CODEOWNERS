@@ -1,5 +1,5 @@
 # repo default
-* @dydxprotocol/mobile-code-owners
+* @dydxprotocol/mobile-code-owner
 
 # global security policy
 /.github/   @dydxprotocol/security
