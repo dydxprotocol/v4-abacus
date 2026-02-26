@@ -11,6 +11,8 @@ import exchange.dydx.abacus.state.machine.onChainRewardTokenPrice
 import exchange.dydx.abacus.state.machine.onChainRewardsParams
 import exchange.dydx.abacus.state.machine.onChainWithdrawalCapacity
 import exchange.dydx.abacus.state.machine.onChainWithdrawalGating
+import exchange.dydx.abacus.state.machine.feeLeaderboard
+import exchange.dydx.abacus.state.machine.rebateLeaderboard
 import exchange.dydx.abacus.utils.AnalyticsUtils
 import exchange.dydx.abacus.utils.Logger
 import exchange.dydx.abacus.utils.ServerTime
@@ -37,6 +39,9 @@ internal class SystemSupervisor(
             if (configs.retrieveLaunchIncentiveSeasons) {
                 // get from launch incentive endpoints
                 retrieveLaunchIncentiveSeasons()
+            }
+            if (configs.retrieveRebateLeaderboard) {
+                retrieveRebateLeaderboard()
             }
         }
     }
@@ -189,6 +194,16 @@ internal class SystemSupervisor(
 
                     incentiveSeasonReceived(stateMachine.state?.launchIncentive?.currentSeason)
                 }
+            }
+        }
+    }
+
+    private fun retrieveRebateLeaderboard() {
+        val url = "https://pp-external-api-ffb2ad95ef03.herokuapp.com/api/dydx-weekly-clc"
+        helper.get(url = url, params = iMapOf("perPage" to "100")) { _, response, httpCode, _ ->
+            if (helper.success(httpCode) && response != null) {
+                val oldState = stateMachine.state
+                update(stateMachine.rebateLeaderboard(response), oldState)
             }
         }
     }

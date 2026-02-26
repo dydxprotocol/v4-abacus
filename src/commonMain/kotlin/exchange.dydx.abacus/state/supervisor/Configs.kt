@@ -12,6 +12,7 @@ data class SystemConfigs(
     val retrieveRewardsParams: Boolean,
     val retrieveLaunchIncentiveSeasons: Boolean,
     val retrieveWithdrawSafetyChecks: Boolean,
+    val retrieveRebateLeaderboard: Boolean
 ) {
     companion object {
         val forApp = SystemConfigs(
@@ -23,6 +24,7 @@ data class SystemConfigs(
             retrieveRewardsParams = true,
             retrieveLaunchIncentiveSeasons = true,
             retrieveWithdrawSafetyChecks = true,
+            retrieveRebateLeaderboard = true
         )
         val forProgrammaticTraders = SystemConfigs(
             retrieveServerTime = true,
@@ -33,6 +35,7 @@ data class SystemConfigs(
             retrieveRewardsParams = false,
             retrieveLaunchIncentiveSeasons = false,
             retrieveWithdrawSafetyChecks = false,
+            retrieveRebateLeaderboard = false
         )
     }
 }
@@ -137,6 +140,7 @@ data class AccountConfigs(
     val retrieveUserStakingTier: Boolean,
     val transferNobleBalances: Boolean,
     val subaccountConfigs: SubaccountConfigs,
+    val retrieveFeeLeaderboard: Boolean
 
 ) {
     companion object {
@@ -150,6 +154,7 @@ data class AccountConfigs(
             retrieveUserStakingTier = true,
             transferNobleBalances = true,
             subaccountConfigs = SubaccountConfigs.forApp,
+            retrieveFeeLeaderboard = true
         )
         val forAppWithIsolatedMargins = AccountConfigs(
             retrieveUserFeeTier = true,
@@ -161,6 +166,7 @@ data class AccountConfigs(
             retrieveUserStakingTier = true,
             transferNobleBalances = true,
             subaccountConfigs = SubaccountConfigs.forAppWithIsolatedMargins,
+            retrieveFeeLeaderboard = true
         )
         val forProgrammaticTraders = AccountConfigs(
             retrieveUserFeeTier = true,
@@ -172,6 +178,7 @@ data class AccountConfigs(
             retrieveUserStakingTier = true,
             transferNobleBalances = true,
             subaccountConfigs = SubaccountConfigs.forProgrammaticTraders,
+            retrieveFeeLeaderboard = false
         )
     }
 }
