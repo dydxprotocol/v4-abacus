@@ -128,6 +128,7 @@ interface AsyncAbacusStateManagerProtocol {
 interface AsyncAbacusStateManagerSingletonProtocol {
     val accountAddress: String?
     val sourceAddress: String?
+    var injectiveAddress: String?
     var subaccountNumber: Int
     var market: String?
     var walletConnectionType: WalletConnectionType?

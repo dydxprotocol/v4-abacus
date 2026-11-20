@@ -323,6 +323,8 @@ internal class StateManagerAdaptorV2(
             accounts.subaccountNumber = value
         }
 
+    internal var injectiveAddress: String? = null
+
     private val currentHeight: Int?
         get() {
             return connections.calculateCurrentHeight()
@@ -637,7 +639,7 @@ internal class StateManagerAdaptorV2(
     }
 
     internal fun transfer(data: String?, type: TransferInputField?) {
-        onboarding.transfer(data, type, accountAddress, sourceAddress, subaccountNumber)
+        onboarding.transfer(data, type, accountAddress, sourceAddress, subaccountNumber, injectiveAddress)
 
         data?.let {
             TransferType.Companion(rawValue = data)?.let {

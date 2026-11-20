@@ -122,6 +122,7 @@ class TestRest() : RestProtocol {
     private val parser = Parser()
 
     var requests = iMutableListOf<String>()
+    val postedBodies = mutableListOf<Pair<String, String?>>()
 
     init {
         setResponse(
@@ -232,6 +233,7 @@ class TestRest() : RestProtocol {
         callback: RestCallback,
     ) {
         requests.add(url)
+        postedBodies.add(url to body)
 
         val response = responses[url]
         if (response != null) {

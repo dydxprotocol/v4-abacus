@@ -80,6 +80,16 @@ class V4StateManagerConfigs(
         return if (environment.isMainNet) "noble-1" else "grand-1"
     }
 
+    fun injectiveChainId(): String {
+        return if (environment.isMainNet) "injective-1" else "injective-888"
+    }
+
+    val injectiveEvmChainId = "1776"
+
+    val injectiveUsdcDenom = "erc20:0xa00C59fF5a080D2b954d0c75e46E22a0c371235a"
+
+    val injectiveEvmUsdcAddress = "0xa00C59fF5a080D2b954d0c75e46E22a0c371235a"
+
     fun osmosisChainId(): String {
         return if (environment.isMainNet) "osmosis-1" else "osmo-test-5"
     }
