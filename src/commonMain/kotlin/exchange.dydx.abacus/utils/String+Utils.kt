@@ -71,6 +71,16 @@ fun String.toInjectiveEvmAddress(): String? {
     return "0x" + bytes.toHex()
 }
 
+fun String.evmToInjectiveAddress(): String? {
+    val hex = removePrefix("0x").removePrefix("0X")
+    if (hex.length != 40) {
+        return null
+    }
+    val bytes = hex.chunked(2).map { it.toIntOrNull(16)?.toByte() ?: return null }.toByteArray()
+    val data = convertBits(bytes, fromBits = 8, toBits = 5, pad = true) ?: return null
+    return Bech32.encode("inj", data)
+}
+
 private fun String.injectiveAddressBytes(): ByteArray? {
     try {
         val (humanReadablePart, data) = Bech32.decode(this)
@@ -135,5 +145,9 @@ object AbacusStringUtils {
 
     fun toInjectiveEvmAddress(injectiveAddress: String): String? {
         return injectiveAddress.toInjectiveEvmAddress()
+    }
+
+    fun evmToInjectiveAddress(evmAddress: String): String? {
+        return evmAddress.evmToInjectiveAddress()
     }
 }

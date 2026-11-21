@@ -707,6 +707,16 @@ class AsyncAbacusStateManagerV2(
         }
     }
 
+    override fun commitInjectiveDeposit(callback: TransactionCallback) {
+        try {
+            adaptor?.commitInjectiveDeposit(callback)
+        } catch (e: Exception) {
+            val error = V4TransactionErrors.Companion.error(null, e.toString())
+            trackTransactionError("commitInjectiveDeposit", error)
+            callback(false, error, null)
+        }
+    }
+
     override fun faucet(amount: Double, callback: TransactionCallback) {
         try {
             adaptor?.faucet(amount, callback)

@@ -5,6 +5,7 @@ import exchange.dydx.abacus.output.Restriction
 import exchange.dydx.abacus.output.UsageRestriction
 import exchange.dydx.abacus.protocols.ThreadingType
 import exchange.dydx.abacus.protocols.TransactionCallback
+import exchange.dydx.abacus.responses.ParsingError
 import exchange.dydx.abacus.responses.ParsingErrorType
 import exchange.dydx.abacus.responses.ParsingException
 import exchange.dydx.abacus.responses.SocketInfo
@@ -109,6 +110,7 @@ internal class AccountsSupervisor(
             newAccountSupervisor.indexerConnected = indexerConnected
             newAccountSupervisor.socketConnected = socketConnected
             newAccountSupervisor.validatorConnected = validatorConnected
+            newAccountSupervisor.injectiveAddress = injectiveAddress
             accounts[address] = newAccountSupervisor
             pushNotificationToken?.let {
                 newAccountSupervisor.registerPushNotification(it, pushNotificationLanguageCode)
@@ -213,6 +215,11 @@ internal class AccountsSupervisor(
 
     var sourceAddress: String? = null
     var accountAddress: String? = null
+    var injectiveAddress: String? = null
+        set(value) {
+            field = value
+            account?.injectiveAddress = value
+        }
 }
 
 // Extension properties to help with current singular account
@@ -370,6 +377,11 @@ internal fun AccountsSupervisor.stopWatchingLastOrder() {
 
 internal fun AccountsSupervisor.faucet(amount: Double, callback: TransactionCallback) {
     account?.faucet(amount, callback)
+}
+
+internal fun AccountsSupervisor.commitInjectiveDeposit(callback: TransactionCallback) {
+    account?.commitInjectiveDeposit(callback)
+        ?: helper.send(ParsingError(ParsingErrorType.MissingRequiredData, "Wallet not connected"), callback)
 }
 
 internal fun AccountsSupervisor.cancelOrder(orderId: String, callback: TransactionCallback) {

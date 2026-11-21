@@ -1,15 +1,18 @@
 package exchange.dydx.abacus.output.account
 
+import com.ionspin.kotlin.bignum.decimal.BigDecimal
 import exchange.dydx.abacus.output.LaunchIncentivePoints
 import exchange.dydx.abacus.protocols.ParserProtocol
 import exchange.dydx.abacus.state.InternalAccountBalanceState
 import exchange.dydx.abacus.state.InternalAccountState
+import exchange.dydx.abacus.state.InternalInjectiveBalancesState
 import exchange.dydx.abacus.state.InternalStakingDelegationState
 import exchange.dydx.abacus.state.manager.TokenInfo
 import exchange.dydx.abacus.utils.IList
 import exchange.dydx.abacus.utils.IMap
 import exchange.dydx.abacus.utils.IMutableMap
 import exchange.dydx.abacus.utils.Logger
+import exchange.dydx.abacus.utils.MIN_INJECTIVE_USDC_TO_DEPOSIT
 import exchange.dydx.abacus.utils.Numeric
 import kollections.JsExport
 import kollections.iMutableMapOf
@@ -30,6 +33,7 @@ data class Account(
     var groupedSubaccounts: IMap<String, Subaccount>?,
     var tradingRewards: TradingRewards?,
     val launchIncentivePoints: LaunchIncentivePoints?,
+    val injectiveBalances: InjectiveBalances? = null,
 ) {
     companion object {
         internal fun create(
@@ -125,6 +129,10 @@ data class Account(
                 groupedSubaccounts = groupedSubaccounts,
                 tradingRewards = tradingRewards,
                 launchIncentivePoints = launchIncentivePoints,
+                injectiveBalances = InjectiveBalances.create(
+                    existing = existing?.injectiveBalances,
+                    internalState = internalState.injectiveBalances,
+                ),
             )
         }
 
@@ -176,6 +184,33 @@ data class Account(
                 }
             }
             return newStakingBalances
+        }
+    }
+}
+
+@JsExport
+@Serializable
+data class InjectiveBalances(
+    val usdc: Double,
+    val inj: Double,
+    // Enough USDC is waiting on Injective to complete a deposit
+    val hasPendingDeposit: Boolean,
+) {
+    companion object {
+        private const val USDC_DECIMALS = 6
+        private const val INJ_DECIMALS = 18
+
+        internal fun create(
+            existing: InjectiveBalances?,
+            internalState: InternalInjectiveBalancesState?,
+        ): InjectiveBalances? {
+            internalState ?: return null
+            val balances = InjectiveBalances(
+                usdc = internalState.usdc.moveDecimalPoint(-USDC_DECIMALS).doubleValue(false),
+                inj = internalState.inj.moveDecimalPoint(-INJ_DECIMALS).doubleValue(false),
+                hasPendingDeposit = internalState.usdc >= BigDecimal.fromLong(MIN_INJECTIVE_USDC_TO_DEPOSIT),
+            )
+            return if (balances != existing) balances else existing
         }
     }
 }

@@ -34,5 +34,8 @@ internal const val GEO_POLLING_DURATION_SECONDS = 600.0
 // Autosweep Constants
 internal const val MIN_USDC_AMOUNT_FOR_AUTO_SWEEP = 50000
 
+// Injective USDC below this, in base units, is not worth sending to dYdX
+internal const val MIN_INJECTIVE_USDC_TO_DEPOSIT = 1_000_000L
+
 // Limit Close GTT duration in Days
 internal const val LIMIT_CLOSE_ORDER_DEFAULT_DURATION_DAYS = 28.0

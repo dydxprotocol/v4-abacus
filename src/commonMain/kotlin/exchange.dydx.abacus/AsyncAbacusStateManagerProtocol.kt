@@ -101,6 +101,9 @@ interface AsyncAbacusStateManagerProtocol {
     fun commitTransfer(callback: TransactionCallback)
     fun commitCCTPWithdraw(callback: TransactionCallback)
 
+    // Sends USDC waiting on Injective to the dYdX chain. The callback's data is the Injective tx hash.
+    fun commitInjectiveDeposit(callback: TransactionCallback)
+
     // Commit changes with params
     fun faucet(amount: Double, callback: TransactionCallback)
     fun cancelOrder(orderId: String, callback: TransactionCallback)

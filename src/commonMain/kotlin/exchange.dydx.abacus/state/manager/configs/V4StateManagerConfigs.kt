@@ -1,5 +1,6 @@
 package exchange.dydx.abacus.state.manager.configs
 
+import com.ionspin.kotlin.bignum.decimal.BigDecimal
 import exchange.dydx.abacus.state.manager.V4Environment
 import exchange.dydx.abacus.utils.IMap
 import kollections.toIMap
@@ -33,7 +34,8 @@ class V4StateManagerConfigs(
                          "vaultPositions":"/v4/vault/v1/megavault/positions",
                          "vaultHistoricalPnl":"/v4/vault/v1/megavault/historicalPnl",
                          "vaultMarketPnls":"/v4/vault/v1/vaults/historicalPnl",
-                         "transfers":"/v4/transfers/between"
+                         "transfers":"/v4/transfers/between",
+                         "gasSponsorship":"/v4/gasSponsorship"
                       },
                       "private":{
                          "account":"/v4/addresses",
@@ -89,6 +91,35 @@ class V4StateManagerConfigs(
     val injectiveUsdcDenom = "erc20:0xa00C59fF5a080D2b954d0c75e46E22a0c371235a"
 
     val injectiveEvmUsdcAddress = "0xa00C59fF5a080D2b954d0c75e46E22a0c371235a"
+
+    val injectiveFeeDenom = "inj"
+
+    val injectiveIbcTransferGasLimit: BigDecimal = BigDecimal.fromLong(450_000)
+
+    // Price per unit of gas, in inj. Comfortably above the minimum base fee (1.6e8).
+    val injectiveGasPrice: BigDecimal = BigDecimal.fromLong(1_000_000_000)
+
+    val injectiveIbcTransferFee: BigDecimal = injectiveIbcTransferGasLimit * injectiveGasPrice
+
+    val injectiveToDydxChannel = "channel-258"
+
+    private val injectiveRestHost: String
+        get() {
+            return environment.endpoints.injectiveRest
+                ?: if (environment.isMainNet) "https://sentry.lcd.injective.network" else "https://testnet.sentry.lcd.injective.network"
+        }
+
+    fun injectiveBalanceUrl(address: String, denom: String): String {
+        return "$injectiveRestHost/cosmos/bank/v1beta1/balances/$address/by_denom?denom=$denom"
+    }
+
+    fun injectiveAccountUrl(address: String): String {
+        return "$injectiveRestHost/cosmos/auth/v1beta1/accounts/$address"
+    }
+
+    fun injectiveBroadcastUrl(): String {
+        return "$injectiveRestHost/cosmos/tx/v1beta1/txs"
+    }
 
     fun osmosisChainId(): String {
         return if (environment.isMainNet) "osmosis-1" else "osmo-test-5"

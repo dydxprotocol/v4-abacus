@@ -66,6 +66,7 @@ import exchange.dydx.abacus.state.supervisor.closePosition
 import exchange.dydx.abacus.state.supervisor.closePositionPayload
 import exchange.dydx.abacus.state.supervisor.commitAdjustIsolatedMargin
 import exchange.dydx.abacus.state.supervisor.commitClosePosition
+import exchange.dydx.abacus.state.supervisor.commitInjectiveDeposit
 import exchange.dydx.abacus.state.supervisor.commitPlaceOrder
 import exchange.dydx.abacus.state.supervisor.commitTriggerOrders
 import exchange.dydx.abacus.state.supervisor.connectedSubaccountNumber
@@ -324,6 +325,10 @@ internal class StateManagerAdaptorV2(
         }
 
     internal var injectiveAddress: String? = null
+        set(value) {
+            field = value
+            accounts.injectiveAddress = value
+        }
 
     private val currentHeight: Int?
         get() {
@@ -656,6 +661,22 @@ internal class StateManagerAdaptorV2(
         val address = accountAddress
         if (address != null) {
             onboarding.commitCCTPWithdraw(address, subaccountNumber, callback)
+        }
+    }
+
+    internal fun commitInjectiveDeposit(callback: TransactionCallback) {
+        accounts.commitInjectiveDeposit { successful, error, data ->
+            val hash = data as? String
+            if (successful && hash != null) {
+                transferStatus(
+                    hash = hash,
+                    fromChainId = configs.injectiveChainId(),
+                    toChainId = environment.dydxChainId,
+                    isCctp = false,
+                    requestId = null,
+                )
+            }
+            callback(successful, error, data)
         }
     }
 

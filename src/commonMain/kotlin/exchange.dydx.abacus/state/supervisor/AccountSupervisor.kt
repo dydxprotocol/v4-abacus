@@ -7,8 +7,11 @@ import exchange.dydx.abacus.protocols.LocalTimerProtocol
 import exchange.dydx.abacus.protocols.QueryType
 import exchange.dydx.abacus.protocols.TransactionCallback
 import exchange.dydx.abacus.protocols.TransactionType
+import exchange.dydx.abacus.responses.ParsingError
+import exchange.dydx.abacus.responses.ParsingErrorType
 import exchange.dydx.abacus.responses.SocketInfo
 import exchange.dydx.abacus.state.Changes
+import exchange.dydx.abacus.state.InternalInjectiveBalancesState
 import exchange.dydx.abacus.state.machine.AdjustIsolatedMarginInputField
 import exchange.dydx.abacus.state.machine.ClosePositionInputField
 import exchange.dydx.abacus.state.machine.TradeInputField
@@ -25,6 +28,7 @@ import exchange.dydx.abacus.state.machine.onChainUnbonding
 import exchange.dydx.abacus.state.machine.onChainUserFeeTier
 import exchange.dydx.abacus.state.machine.onChainUserStakingTier
 import exchange.dydx.abacus.state.machine.onChainUserStats
+import exchange.dydx.abacus.state.machine.setInjectiveBalances
 import exchange.dydx.abacus.state.manager.ApiData
 import exchange.dydx.abacus.state.manager.AutoSweepConfig
 import exchange.dydx.abacus.state.manager.BlockAndTime
@@ -105,6 +109,27 @@ internal open class AccountSupervisor(
             if (field !== value) {
                 field?.cancel()
                 field = value
+            }
+        }
+
+    private val injectiveBalancesPollingDuration = 30.0
+    private var injectiveBalancesTimer: LocalTimerProtocol? = null
+        set(value) {
+            if (field !== value) {
+                field?.cancel()
+                field = value
+            }
+        }
+
+    private val injectiveDeposit = InjectiveDepositSupervisor(helper)
+
+    internal var injectiveAddress: String? = null
+        set(value) {
+            if (field != value) {
+                field = value
+                val oldState = stateMachine.state
+                update(stateMachine.setInjectiveBalances(null), oldState)
+                retrieveInjectiveBalances()
             }
         }
 
@@ -220,6 +245,9 @@ internal open class AccountSupervisor(
             if (configs.retrieveLaunchIncentivePoints) {
                 retrieveLaunchIncentivePoints()
             }
+            retrieveInjectiveBalances()
+        } else {
+            injectiveBalancesTimer = null
         }
     }
 
@@ -466,6 +494,51 @@ internal open class AccountSupervisor(
                 } else if (balance["error"] != null) {
                     Logger.e { "Error checking noble balance: $response" }
                 }
+            }
+        }
+    }
+
+    private fun retrieveInjectiveBalances() {
+        if (injectiveAddress == null || !readyToConnect) {
+            injectiveBalancesTimer = null
+            return
+        }
+        val timer = helper.ioImplementations.timer ?: CoroutineTimer.instance
+        injectiveBalancesTimer =
+            timer.schedule(0.0, injectiveBalancesPollingDuration) {
+                if (readyToConnect) {
+                    getInjectiveBalances()
+                    true
+                } else {
+                    false
+                }
+            }
+    }
+
+    private fun getInjectiveBalances(completion: ((InternalInjectiveBalancesState?) -> Unit)? = null) {
+        val address = injectiveAddress ?: return
+        injectiveDeposit.fetchBalances(address) { balances ->
+            if (balances != null && address == injectiveAddress) {
+                val oldState = stateMachine.state
+                update(stateMachine.setInjectiveBalances(balances), oldState)
+            }
+            completion?.invoke(balances)
+        }
+    }
+
+    internal fun commitInjectiveDeposit(callback: TransactionCallback) {
+        val injectiveAddress = injectiveAddress
+        if (injectiveAddress == null) {
+            helper.send(
+                ParsingError(ParsingErrorType.MissingRequiredData, "Injective wallet not connected"),
+                callback,
+            )
+            return
+        }
+        getInjectiveBalances { balances ->
+            injectiveDeposit.commit(accountAddress, injectiveAddress, balances) { error, hash ->
+                getInjectiveBalances()
+                helper.send(error, callback, hash)
             }
         }
     }

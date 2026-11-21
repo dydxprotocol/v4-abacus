@@ -37,6 +37,7 @@ data class EnvironmentEndpoints(
     val metadataService: String?,
     val nobleValidator: String?,
     val injectiveValidator: String?,
+    val injectiveRest: String? = null,
     val geo: String?,
     val solanaRpcUrl: String?,
 ) {
@@ -56,6 +57,7 @@ data class EnvironmentEndpoints(
             val metadataService = parser.asString(data["metadataService"])
             val nobleValidator = parser.asString(data["nobleValidator"])
             val injectiveValidator = parser.asString(data["injectiveValidator"])
+            val injectiveRest = parser.asString(data["injectiveRest"])
             val geo = parser.asString(data["geo"])
             val solanaRpcUrl = parser.asString(data["solanaRpcUrl"])
             return EnvironmentEndpoints(
@@ -66,6 +68,7 @@ data class EnvironmentEndpoints(
                 metadataService = metadataService,
                 nobleValidator = nobleValidator,
                 injectiveValidator = injectiveValidator,
+                injectiveRest = injectiveRest,
                 geo = geo,
                 solanaRpcUrl = solanaRpcUrl,
             )
@@ -627,6 +630,12 @@ data object StatsigConfig {
 @Suppress("PropertyName")
 data object AutoSweepConfig {
     var disable_autosweep: Boolean = false
+}
+
+@JsExport
+@Suppress("PropertyName")
+data object InjectiveDepositConfig {
+    var gas_sponsorship_enabled: Boolean = true
 }
 
 @JsExport
