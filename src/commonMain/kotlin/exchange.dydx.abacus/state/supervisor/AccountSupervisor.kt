@@ -1,8 +1,6 @@
 package exchange.dydx.abacus.state.supervisor
 
-import com.ionspin.kotlin.bignum.decimal.BigDecimal
 import exchange.dydx.abacus.output.Notification
-import exchange.dydx.abacus.processor.router.skip.SkipRoutePayloadProcessor
 import exchange.dydx.abacus.protocols.LocalTimerProtocol
 import exchange.dydx.abacus.protocols.QueryType
 import exchange.dydx.abacus.protocols.TransactionCallback
@@ -30,7 +28,6 @@ import exchange.dydx.abacus.state.machine.onChainUserStakingTier
 import exchange.dydx.abacus.state.machine.onChainUserStats
 import exchange.dydx.abacus.state.machine.setInjectiveBalances
 import exchange.dydx.abacus.state.manager.ApiData
-import exchange.dydx.abacus.state.manager.AutoSweepConfig
 import exchange.dydx.abacus.state.manager.BlockAndTime
 import exchange.dydx.abacus.state.manager.HistoricalTradingRewardsPeriod
 import exchange.dydx.abacus.state.manager.HumanReadableCancelAllOrdersPayload
@@ -47,12 +44,9 @@ import exchange.dydx.abacus.utils.AnalyticsUtils
 import exchange.dydx.abacus.utils.CoroutineTimer
 import exchange.dydx.abacus.utils.IMap
 import exchange.dydx.abacus.utils.Logger
-import exchange.dydx.abacus.utils.MIN_USDC_AMOUNT_FOR_AUTO_SWEEP
-import exchange.dydx.abacus.utils.SLIPPAGE_PERCENT
+import exchange.dydx.abacus.utils.MIN_NOBLE_USDC_FOR_CCTP_WITHDRAW
 import exchange.dydx.abacus.utils.iMapOf
 import exchange.dydx.abacus.utils.mutable
-import exchange.dydx.abacus.utils.toJsonPrettyPrint
-import exchange.dydx.abacus.utils.toNobleAddress
 import kotlinx.datetime.Clock
 import kotlinx.datetime.Instant
 import kotlin.Boolean
@@ -292,9 +286,7 @@ internal open class AccountSupervisor(
             if (configs.retrieveBalances) {
                 retrieveBalances()
             }
-            if (configs.transferNobleBalances) {
-                retrieveNobleBalance()
-            }
+            retrieveNobleBalance()
         } else {
             userStatsTimer = null
             accountBalancesTimer = null
@@ -441,9 +433,6 @@ internal open class AccountSupervisor(
             nobleBalancesTimer = null
             return
         }
-        if (AutoSweepConfig.disable_autosweep) {
-            return
-        }
         val timer = helper.ioImplementations.timer ?: CoroutineTimer.instance
         nobleBalancesTimer =
             timer.schedule(0.0, nobleBalancePollingDuration) {
@@ -457,12 +446,15 @@ internal open class AccountSupervisor(
     }
 
     private fun getNobleBalance() {
+        if (pendingCctpWithdraw == null) {
+            return
+        }
         helper.getOnChain(QueryType.GetNobleBalance, "") { response ->
             val balance = helper.parser.decodeJsonObject(response)
             if (balance != null) {
                 val amount = helper.parser.asDecimal(balance["amount"])
 //                minimum usdc required for successful tx (gas fee)
-                if (amount != null && amount > MIN_USDC_AMOUNT_FOR_AUTO_SWEEP) {
+                if (amount != null && amount > MIN_NOBLE_USDC_FOR_CCTP_WITHDRAW) {
                     if (processingCctpWithdraw) {
                         return@getOnChain
                     }
@@ -489,8 +481,6 @@ internal open class AccountSupervisor(
                             processingCctpWithdraw = false
                         }
                     }
-//                        else, transfer noble balance back to dydx
-                        ?: run { sweepNobleBalanceToDydx(amount) }
                 } else if (balance["error"] != null) {
                     Logger.e { "Error checking noble balance: $response" }
                 }
@@ -632,60 +622,6 @@ internal open class AccountSupervisor(
     internal fun retrieveHistoricalPnls() {
         for ((_, subaccount) in subaccounts) {
             subaccount.retrieveHistoricalPnls()
-        }
-    }
-
-    private fun sweepNobleBalanceToDydx(amount: BigDecimal) {
-        sweepNobleBalanceToDydxSkip(amount = amount)
-    }
-
-    private fun sweepNobleBalanceToDydxSkip(amount: BigDecimal) {
-        val url = helper.configs.skipV2MsgsDirect()
-        val fromChain = helper.configs.nobleChainId()
-        val fromToken = helper.configs.nobleDenom
-        val nobleAddress = accountAddress.toNobleAddress() ?: return
-        val chainId = helper.environment.dydxChainId ?: return
-        val dydxTokenDemon = helper.environment.tokens["usdc"]?.denom ?: return
-        val body: Map<String, Any> = mapOf(
-            "amount_in" to amount.toPlainString(),
-//              from noble denom and chain
-            "source_asset_denom" to fromToken,
-            "source_asset_chain_id" to fromChain,
-//              to dydx denom and chain
-            "dest_asset_denom" to dydxTokenDemon,
-            "dest_asset_chain_id" to chainId,
-            "chain_ids_to_addresses" to mapOf(
-                fromChain to nobleAddress,
-                chainId to accountAddress,
-            ),
-            "slippage_tolerance_percent" to SLIPPAGE_PERCENT,
-        )
-        val header =
-            iMapOf(
-                "Content-Type" to "application/json",
-            )
-        helper.post(url, header, body.toJsonPrettyPrint()) { _, response, code, _ ->
-            if (response != null) {
-                val json = helper.parser.decodeJsonObject(response)
-                if (json != null) {
-                    val skipRoutePayloadProcessor = SkipRoutePayloadProcessor(parser = helper.parser)
-                    val processedPayload = skipRoutePayloadProcessor.received(existing = mapOf(), payload = json)
-                    val ibcPayload =
-                        helper.parser.asString(
-                            processedPayload.get("data"),
-                        )
-                    if (ibcPayload != null) {
-                        helper.transaction(TransactionType.SendNobleIBC, ibcPayload) {
-                            val error = helper.parseTransactionResponse(it)
-                            if (error != null) {
-                                Logger.e { "sweepNobleBalanceToDydxSkip error: $error" }
-                            }
-                        }
-                    }
-                }
-            } else {
-                Logger.e { "sweepNobleBalanceToDydxSkip error, code: $code" }
-            }
         }
     }
 

@@ -156,7 +156,6 @@ enum class TransactionType(val rawValue: String) {
     Faucet("faucet"),
     simulateWithdraw("simulateWithdraw"),
     simulateTransferNativeToken("simulateTransferNativeToken"),
-    SendNobleIBC("sendNobleIBC"),
     WithdrawToNobleIBC("withdrawToNobleIBC"),
     SignInjectiveDirect("signInjectiveDirect"),
     CctpWithdraw("cctpWithdraw"),

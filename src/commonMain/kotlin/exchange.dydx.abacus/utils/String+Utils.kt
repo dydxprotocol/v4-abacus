@@ -135,10 +135,6 @@ fun String.toCamelCase(): String {
 
 // Need to wrap this in a class so iOS can access it
 object AbacusStringUtils {
-    fun toNobleAddress(dydxAddress: String): String? {
-        return dydxAddress.toNobleAddress()
-    }
-
     fun isInjectiveAddressValid(address: String): Boolean {
         return address.isInjectiveAddressValid()
     }

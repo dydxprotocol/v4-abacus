@@ -628,12 +628,6 @@ data object StatsigConfig {
 
 @JsExport
 @Suppress("PropertyName")
-data object AutoSweepConfig {
-    var disable_autosweep: Boolean = false
-}
-
-@JsExport
-@Suppress("PropertyName")
 data object InjectiveDepositConfig {
     var gas_sponsorship_enabled: Boolean = true
 }

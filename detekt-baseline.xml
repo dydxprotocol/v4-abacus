@@ -178,7 +178,6 @@
     <ID>FunctionOnlyReturningConstant:TradeMarketOrderInputValidator.kt$TradeMarketOrderInputValidator$private fun accountRestricted(): Boolean</ID>
     <ID>FunctionOnlyReturningConstant:TradingStateMachine+TriggerOrdersInput.kt$fun TradingStateMachine.validTriggerOrdersInput( triggerOrders: Map&lt;String, Any&gt;, typeText: String? ): Boolean</ID>
     <ID>FunctionOnlyReturningConstant:TradingStateMachine.kt$TradingStateMachine$private fun priceOverwrite(markets: Map&lt;String, Any&gt;): Map&lt;String, Any&gt;?</ID>
-    <ID>FunctionOnlyReturningConstant:V4StateManagerConfigs.kt$V4StateManagerConfigs$fun nobleDenom(): String?</ID>
     <ID>FunctionParameterNaming:AsyncAbacusStateManager.kt$AsyncAbacusStateManager.Companion$_nativeImplementations: ProtocolNativeImpFactory</ID>
     <ID>FunctionParameterNaming:AsyncAbacusStateManagerV2.kt$AsyncAbacusStateManagerV2.Companion$_nativeImplementations: ProtocolNativeImpFactory</ID>
     <ID>LargeClass:OnboardingSupervisor.kt$OnboardingSupervisor : NetworkSupervisor</ID>
@@ -830,7 +829,6 @@
     <ID>UnusedPrivateMember:AsyncAbacusStateManagerV2.kt$AsyncAbacusStateManagerV2.Companion$private fun createIOImplementions(_nativeImplementations: ProtocolNativeImpFactory): IOImplementations</ID>
     <ID>UnusedPrivateMember:AsyncAbacusStateManagerV2.kt$AsyncAbacusStateManagerV2.Companion$private fun createUIImplemention(_nativeImplementations: ProtocolNativeImpFactory): UIImplementations</ID>
     <ID>UnusedPrivateMember:JsonEncoder.kt$JsonEncoder$private fun boolean(element: Any): Boolean?</ID>
-    <ID>UnusedPrivateMember:OnboardingSupervisor.kt$OnboardingSupervisor$private fun transferNobleBalance(accountAddress: String, amount: BigDecimal)</ID>
     <ID>UnusedPrivateMember:OrderbookProcessor.kt$OrderbookProcessor$@Throws(Exception::class) private fun compareResults( result1: List&lt;Map&lt;String, Any&gt;&gt;, result2: List&lt;Map&lt;String, Any&gt;&gt; )</ID>
     <ID>UnusedPrivateMember:OrderbookProcessor.kt$OrderbookProcessor$private fun receivedChangesLinear( existing: List&lt;Map&lt;String, Any&gt;&gt;?, changes: List&lt;Any&gt;, offset: Long?, ascending: Boolean ): List&lt;Map&lt;String, Any&gt;&gt;</ID>
     <ID>UnusedPrivateMember:StateManagerAdaptor.kt$StateManagerAdaptor$private fun nextMinute(): Instant</ID>
