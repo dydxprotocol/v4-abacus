@@ -381,7 +381,7 @@ internal fun AccountsSupervisor.faucet(amount: Double, callback: TransactionCall
 
 internal fun AccountsSupervisor.commitInjectiveDeposit(callback: TransactionCallback) {
     account?.commitInjectiveDeposit(callback)
-        ?: helper.send(ParsingError(ParsingErrorType.MissingRequiredData, "Wallet not connected"), callback)
+        ?: helper.send(ParsingError(ParsingErrorType.MissingRequiredData, "dYdX wallet not connected"), callback)
 }
 
 internal fun AccountsSupervisor.cancelOrder(orderId: String, callback: TransactionCallback) {

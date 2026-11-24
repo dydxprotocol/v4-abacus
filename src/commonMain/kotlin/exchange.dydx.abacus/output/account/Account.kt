@@ -11,6 +11,8 @@ import exchange.dydx.abacus.state.manager.TokenInfo
 import exchange.dydx.abacus.utils.IList
 import exchange.dydx.abacus.utils.IMap
 import exchange.dydx.abacus.utils.IMutableMap
+import exchange.dydx.abacus.utils.INJECTIVE_USDC_DECIMALS
+import exchange.dydx.abacus.utils.INJ_DECIMALS
 import exchange.dydx.abacus.utils.Logger
 import exchange.dydx.abacus.utils.MIN_INJECTIVE_USDC_TO_DEPOSIT
 import exchange.dydx.abacus.utils.Numeric
@@ -197,16 +199,13 @@ data class InjectiveBalances(
     val hasPendingDeposit: Boolean,
 ) {
     companion object {
-        private const val USDC_DECIMALS = 6
-        private const val INJ_DECIMALS = 18
-
         internal fun create(
             existing: InjectiveBalances?,
             internalState: InternalInjectiveBalancesState?,
         ): InjectiveBalances? {
             internalState ?: return null
             val balances = InjectiveBalances(
-                usdc = internalState.usdc.moveDecimalPoint(-USDC_DECIMALS).doubleValue(false),
+                usdc = internalState.usdc.moveDecimalPoint(-INJECTIVE_USDC_DECIMALS).doubleValue(false),
                 inj = internalState.inj.moveDecimalPoint(-INJ_DECIMALS).doubleValue(false),
                 hasPendingDeposit = internalState.usdc >= BigDecimal.fromLong(MIN_INJECTIVE_USDC_TO_DEPOSIT),
             )

@@ -9,6 +9,7 @@ import exchange.dydx.abacus.state.InternalInjectiveBalancesState
 import exchange.dydx.abacus.state.manager.InjectiveDepositConfig
 import exchange.dydx.abacus.utils.CoroutineTimer
 import exchange.dydx.abacus.utils.IMap
+import exchange.dydx.abacus.utils.INJ_DECIMALS
 import exchange.dydx.abacus.utils.InjectiveTx
 import exchange.dydx.abacus.utils.Logger
 import exchange.dydx.abacus.utils.iMapOf
@@ -39,7 +40,6 @@ internal class InjectiveDepositSupervisor(
     private val helper: NetworkHelper,
 ) {
     companion object {
-        private const val INJ_DECIMALS = 18
         private const val CONFIRMED = "CONFIRMED"
 
         // The endpoint already waits for the grant to confirm before answering PENDING, and is rate

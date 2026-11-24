@@ -59,6 +59,8 @@ fun String.toDydxAddress(): String? {
     }
 }
 
+private val evmAddressHexRegex = Regex("[0-9a-fA-F]{40}")
+
 fun String.isInjectiveAddressValid(): Boolean {
     return injectiveAddressBytes()?.size == 20
 }
@@ -73,10 +75,10 @@ fun String.toInjectiveEvmAddress(): String? {
 
 fun String.evmToInjectiveAddress(): String? {
     val hex = removePrefix("0x").removePrefix("0X")
-    if (hex.length != 40) {
+    if (!evmAddressHexRegex.matches(hex)) {
         return null
     }
-    val bytes = hex.chunked(2).map { it.toIntOrNull(16)?.toByte() ?: return null }.toByteArray()
+    val bytes = hex.chunked(2).map { it.toInt(16).toByte() }.toByteArray()
     val data = convertBits(bytes, fromBits = 8, toBits = 5, pad = true) ?: return null
     return Bech32.encode("inj", data)
 }

@@ -106,7 +106,7 @@ internal open class AccountSupervisor(
             }
         }
 
-    private val injectiveBalancesPollingDuration = 30.0
+    private val injectiveBalancesPollingSeconds = 10.0
     private var injectiveBalancesTimer: LocalTimerProtocol? = null
         set(value) {
             if (field !== value) {
@@ -495,7 +495,7 @@ internal open class AccountSupervisor(
         }
         val timer = helper.ioImplementations.timer ?: CoroutineTimer.instance
         injectiveBalancesTimer =
-            timer.schedule(0.0, injectiveBalancesPollingDuration) {
+            timer.schedule(0.0, injectiveBalancesPollingSeconds) {
                 if (readyToConnect) {
                     getInjectiveBalances()
                     true
