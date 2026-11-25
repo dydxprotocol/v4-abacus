@@ -7,19 +7,13 @@ import kotlin.test.assertNull
 import kotlin.test.assertTrue
 
 class StringUtilsTests {
-    @Test
-    fun testAddressConversion() {
-        val dydxAddress = "dydx14zzueazeh0hj67cghhf9jypslcf9sh2n5k6art"
-        val nobleAddress = "noble14zzueazeh0hj67cghhf9jypslcf9sh2n4vp3mj"
-        assertEquals(nobleAddress, dydxAddress.toNobleAddress())
-        assertEquals(dydxAddress, nobleAddress?.toDydxAddress())
-    }
-
     // Injective address to lowercase EVM address, verified against the BIP173 reference implementation
     private val injectiveToEvmAddresses = listOf(
         "inj15qx9nl66pqxjh92dp367gm3z5rphzg669sh88w" to "0xa00c59ff5a080d2b954d0c75e46e22a0c371235a",
         // Address conversion example from the Injective docs
         "inj14au322k9munkmx5wrchz9q30juf5wjgz2cfqku" to "0xaf79152ac5df276d9a8e1e2e22822f9713474902",
+        // Keplr test wallet
+        "inj100dha6y80q8883x65zr6ssuap2jejhkxmchhpq" to "0x7bdb7ee887780e73c4daa087a8439d0aa5995ec6",
         "inj1qqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqe2hm49" to "0x0000000000000000000000000000000000000000",
         "inj1llllllllllllllllllllllllllllllll4mk5j0" to "0xffffffffffffffffffffffffffffffffffffffff",
         "inj1qy352euf40x77qfrg4ncn27dauqjx3t8r0l89x" to "0x0123456789abcdef0123456789abcdef01234567",
@@ -43,6 +37,10 @@ class StringUtilsTests {
         assertEquals(
             "inj14au322k9munkmx5wrchz9q30juf5wjgz2cfqku",
             "0xAF79152AC5dF276D9A8e1E2E22822f9713474902".evmToInjectiveAddress(),
+        )
+        assertEquals(
+            "inj100dha6y80q8883x65zr6ssuap2jejhkxmchhpq",
+            "0x7bdb7Ee887780E73c4dAa087a8439D0Aa5995eC6".evmToInjectiveAddress(),
         )
     }
 

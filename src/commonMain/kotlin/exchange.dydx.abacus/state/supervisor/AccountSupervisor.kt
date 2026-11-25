@@ -4,7 +4,6 @@ import exchange.dydx.abacus.output.Notification
 import exchange.dydx.abacus.protocols.LocalTimerProtocol
 import exchange.dydx.abacus.protocols.QueryType
 import exchange.dydx.abacus.protocols.TransactionCallback
-import exchange.dydx.abacus.protocols.TransactionType
 import exchange.dydx.abacus.responses.ParsingError
 import exchange.dydx.abacus.responses.ParsingErrorType
 import exchange.dydx.abacus.responses.SocketInfo
@@ -38,13 +37,9 @@ import exchange.dydx.abacus.state.manager.HumanReadablePlaceOrderPayload
 import exchange.dydx.abacus.state.manager.HumanReadableSubaccountTransferPayload
 import exchange.dydx.abacus.state.manager.HumanReadableTriggerOrdersPayload
 import exchange.dydx.abacus.state.manager.HumanReadableWithdrawPayload
-import exchange.dydx.abacus.state.manager.pendingCctpWithdraw
-import exchange.dydx.abacus.state.manager.processingCctpWithdraw
 import exchange.dydx.abacus.utils.AnalyticsUtils
 import exchange.dydx.abacus.utils.CoroutineTimer
 import exchange.dydx.abacus.utils.IMap
-import exchange.dydx.abacus.utils.Logger
-import exchange.dydx.abacus.utils.MIN_NOBLE_USDC_FOR_CCTP_WITHDRAW
 import exchange.dydx.abacus.utils.iMapOf
 import exchange.dydx.abacus.utils.mutable
 import kotlinx.datetime.Clock
@@ -97,15 +92,6 @@ internal open class AccountSupervisor(
             }
         }
 
-    private val nobleBalancePollingDuration = 10.0
-    private var nobleBalancesTimer: LocalTimerProtocol? = null
-        set(value) {
-            if (field !== value) {
-                field?.cancel()
-                field = value
-            }
-        }
-
     private val injectiveBalancesPollingSeconds = 10.0
     private var injectiveBalancesTimer: LocalTimerProtocol? = null
         set(value) {
@@ -148,11 +134,6 @@ internal open class AccountSupervisor(
     var walletConnectionType: WalletConnectionType? = WalletConnectionType.Ethereum
         internal set(value) {
             field = value
-            if (value == WalletConnectionType.Cosmos) {
-                nobleBalancesTimer?.cancel()
-                nobleBalancesTimer = null
-            }
-
             sendPushNotificationToken()
         }
 
@@ -286,11 +267,9 @@ internal open class AccountSupervisor(
             if (configs.retrieveBalances) {
                 retrieveBalances()
             }
-            retrieveNobleBalance()
         } else {
             userStatsTimer = null
             accountBalancesTimer = null
-            nobleBalancesTimer = null
         }
     }
 
@@ -425,66 +404,6 @@ internal open class AccountSupervisor(
         helper.getOnChain(QueryType.GetStakingRewards, paramsInJson) { response ->
             val oldState = stateMachine.state
             update(stateMachine.onChainStakingRewards(response), oldState)
-        }
-    }
-
-    private fun retrieveNobleBalance() {
-        if (walletConnectionType == WalletConnectionType.Cosmos) {
-            nobleBalancesTimer = null
-            return
-        }
-        val timer = helper.ioImplementations.timer ?: CoroutineTimer.instance
-        nobleBalancesTimer =
-            timer.schedule(0.0, nobleBalancePollingDuration) {
-                if (validatorConnected) {
-                    getNobleBalance()
-                    true
-                } else {
-                    false
-                }
-            }
-    }
-
-    private fun getNobleBalance() {
-        if (pendingCctpWithdraw == null) {
-            return
-        }
-        helper.getOnChain(QueryType.GetNobleBalance, "") { response ->
-            val balance = helper.parser.decodeJsonObject(response)
-            if (balance != null) {
-                val amount = helper.parser.asDecimal(balance["amount"])
-//                minimum usdc required for successful tx (gas fee)
-                if (amount != null && amount > MIN_NOBLE_USDC_FOR_CCTP_WITHDRAW) {
-                    if (processingCctpWithdraw) {
-                        return@getOnChain
-                    }
-//                    if pending withdrawal, perform CCTP Withdrawal
-                    pendingCctpWithdraw?.let { walletState ->
-                        processingCctpWithdraw = true
-                        val callback = walletState.callback
-//                        if walletState has a singleMessagePayload, it's a single message tx
-//                        otherwise walletState represents a multi message tx (like smart relay) and we should use the relevant transaction
-                        val transactionType = if (walletState.multiMessagePayload == null) TransactionType.CctpWithdraw else TransactionType.CctpMultiMsgWithdraw
-                        val payload = if (walletState.multiMessagePayload == null) walletState.singleMessagePayload else walletState.multiMessagePayload
-                        helper.transaction(
-                            transactionType,
-                            payload,
-                        ) { hash ->
-                            val error = helper.parseTransactionResponse(hash)
-                            if (error != null) {
-                                Logger.e { "TransactionType.CctpWithdraw error: $error" }
-                                callback?.let { it -> helper.send(error, it, hash) }
-                            } else {
-                                callback?.let { it -> helper.send(null, it, hash) }
-                            }
-                            pendingCctpWithdraw = null
-                            processingCctpWithdraw = false
-                        }
-                    }
-                } else if (balance["error"] != null) {
-                    Logger.e { "Error checking noble balance: $response" }
-                }
-            }
         }
     }
 

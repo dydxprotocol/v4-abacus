@@ -228,7 +228,6 @@ internal class ConnectionsSupervisor(
         val usdcGasDenom = usdcToken.gasDenom
         val chainTokenDenom = chainToken.denom
         val chainTokenDecimals = chainToken.decimals
-        val nobleValidator = helper.environment.endpoints.nobleValidator
         val injectiveValidator = helper.environment.endpoints.injectiveValidator
 
         val params = mutableMapOf<String, Any>()
@@ -237,7 +236,6 @@ internal class ConnectionsSupervisor(
         params["validatorUrl"] = validatorUrl
         params["chainId"] = chainId
         params.safeSet("faucetUrl", faucetUrl)
-        params.safeSet("nobleValidatorUrl", nobleValidator)
         params.safeSet("injectiveValidatorUrl", injectiveValidator)
 
         params.safeSet("USDC_DENOM", usdcDenom)

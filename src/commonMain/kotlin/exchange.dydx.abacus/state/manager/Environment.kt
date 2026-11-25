@@ -35,7 +35,6 @@ data class EnvironmentEndpoints(
     val faucet: String?,
     val skip: String?,
     val metadataService: String?,
-    val nobleValidator: String?,
     val injectiveValidator: String?,
     val injectiveRest: String? = null,
     val geo: String?,
@@ -55,7 +54,6 @@ data class EnvironmentEndpoints(
             val faucet = parser.asString(data["faucet"])
             val skip = parser.asString(data["skip"])
             val metadataService = parser.asString(data["metadataService"])
-            val nobleValidator = parser.asString(data["nobleValidator"])
             val injectiveValidator = parser.asString(data["injectiveValidator"])
             val injectiveRest = parser.asString(data["injectiveRest"])
             val geo = parser.asString(data["geo"])
@@ -66,7 +64,6 @@ data class EnvironmentEndpoints(
                 faucet = faucet,
                 skip = skip,
                 metadataService = metadataService,
-                nobleValidator = nobleValidator,
                 injectiveValidator = injectiveValidator,
                 injectiveRest = injectiveRest,
                 geo = geo,

@@ -18,13 +18,10 @@ import exchange.dydx.abacus.state.InternalTransferInputState
 import exchange.dydx.abacus.state.InternalWalletState
 import exchange.dydx.abacus.state.StateChanges
 import exchange.dydx.abacus.state.machine.TransferInputField
-import exchange.dydx.abacus.state.manager.ExchangeConfig.exchangeList
 import exchange.dydx.abacus.state.manager.V4Environment
 import exchange.dydx.abacus.state.safeCreate
 import exchange.dydx.abacus.utils.IList
-import exchange.dydx.abacus.utils.IMutableList
 import kollections.iListOf
-import kollections.iMutableListOf
 import kollections.toIList
 import kollections.toIMap
 
@@ -50,7 +47,6 @@ internal class TransferInputProcessor(
             inputState.transfer.decimals = null
             inputState.transfer.fastSpeed = false
             inputState.transfer.fee = null
-            inputState.transfer.exchange = null
             inputState.transfer.chain = null
             inputState.transfer.token = null
             inputState.transfer.address = null
@@ -180,14 +176,6 @@ internal class TransferInputProcessor(
                 updated = true
             }
 
-            TransferInputField.exchange -> {
-                val exchange = parser.asString(data)
-                if (exchange != null) {
-                    updateTransferExchangeType(transfer, exchange)
-                }
-                updated = true
-            }
-
             TransferInputField.MEMO -> {
                 if (transfer.memo != data) {
                     transfer.memo = data
@@ -248,20 +236,10 @@ internal class TransferInputProcessor(
     ) {
         val chains: IList<SelectionOption> = transfer.chains?.toIList() ?: iListOf()
         val assets: IList<SelectionOption> = transfer.tokens?.toIList() ?: iListOf()
-        var exchanges: IMutableList<SelectionOption>? = null
-        exchangeList?.let { data ->
-            exchanges = iMutableListOf()
-            for (i in data.indices) {
-                val item = data[i]
-                val selection = SelectionOption(item.name, item.label, item.label, item.icon)
-                exchanges?.add(selection)
-            }
-        }
         transfer.depositOptions = DepositInputOptions(
             needsSize = false,
             needsAddress = false,
             needsFastSpeed = false,
-            exchanges = exchanges?.toIList(),
             chains = chains,
             assets = assets,
         )
@@ -280,20 +258,10 @@ internal class TransferInputProcessor(
         } else {
             transfer.tokens?.toIList() ?: iListOf()
         }
-        var exchanges: IMutableList<SelectionOption>? = null
-        exchangeList?.let { data ->
-            exchanges = iMutableListOf()
-            for (i in data.indices) {
-                val item = data[i]
-                val selection = SelectionOption(item.name, item.label, item.label, item.icon)
-                exchanges?.add(selection)
-            }
-        }
         transfer.withdrawalOptions = WithdrawalInputOptions(
             needsSize = false,
             needsAddress = false,
             needsFastSpeed = false,
-            exchanges = exchanges?.toIList(),
             chains = chains,
             assets = assets,
         )
@@ -345,7 +313,6 @@ internal class TransferInputProcessor(
             transfer.chainResources = routerProcessor.chainResources(chainType)
             transfer.tokenResources = routerProcessor.tokenResources(chainType)
         }
-        transfer.exchange = null
         transfer.size = TransferInputSize.safeCreate(transfer.size).copy(size = null)
         transfer.route = null
         transfer.goFastRoute = null
@@ -376,30 +343,6 @@ internal class TransferInputProcessor(
 //                routerProcessor.selectedTokenDecimals(tokenAddress = tokenAddress, selectedChainId = selectedChainId),
 //            )
 //        }
-        transfer.route = null
-        transfer.goFastRoute = null
-    }
-
-    private fun updateTransferExchangeType(
-        transfer: InternalTransferInputState,
-        exchange: String
-    ) {
-        val exchangeDestinationChainId = routerProcessor.exchangeDestinationChainId
-        val tokenOptions = routerProcessor.tokenOptions(exchangeDestinationChainId)
-        if (transfer.type != TransferType.transferOut) {
-            transfer.tokens = tokenOptions
-            transfer.token = routerProcessor.defaultTokenAddress(exchangeDestinationChainId)
-            transfer.tokenResources = routerProcessor.tokenResources(exchangeDestinationChainId)
-            // needed to pass tests, remove later
-            transfer.depositOptions = DepositInputOptions.safeCreate(transfer.depositOptions)
-                .copy(assets = tokenOptions.toIList())
-            transfer.withdrawalOptions = WithdrawalInputOptions.safeCreate(transfer.withdrawalOptions)
-                .copy(assets = tokenOptions.toIList())
-        }
-
-        transfer.exchange = exchange
-        transfer.chain = null
-        transfer.size = TransferInputSize.safeCreate(transfer.size).copy(size = null)
         transfer.route = null
         transfer.goFastRoute = null
     }

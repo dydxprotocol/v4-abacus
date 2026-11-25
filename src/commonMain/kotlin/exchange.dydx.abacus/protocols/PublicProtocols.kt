@@ -135,7 +135,6 @@ enum class QueryType(val rawValue: String) {
     GetStakingRewards("getStakingRewards"),
     GetCurrentUnstaking("getCurrentUnstaking"),
     RewardsParams("getRewardsParams"),
-    GetNobleBalance("getNobleBalance"),
     GetInjectivePublicKey("getInjectivePublicKey"),
     GetWithdrawalAndTransferGatingStatus("getWithdrawalAndTransferGatingStatus"),
     GetWithdrawalCapacityByDenom("getWithdrawalCapacityByDenom");
@@ -156,10 +155,7 @@ enum class TransactionType(val rawValue: String) {
     Faucet("faucet"),
     simulateWithdraw("simulateWithdraw"),
     simulateTransferNativeToken("simulateTransferNativeToken"),
-    WithdrawToNobleIBC("withdrawToNobleIBC"),
     SignInjectiveDirect("signInjectiveDirect"),
-    CctpWithdraw("cctpWithdraw"),
-    CctpMultiMsgWithdraw("cctpMultiMsgWithdraw"),
     SignCompliancePayload("signCompliancePayload"),
     SetSelectedGasDenom("setSelectedGasDenom"),
     SignPushNotificationTokenRegistrationPayload("signPushNotificationTokenRegistrationPayload"),

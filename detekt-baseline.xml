@@ -618,8 +618,6 @@
     <ID>ReturnCount:StateManagerConfigs.kt$StateManagerConfigs$fun privateApiUrl(type: String): String?</ID>
     <ID>ReturnCount:StateManagerConfigs.kt$StateManagerConfigs$fun publicApiUrl(type: String): String?</ID>
     <ID>ReturnCount:StateManagerConfigs.kt$StateManagerConfigs$fun websocketUrl(): String?</ID>
-    <ID>ReturnCount:String+Utils.kt$fun String.toDydxAddress(): String?</ID>
-    <ID>ReturnCount:String+Utils.kt$fun String.toNobleAddress(): String?</ID>
     <ID>ReturnCount:StringHelper.kt$StringHelper.Companion$private fun formatNumericString(string: String, decimals: Int? = null): String</ID>
     <ID>ReturnCount:SubaccountSupervisor.kt$SubaccountSupervisor$internal fun getChildSubaccountNumberForIsolatedMarginTrade(marketId: String): Int</ID>
     <ID>ReturnCount:SubaccountSupervisor.kt$SubaccountSupervisor$private fun marketInfo(marketId: String): PlaceOrderMarketInfo?</ID>

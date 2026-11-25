@@ -68,52 +68,6 @@ class SkipRouteProcessorTests {
     }
 
     /**
-     * Tests a CCTP withdrawal initiated from the cctpToNobleSkip method
-     * This payload is used by the chain transaction method WithdrawToNobleIBC
-     * This processes a Dydx -> Noble CCTP transaction
-     */
-    @Test
-    fun testReceivedCCTPDydxToNobleWithdrawal() {
-        val payload = skipRouteMock.payloadCCTPDydxToNoble
-        val result = skipRouteProcessor.received(existing = mapOf(), payload = templateToMap(payload), decimals = 6.0)
-        val jsonEncoder = JsonEncoder()
-        val expectedMsg = mapOf(
-            "sourcePort" to "transfer",
-            "sourceChannel" to "channel-0",
-            "token" to mapOf(
-                "denom" to "ibc/8E27BA2D5493AF5636760E354E46004562C46AB7EC0CC4C1CA14E9E20E2545B5",
-                "amount" to "10996029",
-            ),
-            "sender" to "dydx1nhzuazjhyfu474er6v4ey8zn6wa5fy6g2dgp7s",
-            "receiver" to "noble1nhzuazjhyfu474er6v4ey8zn6wa5fy6gthndxf",
-            "timeoutHeight" to mapOf<String, Any>(),
-            "timeoutTimestamp" to 1718308711061386287,
-        )
-        val expectedDataRaw =
-            mapOf(
-                "msg" to expectedMsg,
-                "value" to expectedMsg,
-                "msgTypeUrl" to "/ibc.applications.transfer.v1.MsgTransfer",
-                "typeUrl" to "/ibc.applications.transfer.v1.MsgTransfer",
-            )
-        val expected = mapOf(
-            "toAmountUSD" to 11.01,
-            "toAmount" to 10.996029,
-            "bridgeFee" to 0.0,
-            "slippage" to "1",
-            "requestPayload" to mapOf(
-                "fromChainId" to "dydx-mainnet-1",
-                "fromAddress" to "ibc/8E27BA2D5493AF5636760E354E46004562C46AB7EC0CC4C1CA14E9E20E2545B5",
-                "toChainId" to "noble-1",
-                "toAddress" to "uusdc",
-                "data" to jsonEncoder.encode(expectedDataRaw),
-                "allMessages" to jsonEncoder.encode(listOf(expectedDataRaw)),
-            ),
-        )
-        assertEquals(expected, result)
-    }
-
-    /**
      * Tests a Non-CCTP withdrawal from Dydx to Ethereum
      */
     @Test
@@ -137,9 +91,7 @@ class SkipRouteProcessorTests {
         val expectedDataRaw =
             mapOf(
                 "msg" to expectedMsg,
-                "value" to expectedMsg,
                 "msgTypeUrl" to "/ibc.applications.transfer.v1.MsgTransfer",
-                "typeUrl" to "/ibc.applications.transfer.v1.MsgTransfer",
             )
 
         val expected = mapOf(
@@ -160,86 +112,9 @@ class SkipRouteProcessorTests {
                 "toChainId" to "1",
                 "toAddress" to "ethereum-native",
                 "data" to jsonEncoder.encode(expectedDataRaw),
-                "allMessages" to jsonEncoder.encode(listOf(expectedDataRaw)),
             ),
         )
 
-        assertEquals(expected, result)
-    }
-
-    /**
-     * Tests a CCTP withdrawal initiated from the getNobleBalance method
-     * This payload is used by the chain transaction method cctpMultiMsgWithdraw
-     * This processes a Noble -> CCTP transaction
-     */
-    @Test
-    fun testReceivedCCTPNobleToUSDCEthWithdrawal() {
-        val payload = skipRouteMock.payloadNobleToUSDCEthWithdrawal
-        val result = skipRouteProcessor.received(existing = mapOf(), payload = templateToMap(payload), decimals = 6.0)
-        val jsonEncoder = JsonEncoder()
-        val expectedMsg = mapOf(
-            "from" to "noble1nhzuazjhyfu474er6v4ey8zn6wa5fy6gthndxf",
-            "amount" to "59995433",
-            "destinationDomain" to 0,
-            "mintRecipient" to "AAAAAAAAAAAAAAAAD3gzd3v8nvcti3aulU04Sd1x+Ck=",
-            "burnToken" to "uusdc",
-            "destinationCaller" to "AAAAAAAAAAAAAAAA/AWtdMb+LnBG4JHWrU9mDSoVl2I=",
-        )
-        val expectedMsg2 = mapOf(
-            "fromAddress" to "noble1nhzuazjhyfu474er6v4ey8zn6wa5fy6gthndxf",
-            "toAddress" to "noble1dyw0geqa2cy0ppdjcxfpzusjpwmq85r5a35hqe",
-            "amount" to listOf(
-                mapOf(
-                    "denom" to "uusdc",
-                    "amount" to "40000000",
-                ),
-            ),
-        )
-        val expectedData = jsonEncoder.encode(
-            mapOf(
-                "msg" to expectedMsg,
-                "value" to expectedMsg,
-                "msgTypeUrl" to "/circle.cctp.v1.MsgDepositForBurnWithCaller",
-                "typeUrl" to "/circle.cctp.v1.MsgDepositForBurnWithCaller",
-            ),
-        )
-
-        val expectedMessagesArray = jsonEncoder.encode(
-            listOf(
-                mapOf(
-                    "msg" to expectedMsg,
-                    "value" to expectedMsg,
-                    "msgTypeUrl" to "/circle.cctp.v1.MsgDepositForBurnWithCaller",
-                    "typeUrl" to "/circle.cctp.v1.MsgDepositForBurnWithCaller",
-                ),
-                mapOf(
-                    "msg" to expectedMsg2,
-                    "value" to expectedMsg2,
-                    "msgTypeUrl" to "/cosmos.bank.v1beta1.MsgSend",
-                    "typeUrl" to "/cosmos.bank.v1beta1.MsgSend",
-                ),
-            ),
-        )
-        val expected = mapOf(
-            "toAmountUSD" to 59.99,
-            "toAmount" to 59.995433,
-            "bridgeFee" to 40.0,
-            "slippage" to "1",
-            "warning" to jsonEncoder.encode(
-                mapOf(
-                    "type" to "BAD_PRICE_WARNING",
-                    "message" to "Difference in USD value of route input and output is large. Input USD value: 99.99 Output USD value: 59.99",
-                ),
-            ),
-            "requestPayload" to mapOf(
-                "fromChainId" to "noble-1",
-                "fromAddress" to "uusdc",
-                "toChainId" to "1",
-                "toAddress" to "0xA0b86991c6218b36c1d19D4a2e9Eb0cE3606eB48",
-                "data" to expectedData,
-                "allMessages" to expectedMessagesArray,
-            ),
-        )
         assertEquals(expected, result)
     }
 

@@ -5,15 +5,11 @@ import com.ionspin.kotlin.bignum.decimal.BigDecimal
 import exchange.dydx.abacus.output.PerpetualState
 import exchange.dydx.abacus.output.input.TransferType
 import exchange.dydx.abacus.processor.router.ChainType
-import exchange.dydx.abacus.processor.router.skip.SkipRoutePayloadProcessor
 import exchange.dydx.abacus.protocols.ThreadingType
 import exchange.dydx.abacus.protocols.TransactionCallback
 import exchange.dydx.abacus.protocols.TransactionType
-import exchange.dydx.abacus.responses.ParsingError
-import exchange.dydx.abacus.responses.ParsingErrorType
 import exchange.dydx.abacus.state.Changes
 import exchange.dydx.abacus.state.StateChanges
-import exchange.dydx.abacus.state.helper.V4TransactionErrors
 import exchange.dydx.abacus.state.machine.TradingStateMachine
 import exchange.dydx.abacus.state.machine.TransferInputField
 import exchange.dydx.abacus.state.machine.WalletConnectionType
@@ -26,9 +22,6 @@ import exchange.dydx.abacus.state.machine.routerTrack
 import exchange.dydx.abacus.state.machine.transfer
 import exchange.dydx.abacus.state.manager.CctpChainTokenInfo
 import exchange.dydx.abacus.state.manager.CctpConfig
-import exchange.dydx.abacus.state.manager.CctpWithdrawState
-import exchange.dydx.abacus.state.manager.ExchangeConfig
-import exchange.dydx.abacus.state.manager.ExchangeInfo
 import exchange.dydx.abacus.state.manager.HumanReadableDepositPayload
 import exchange.dydx.abacus.state.manager.HumanReadableSubaccountTransferPayload
 import exchange.dydx.abacus.state.manager.HumanReadableTransferPayload
@@ -36,7 +29,6 @@ import exchange.dydx.abacus.state.manager.HumanReadableWithdrawPayload
 import exchange.dydx.abacus.state.manager.Platform
 import exchange.dydx.abacus.state.manager.RpcConfigs
 import exchange.dydx.abacus.state.manager.SystemUtils
-import exchange.dydx.abacus.state.manager.pendingCctpWithdraw
 import exchange.dydx.abacus.utils.AnalyticsUtils
 import exchange.dydx.abacus.utils.IMap
 import exchange.dydx.abacus.utils.Logger
@@ -48,9 +40,7 @@ import exchange.dydx.abacus.utils.isAddressValid
 import exchange.dydx.abacus.utils.toInjectiveEvmAddress
 import exchange.dydx.abacus.utils.toJsonPrettyPrint
 import exchange.dydx.abacus.utils.toNeutronAddress
-import exchange.dydx.abacus.utils.toNobleAddress
 import exchange.dydx.abacus.utils.toOsmosisAddress
-import io.ktor.util.encodeBase64
 import kollections.iListOf
 import kollections.toIMap
 import kotlinx.coroutines.CoroutineScope
@@ -62,9 +52,6 @@ import kotlinx.serialization.encodeToString
 import kotlinx.serialization.json.Json
 import kotlinx.serialization.json.JsonElement
 import kotlinx.serialization.json.jsonObject
-
-private const val OSMOSIS_SWAP_VENUE = "osmosis-1"
-private const val NEUTRON_SWAP_VENUE = "neutron-1"
 
 private val SMART_SWAP_OPTIONS = mapOf(
     "evm_swaps" to true,
@@ -102,7 +89,6 @@ internal class OnboardingSupervisor(
         if (readyToConnect) {
             if (configs.retrieveRoutes) {
                 retrieveAssetsFromRouter()
-                retrieveDepositExchanges()
             }
         }
     }
@@ -183,30 +169,6 @@ internal class OnboardingSupervisor(
         }
     }
 
-    private fun retrieveDepositExchanges() {
-        val url = "${helper.deploymentUri}/configs/exchanges.json"
-        helper.get(url) { _, response, _, _ ->
-            if (response != null) {
-                val exchanges = mutableListOf<ExchangeInfo>()
-                val exchangeInfos: List<JsonElement>? =
-                    helper.parser.decodeJsonArray(response)?.toList() as? List<JsonElement>
-                for (exchange in exchangeInfos ?: emptyList()) {
-                    val exchangeInfo = exchange.jsonObject
-                    val name = helper.parser.asString(exchangeInfo["name"])
-                    val label = helper.parser.asString(exchangeInfo["label"])
-                    val icon = helper.parser.asString(exchangeInfo["icon"])
-                    val depositType = helper.parser.asString(exchangeInfo["depositType"])
-                    if (name != null && label != null && icon != null && depositType != null) {
-                        exchanges.add(ExchangeInfo(name, label, icon, depositType))
-                    }
-                }
-                ExchangeConfig.exchangeList = exchanges
-                stateMachine.routerProcessor.exchangeDestinationChainId =
-                    helper.configs.nobleChainId()
-            }
-        }
-    }
-
     private fun retrieveDepositRoute(
         state: PerpetualState?,
         accountAddress: String,
@@ -257,17 +219,17 @@ internal class OnboardingSupervisor(
         }
     }
 
-    private fun depositChainAddresses(
+    // externalChain (deposit source or withdrawal destination) goes last so it wins if it's also a hop
+    private fun routeChainAddresses(
         accountAddress: String,
-        sourceAddress: String,
-        fromChain: String,
         injectiveAddress: String?,
+        externalChain: String,
+        externalAddress: String,
         includeOsmosisAndNeutron: Boolean,
     ): Map<String, String?>? {
         val injectiveEvmAddress = injectiveAddress?.toInjectiveEvmAddress() ?: return null
         val dydxChainId = helper.environment.dydxChainId ?: return null
         val addresses = mutableMapOf<String, String?>(
-            fromChain to sourceAddress,
             helper.configs.injectiveChainId() to injectiveAddress,
             helper.configs.injectiveEvmChainId to injectiveEvmAddress,
             dydxChainId to accountAddress,
@@ -276,6 +238,7 @@ internal class OnboardingSupervisor(
             addresses[helper.configs.osmosisChainId()] = accountAddress.toOsmosisAddress()
             addresses[helper.configs.neutronChainId()] = accountAddress.toNeutronAddress()
         }
+        addresses[externalChain] = externalAddress
         return addresses
     }
 
@@ -306,11 +269,11 @@ internal class OnboardingSupervisor(
             return
         }
         val fromAmountString = helper.parser.asString(fromAmount) ?: return
-        val chainAddresses = depositChainAddresses(
+        val chainAddresses = routeChainAddresses(
             accountAddress = accountAddress,
-            sourceAddress = sourceAddress,
-            fromChain = fromChain,
             injectiveAddress = injectiveAddress,
+            externalChain = fromChain,
+            externalAddress = sourceAddress,
             includeOsmosisAndNeutron = true,
         ) ?: return
 
@@ -401,11 +364,11 @@ internal class OnboardingSupervisor(
         }
         val fromAmountString = helper.parser.asString(fromAmount) ?: return
         val url = helper.configs.skipV2MsgsDirect()
-        val chainAddresses = depositChainAddresses(
+        val chainAddresses = routeChainAddresses(
             accountAddress = accountAddress,
-            sourceAddress = sourceAddress,
-            fromChain = fromChain,
             injectiveAddress = injectiveAddress,
+            externalChain = fromChain,
+            externalAddress = sourceAddress,
             includeOsmosisAndNeutron = true,
         ) ?: return
 
@@ -480,11 +443,11 @@ internal class OnboardingSupervisor(
         if (fromAmount <= 0) return
         val fromAmountString = helper.parser.asString(fromAmount) ?: return
         val url = helper.configs.skipV2MsgsDirect()
-        val chainAddresses = depositChainAddresses(
+        val chainAddresses = routeChainAddresses(
             accountAddress = accountAddress,
-            sourceAddress = sourceAddress,
-            fromChain = fromChain,
             injectiveAddress = injectiveAddress,
+            externalChain = fromChain,
+            externalAddress = sourceAddress,
             includeOsmosisAndNeutron = false,
         ) ?: return
         val body: Map<String, Any> = mapOf(
@@ -572,7 +535,6 @@ internal class OnboardingSupervisor(
             if (type == TransferInputField.usdcSize ||
                 type == TransferInputField.address ||
                 type == TransferInputField.chain ||
-                type == TransferInputField.exchange ||
                 type == TransferInputField.token
             ) {
                 val decimals = helper.environment.tokens["usdc"]?.decimals ?: 6
@@ -582,25 +544,14 @@ internal class OnboardingSupervisor(
                         ?: Numeric.double.ZERO
                 if (usdcSize > Numeric.double.ZERO) {
                     simulateWithdrawal(decimals, subaccountNumber) { gasFee ->
-                        if (gasFee != null) {
-                            retrieveWithdrawalRoute(
-                                state,
-                                decimals,
-                                gasFee,
-                                accountAddress,
-                                sourceAddress,
-                                subaccountNumber,
-                            )
-                        } else {
-                            retrieveWithdrawalRoute(
-                                state,
-                                decimals,
-                                Numeric.decimal.ZERO,
-                                accountAddress,
-                                sourceAddress,
-                                subaccountNumber,
-                            )
-                        }
+                        retrieveWithdrawalRoute(
+                            state = state,
+                            decimals = decimals,
+                            gas = gasFee ?: Numeric.decimal.ZERO,
+                            accountAddress = accountAddress,
+                            subaccountNumber = subaccountNumber,
+                            injectiveAddress = injectiveAddress,
+                        )
                     }
                 }
             }
@@ -724,29 +675,19 @@ internal class OnboardingSupervisor(
         decimals: Int,
         gas: BigDecimal,
         accountAddress: String,
-        sourceAddress: String,
         subaccountNumber: Int?,
+        injectiveAddress: String?,
     ) {
         val isCctp =
             CctpConfig.cctpChainIds?.any { it.isCctpEnabled(state?.input?.transfer) } ?: false
-        val isExchange = state?.input?.transfer?.exchange != null
         if (isCctp) {
             retrieveSkipWithdrawalRouteCCTP(
                 state,
                 decimals,
                 gas,
                 accountAddress,
-                sourceAddress,
                 subaccountNumber,
-            )
-        } else if (isExchange) {
-            retrieveSkipWithdrawalRouteExchange(
-                state,
-                decimals,
-                gas,
-                accountAddress,
-                sourceAddress,
-                subaccountNumber,
+                injectiveAddress,
             )
         } else {
             retrieveSkipWithdrawalRouteNonCCTP(
@@ -754,58 +695,9 @@ internal class OnboardingSupervisor(
                 decimals,
                 gas,
                 accountAddress,
-                sourceAddress,
                 subaccountNumber,
+                injectiveAddress,
             )
-        }
-    }
-
-    private fun retrieveSkipWithdrawalRouteExchange(
-        state: PerpetualState?,
-        decimals: Int,
-        gas: BigDecimal,
-        accountAddress: String,
-        sourceAddress: String,
-        subaccountNumber: Int?,
-    ) {
-        val toChain = helper.configs.nobleChainId() ?: return
-        val toToken = helper.configs.nobleDenom ?: return
-        val toAddress = state?.input?.transfer?.address ?: return
-        val usdcSize = helper.parser.asDecimal(state?.input?.transfer?.size?.usdcSize) ?: return
-        val fromAmount = if (usdcSize > gas) {
-            ((usdcSize - gas) * Numeric.decimal.TEN.pow(decimals)).toBigInteger()
-        } else {
-            return
-        }
-        if (fromAmount <= 0) return
-        val fromChain = helper.environment.dydxChainId ?: return
-        val nativeChainUSDCDenom = helper.environment.tokens["usdc"]?.denom ?: return
-        val fromAmountString = helper.parser.asString(fromAmount) ?: return
-        val url = helper.configs.skipV2MsgsDirect()
-        val fromAddress = accountAddress
-        val body: Map<String, Any> = mapOf(
-            "amount_in" to fromAmountString,
-            "source_asset_denom" to nativeChainUSDCDenom,
-            "source_asset_chain_id" to fromChain,
-            "dest_asset_denom" to toToken,
-            "dest_asset_chain_id" to toChain,
-            "chain_ids_to_addresses" to mapOf(
-                fromChain to fromAddress,
-                toChain to toAddress,
-            ),
-            "slippage_tolerance_percent" to SLIPPAGE_PERCENT,
-        )
-
-        val oldState = stateMachine.state
-        val header = iMapOf(
-            "Content-Type" to "application/json",
-        )
-        helper.post(url, header, body.toJsonPrettyPrint()) { _, response, code, headers ->
-            if (response != null) {
-                update(stateMachine.routerRoute(response, subaccountNumber ?: 0, null, false), oldState)
-            } else {
-                Logger.e { "retrieveSkipWithdrawalRouteExchange error, code: $code" }
-            }
         }
     }
 
@@ -814,8 +706,8 @@ internal class OnboardingSupervisor(
         decimals: Int,
         gas: BigDecimal,
         accountAddress: String,
-        sourceAddress: String,
         subaccountNumber: Int?,
+        injectiveAddress: String?,
     ) {
         val toChain = state?.input?.transfer?.chain ?: return
         val toAddress = state.input.transfer.address ?: return
@@ -837,19 +729,17 @@ internal class OnboardingSupervisor(
             return
         }
         if (fromAmount <= 0) return
-        val osmosisChainId = helper.configs.osmosisChainId()
-        val nobleChainId = helper.configs.nobleChainId()
-        val neutronChainId = helper.configs.neutronChainId()
         val fromChain = helper.environment.dydxChainId ?: return
         val fromToken = helper.environment.tokens["usdc"]?.denom ?: return
         val fromAmountString = helper.parser.asString(fromAmount) ?: return
         val url = helper.configs.skipV2MsgsDirect()
-        val allSwapVenues = stateMachine.internalState.input.transfer.swapVenues
-        val swapVenues = allSwapVenues.filter {
-            it.chain_id == OSMOSIS_SWAP_VENUE || it.chain_id == NEUTRON_SWAP_VENUE
-        }.map {
-            it.toMap()
-        }
+        val chainAddresses = routeChainAddresses(
+            accountAddress = accountAddress,
+            injectiveAddress = injectiveAddress,
+            externalChain = toChain,
+            externalAddress = toAddress,
+            includeOsmosisAndNeutron = true,
+        ) ?: return
 
         val body: Map<String, Any> = mapOf(
             "amount_in" to fromAmountString,
@@ -857,14 +747,7 @@ internal class OnboardingSupervisor(
             "source_asset_chain_id" to fromChain,
             "dest_asset_denom" to toTokenDenomForAPIUse,
             "dest_asset_chain_id" to toChain,
-            "chain_ids_to_addresses" to mapOf(
-                fromChain to accountAddress,
-                osmosisChainId to accountAddress.toOsmosisAddress(),
-                nobleChainId to accountAddress.toNobleAddress(),
-                neutronChainId to accountAddress.toNeutronAddress(),
-                toChain to toAddress,
-            ),
-            "swap_venues" to swapVenues,
+            "chain_ids_to_addresses" to chainAddresses,
             "bridges" to listOf(
                 IBC_BRIDGE_ID,
                 AXELAR_BRIDGE_ID,
@@ -896,8 +779,8 @@ internal class OnboardingSupervisor(
         decimals: Int,
         gas: BigDecimal,
         accountAddress: String,
-        sourceAddress: String,
         subaccountNumber: Int?,
+        injectiveAddress: String?,
     ) {
         val toChain = state?.input?.transfer?.chain ?: return
         val toToken = state.input.transfer.token ?: return
@@ -911,24 +794,28 @@ internal class OnboardingSupervisor(
         }
         if (fromAmount <= 0) return
         val fromAmountString = helper.parser.asString(fromAmount) ?: return
+        val fromChain = helper.environment.dydxChainId ?: return
+        val fromToken = helper.environment.tokens["usdc"]?.denom ?: return
         val url = helper.configs.skipV2MsgsDirect()
-        val fromAddress = accountAddress.toNobleAddress() ?: return
-
-        val fromChain = helper.configs.nobleChainId()
-        val fromToken = helper.configs.nobleDenom
+        val chainAddresses = routeChainAddresses(
+            accountAddress = accountAddress,
+            injectiveAddress = injectiveAddress,
+            externalChain = toChain,
+            externalAddress = toAddress,
+            includeOsmosisAndNeutron = false,
+        ) ?: return
         val body: Map<String, Any> = mapOf(
             "amount_in" to fromAmountString,
             "source_asset_denom" to fromToken,
             "source_asset_chain_id" to fromChain,
             "dest_asset_denom" to toToken,
             "dest_asset_chain_id" to toChain,
-            "chain_ids_to_addresses" to mapOf(
-                fromChain to fromAddress,
-                toChain to toAddress,
-            ),
+            "chain_ids_to_addresses" to chainAddresses,
             "slippage_tolerance_percent" to SLIPPAGE_PERCENT,
             "smart_relay" to true,
             "allow_unsafe" to true,
+            // Mobile only signs the dYdX tx, so Skip has to relay every hop after it
+            "allow_multi_tx" to false,
             "bridges" to listOf(
                 CCTP_BRIDGE_ID,
                 IBC_BRIDGE_ID,
@@ -1115,178 +1002,6 @@ internal class OnboardingSupervisor(
         helper.transaction(TransactionType.SubaccountTransfer, string) { response ->
             val error = helper.parseTransactionResponse(response)
             helper.send(error, callback, payload)
-        }
-    }
-
-    internal fun commitCCTPWithdraw(
-        accountAddress: String,
-        subaccountNumber: Int?,
-        callback: TransactionCallback
-    ) {
-        val state = stateMachine.state
-        if (state?.input?.transfer?.type == TransferType.withdrawal) {
-            val decimals = helper.environment.tokens["usdc"]?.decimals ?: 6
-
-            val usdcSize =
-                helper.parser.asDouble(state.input.transfer.size?.usdcSize) ?: Numeric.double.ZERO
-            if (usdcSize > Numeric.double.ZERO) {
-                simulateWithdrawal(decimals, subaccountNumber) { gasFee ->
-                    if (gasFee != null) {
-//                        return back and branch from top level method
-                        cctpToNoble(
-                            state,
-                            decimals,
-                            gasFee,
-                            accountAddress,
-                            subaccountNumber,
-                            callback,
-                        )
-                    } else {
-//                        return back and branch from top level method
-                        cctpToNoble(
-                            state,
-                            decimals,
-                            Numeric.decimal.ZERO,
-                            accountAddress,
-                            subaccountNumber,
-                            callback,
-                        )
-                    }
-                }
-            } else {
-                helper.send(V4TransactionErrors.error(null, "Invalid usdcSize"), callback)
-            }
-        } else {
-            helper.send(V4TransactionErrors.error(null, "Invalid transfer type"), callback)
-        }
-    }
-
-    /**
-     * Computes whether to serve skip or squid cctpToNoble method
-     * The cctpToNoble methods move cctp funds from dydx subaccount wallet to the noble wallet
-     */
-    private fun cctpToNoble(
-        state: PerpetualState?,
-        decimals: Int,
-        gas: BigDecimal,
-        accountAddress: String,
-        subaccountNumber: Int?,
-        callback: TransactionCallback
-    ) {
-        cctpToNobleSkip(
-            state,
-            decimals,
-            gas,
-            accountAddress,
-            subaccountNumber,
-            callback,
-        )
-    }
-
-    private fun cctpToNobleSkip(
-        state: PerpetualState?,
-        decimals: Int,
-        gas: BigDecimal,
-        accountAddress: String,
-        subaccountNumber: Int?,
-        callback: TransactionCallback
-    ) {
-//      We have a lot of duplicate code for these deposit/withdrawal route calls
-//      It's easier to dedupe now that the url is the same and only the args differ
-//      Consider creating generateArgs fun to reduce code duplication
-//      DO-LATER: https://linear.app/dydx/issue/OTE-350/%5Babacus%5D-cleanup
-        val url = helper.configs.skipV2MsgsDirect()
-        val nobleChain = helper.configs.nobleChainId()
-        val nobleToken = helper.configs.nobleDenom
-        val nobleAddress = accountAddress.toNobleAddress()
-        val chainId = helper.environment.dydxChainId
-        val nativeChainUSDCDenom = helper.environment.tokens["usdc"]?.denom
-        val usdcSize = helper.parser.asDecimal(state?.input?.transfer?.size?.usdcSize)
-        val fromAmount = if (usdcSize != null && usdcSize > gas) {
-            ((usdcSize - gas) * Numeric.decimal.TEN.pow(decimals)).toBigInteger()
-        } else {
-            null
-        }
-        val fromAmountString = helper.parser.asString(fromAmount)
-
-        if (
-            nobleAddress != null &&
-            chainId != null &&
-            nativeChainUSDCDenom != null &&
-            fromAmountString != null && fromAmount != null && fromAmount > 0
-        ) {
-            val body: Map<String, Any> = mapOf(
-                "amount_in" to fromAmountString,
-//                from dydx denom and chain
-                "source_asset_denom" to nativeChainUSDCDenom,
-                "source_asset_chain_id" to chainId,
-//                to noble denom and chain
-                "dest_asset_denom" to nobleToken,
-                "dest_asset_chain_id" to nobleChain,
-                "chain_ids_to_addresses" to mapOf(
-                    chainId to accountAddress,
-                    nobleChain to nobleAddress,
-                ),
-                "slippage_tolerance_percent" to SLIPPAGE_PERCENT,
-            )
-
-            val header = iMapOf(
-                "Content-Type" to "application/json",
-            )
-            Logger.ddInfo(body.toIMap(), { "cctpToNobleSkip payload sending" })
-            helper.post(url, header, body.toJsonPrettyPrint()) { _, response, code, _ ->
-                val json = helper.parser.decodeJsonObject(response)
-                if (json != null) {
-                    Logger.ddInfo(json, { "cctpToNobleSkip payload received" })
-                    val skipRoutePayloadProcessor = SkipRoutePayloadProcessor(parser = helper.parser)
-                    val processedPayload = skipRoutePayloadProcessor.received(existing = mapOf(), payload = json)
-                    val ibcPayload = helper.parser.asString(
-                        processedPayload.get("data"),
-                    )
-                    if (ibcPayload != null) {
-                        val payload = helper.jsonEncoder.encode(
-                            mapOf(
-                                "subaccountNumber" to (subaccountNumber ?: 0),
-                                "amount" to state?.input?.transfer?.size?.usdcSize,
-                                "ibcPayload" to ibcPayload.encodeBase64(),
-                            ),
-                        )
-                        helper.transaction(TransactionType.WithdrawToNobleIBC, payload) {
-                            val error = helper.parseTransactionResponse(it)
-                            if (error != null) {
-                                Logger.e { "withdrawToNobleIBC error: $error" }
-                                helper.send(error, callback)
-                            } else {
-                                pendingCctpWithdraw = CctpWithdrawState(
-                                    singleMessagePayload = null,
-                                    multiMessagePayload = state?.input?.transfer?.requestPayload?.allMessages,
-                                    callback = callback,
-                                )
-                            }
-                        }
-                    } else {
-                        Logger.e { "cctpToNobleSkip error, code: $code" }
-                        val error = ParsingError(
-                            ParsingErrorType.MissingContent,
-                            "Missing skip response",
-                        )
-                        helper.send(error, callback)
-                    }
-                } else {
-                    Logger.e { "cctpToNobleSkip error, code: $code" }
-                    val error = ParsingError(
-                        ParsingErrorType.MissingContent,
-                        "Missing skip response",
-                    )
-                    helper.send(error, callback)
-                }
-            }
-        } else {
-            val error = ParsingError(
-                ParsingErrorType.MissingRequiredData,
-                "Missing required data for cctp skip withdraw",
-            )
-            helper.send(error, callback)
         }
     }
 }

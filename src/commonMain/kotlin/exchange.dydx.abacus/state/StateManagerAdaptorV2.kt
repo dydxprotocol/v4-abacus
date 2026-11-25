@@ -657,13 +657,6 @@ internal class StateManagerAdaptorV2(
         onboarding.commitTransfer(subaccountNumber, callback)
     }
 
-    internal fun commitCCTPWithdraw(callback: TransactionCallback) {
-        val address = accountAddress
-        if (address != null) {
-            onboarding.commitCCTPWithdraw(address, subaccountNumber, callback)
-        }
-    }
-
     internal fun commitInjectiveDeposit(callback: TransactionCallback) {
         accounts.commitInjectiveDeposit { successful, error, data ->
             val hash = data as? String
