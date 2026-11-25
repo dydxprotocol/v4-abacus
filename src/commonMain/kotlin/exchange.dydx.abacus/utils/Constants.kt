@@ -31,9 +31,6 @@ internal const val ETHEREUM_CHAIN_ID = "1"
 // Polling durations
 internal const val GEO_POLLING_DURATION_SECONDS = 600.0
 
-// CCTP Withdraw Constants
-internal const val MIN_NOBLE_USDC_FOR_CCTP_WITHDRAW = 50000
-
 // Injective Constants
 internal const val INJECTIVE_USDC_DECIMALS = 6
 internal const val INJ_DECIMALS = 18

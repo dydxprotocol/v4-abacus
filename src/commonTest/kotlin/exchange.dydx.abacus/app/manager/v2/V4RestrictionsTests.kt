@@ -208,7 +208,6 @@ class V4RestrictionsTests : NetworkTests() {
 //                    "https://dydx.exchange/v4-launch-incentive/query/ccar-perpetuals",
 //                    "https://squid-api-git-main-cosmos-testnet-0xsquid.vercel.app/v1/chains",
 //                    "https://squid-api-git-main-cosmos-testnet-0xsquid.vercel.app/v1/tokens",
-//                    "https://api.examples.com/configs/exchanges.json",
 //                    "https://indexer.v4staging.dydx.exchange/v4/screen?address=cosmos1fq8q55896ljfjj7v3x0qd0z3sr78wmes940uhm",
 //                    "https://dydx.exchange/v4-launch-incentive/query/api/dydx/points/cosmos1fq8q55896ljfjj7v3x0qd0z3sr78wmes940uhm?n=2",
 //                    "https://indexer.v4staging.dydx.exchange/v4/addresses/cosmos1fq8q55896ljfjj7v3x0qd0z3sr78wmes940uhm",

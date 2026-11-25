@@ -16,7 +16,6 @@ enum class TransferInputField(val rawValue: String) {
     size("size.size"),
     usdcFee("fee"),
 
-    exchange("exchange"),
     chain("chain"),
     token("token"),
     address("address"),

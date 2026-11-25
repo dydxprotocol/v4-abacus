@@ -17,7 +17,6 @@ data class DepositInputOptions(
     val needsSize: Boolean?,
     val needsAddress: Boolean?,
     val needsFastSpeed: Boolean?,
-    val exchanges: IList<SelectionOption>?,
     val chains: IList<SelectionOption>?,
     val assets: IList<SelectionOption>?
 )
@@ -28,7 +27,6 @@ data class WithdrawalInputOptions(
     val needsSize: Boolean?,
     val needsAddress: Boolean?,
     val needsFastSpeed: Boolean?,
-    val exchanges: IList<SelectionOption>?,
     val chains: IList<SelectionOption>?,
     val assets: IList<SelectionOption>?
 )
@@ -102,7 +100,6 @@ data class TransferInputRequestPayload(
     val routeType: String?,
     val targetAddress: String?,
     val data: String?,
-    val allMessages: String?,
     val value: String?,
     val gasLimit: String?,
     val gasPrice: String?,
@@ -127,7 +124,6 @@ data class TransferInputRequestPayload(
                 val routeType = parser.asString(data["routeType"])
                 val targetAddress = parser.asString(data["targetAddress"])
                 val dataValue = parser.asString(data["data"])
-                val allMessages = parser.asString(data["allMessages"])
                 val value = parser.asString(data["value"])
                 val gasLimit = parser.asString(data["gasLimit"])
                 val gasPrice = parser.asString(data["gasPrice"])
@@ -144,7 +140,6 @@ data class TransferInputRequestPayload(
                     existing?.routeType != routeType ||
                     existing?.targetAddress != targetAddress ||
                     existing?.data != dataValue ||
-                    existing?.allMessages != allMessages ||
                     existing?.value != value ||
                     existing?.gasLimit != gasLimit ||
                     existing?.gasPrice != gasPrice ||
@@ -161,7 +156,6 @@ data class TransferInputRequestPayload(
                         routeType,
                         targetAddress,
                         dataValue,
-                        allMessages,
                         value,
                         gasLimit,
                         gasPrice,
@@ -290,7 +284,6 @@ data class TransferInput(
     val size: TransferInputSize?,
     val fastSpeed: Boolean,
     val fee: Double?,
-    val exchange: String?,
     val chain: String?,
     val token: String?,
     val address: String?,
@@ -324,7 +317,6 @@ data class TransferInput(
 
                 val fastSpeed = internalState?.fastSpeed ?: false
                 val fee = internalState?.fee
-                val exchange = internalState?.exchange
                 val chain = internalState?.chain
                 val token = internalState?.token
                 val address = internalState?.address
@@ -378,7 +370,6 @@ data class TransferInput(
                     existing?.size !== size ||
                     existing?.fastSpeed != fastSpeed ||
                     existing.fee != fee ||
-                    existing.exchange != exchange ||
                     existing.chain != chain ||
                     existing.token != token ||
                     existing.address != address ||
@@ -400,7 +391,6 @@ data class TransferInput(
                         size = size,
                         fastSpeed = fastSpeed,
                         fee = fee,
-                        exchange = exchange,
                         chain = chain,
                         token = token,
                         address = address,

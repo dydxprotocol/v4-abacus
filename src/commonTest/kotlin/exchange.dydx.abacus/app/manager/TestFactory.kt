@@ -325,6 +325,7 @@ class TestChain : DYDXChainTransactionsProtocol {
     var transferResponse: String? = null
     var depositResponse: String? = null
     var withdrawResponse: String? = null
+    var simulateWithdrawResponse: String? = null
     var signCompliancePayload: String? = null
     var injectivePublicKeyResponse: String? = null
     var signInjectiveResponse: String? = null
@@ -403,6 +404,10 @@ class TestChain : DYDXChainTransactionsProtocol {
 
             TransactionType.Withdraw -> {
                 withdraw(paramsInJson!!, callback)
+            }
+
+            TransactionType.simulateWithdraw -> {
+                simulateWithdrawResponse?.let(callback)
             }
 
             TransactionType.SignCompliancePayload -> {

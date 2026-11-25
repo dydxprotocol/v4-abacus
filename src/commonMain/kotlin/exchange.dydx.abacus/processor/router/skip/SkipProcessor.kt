@@ -24,7 +24,6 @@ internal class SkipProcessor(
     var chains: List<Any>? = null
 
     var skipTokens: Map<String, Map<String, List<Map<String, Any>>>>? = null
-    var exchangeDestinationChainId: String? = null
     var selectedChainType: ChainType? = ChainType.EVM
         set(value) {
             if (field != value) {
@@ -230,12 +229,6 @@ internal class SkipProcessor(
         val chainIdToUse = chainId ?: defaultChainId()
         val assetsMapForChainId = parser.asNativeMap(this.skipTokens?.get(chainIdToUse))
         val assetsForChainId = parser.asNativeList(assetsMapForChainId?.get("assets"))
-//      coinbase exchange chainId is noble-1. we only allow usdc withdrawals from it
-        if (chainId === exchangeDestinationChainId) {
-            return assetsForChainId?.filter {
-                parser.asString(parser.asNativeMap(it)?.get("denom")) == "uusdc"
-            }
-        }
 
         val tokensWithSkipDenom = mutableListOf<Map<String, Any>>()
 /*        we have to replace skip's {chain-name}-native naming bc it doesn't play well with

@@ -78,10 +78,6 @@ class V4StateManagerConfigs(
         return parser.asString(parser.value(configs, "channels.candles"))
     }
 
-    fun nobleChainId(): String {
-        return if (environment.isMainNet) "noble-1" else "grand-1"
-    }
-
     fun injectiveChainId(): String {
         return if (environment.isMainNet) "injective-1" else "injective-888"
     }
@@ -150,8 +146,6 @@ class V4StateManagerConfigs(
     }
 
     val skipV2Venues = "$skipHost/v2/fungible/venues"
-
-    val nobleDenom = "uusdc"
 
     private val includeSvmChains: String
         get() {

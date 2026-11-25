@@ -64,7 +64,6 @@ class AbacusMockData {
             faucet = null,
             skip = null,
             metadataService = null,
-            nobleValidator = null,
             injectiveValidator = null,
             geo = null,
             solanaRpcUrl = null,

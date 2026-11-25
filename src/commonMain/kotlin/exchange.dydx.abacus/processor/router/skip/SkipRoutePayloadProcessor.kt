@@ -60,25 +60,9 @@ internal class SkipRoutePayloadProcessor(parser: ParserProtocol) : BaseProcessor
         val camelCasedMsgMap = msgMap?.toCamelCaseKeys()
         val fullMessage = mapOf(
             "msg" to camelCasedMsgMap,
-//                Squid returns the msg payload under the "value" key for noble transfers
-            "value" to camelCasedMsgMap,
             "msgTypeUrl" to msgTypeUrl,
-//                Squid sometimes returns typeUrl or msgTypeUrl depending on the route version
-            "typeUrl" to msgTypeUrl,
         )
         return fullMessage
-    }
-
-    private fun formatAllMessages(payload: Map<String, Any>?): List<Map<String, Any?>> {
-        val allRawMessages = parser.asList(parser.value(payload, "txs.0.cosmos_tx.msgs"))
-        val allFormattedMessages = mutableListOf<Map<String, Any?>>()
-        allRawMessages?.forEach {
-            val msgObject = parser.asMap(it)
-            val msg = parser.asString(msgObject?.get("msg"))
-            val msgTypeUrl = parser.asString(msgObject?.get("msg_type_url"))
-            allFormattedMessages.add(formatMessage(msg, msgTypeUrl))
-        }
-        return allFormattedMessages
     }
 
     override fun received(
@@ -96,10 +80,7 @@ internal class SkipRoutePayloadProcessor(parser: ParserProtocol) : BaseProcessor
             val msg = parser.asString(parser.value(payload, "txs.0.cosmos_tx.msgs.0.msg"))
             val msgTypeUrl = parser.asString(parser.value(payload, "txs.0.cosmos_tx.msgs.0.msg_type_url"))
             val formattedMessage = formatMessage(msg, msgTypeUrl)
-            val allFormattedMessages = formatAllMessages(payload)
-//            save all messages in array
             modified.safeSet("data", jsonEncodePayload(formattedMessage))
-            modified.safeSet("allMessages", jsonEncodePayload(allFormattedMessages))
         }
         if (txType == TxType.SOLANA) {
             if (modified["solanaTransaction"] != null) {

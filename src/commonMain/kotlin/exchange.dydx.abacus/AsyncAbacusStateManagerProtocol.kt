@@ -99,7 +99,6 @@ interface AsyncAbacusStateManagerProtocol {
     fun commitAdjustIsolatedMargin(callback: TransactionCallback): HumanReadableSubaccountTransferPayload?
     fun stopWatchingLastOrder()
     fun commitTransfer(callback: TransactionCallback)
-    fun commitCCTPWithdraw(callback: TransactionCallback)
 
     // Sends USDC waiting on Injective to the dYdX chain. The callback's data is the Injective tx hash.
     fun commitInjectiveDeposit(callback: TransactionCallback)

@@ -697,16 +697,6 @@ class AsyncAbacusStateManagerV2(
         }
     }
 
-    override fun commitCCTPWithdraw(callback: TransactionCallback) {
-        try {
-            adaptor?.commitCCTPWithdraw(callback)
-        } catch (e: Exception) {
-            val error = V4TransactionErrors.Companion.error(null, e.toString())
-            trackTransactionError("commitCCTPWithdraw", error)
-            callback(false, error, null)
-        }
-    }
-
     override fun commitInjectiveDeposit(callback: TransactionCallback) {
         try {
             adaptor?.commitInjectiveDeposit(callback)

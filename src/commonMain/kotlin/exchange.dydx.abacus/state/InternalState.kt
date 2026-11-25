@@ -571,7 +571,6 @@ internal data class InternalTransferInputState(
     var decimals: Int? = null,
     var fastSpeed: Boolean = false,
     var fee: Double? = null,
-    var exchange: String? = null,
     var chain: String? = null,
     var token: String? = null,
     var address: String? = null,
@@ -610,7 +609,6 @@ internal fun DepositInputOptions.Companion.safeCreate(existing: DepositInputOpti
         needsSize = null,
         needsAddress = null,
         needsFastSpeed = null,
-        exchanges = null,
         chains = null,
         assets = null,
     )
@@ -621,7 +619,6 @@ internal fun WithdrawalInputOptions.Companion.safeCreate(existing: WithdrawalInp
         needsSize = null,
         needsAddress = null,
         needsFastSpeed = null,
-        exchanges = null,
         chains = null,
         assets = null,
     )
