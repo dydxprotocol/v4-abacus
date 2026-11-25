@@ -134,6 +134,7 @@ class AsyncAbacusStateManagerV2(
 
                 value?.market = market
                 value?.setAddresses(source = sourceAddress, account = accountAddress, isNew = true)
+                value?.injectiveAddress = injectiveAddress
                 value?.subaccountNumber = subaccountNumber
                 value?.orderbookGrouping = orderbookGrouping
                 value?.historicalTradingRewardPeriod = historicalTradingRewardPeriod
@@ -190,6 +191,14 @@ class AsyncAbacusStateManagerV2(
         }
 
     override var sourceAddress: String? = null
+
+    override var injectiveAddress: String? = null
+        set(value) {
+            field = value
+            ioImplementations.threading?.async(ThreadingType.abacus) {
+                adaptor?.injectiveAddress = field
+            }
+        }
 
     override var subaccountNumber: Int = 0
         set(value) {
@@ -694,6 +703,16 @@ class AsyncAbacusStateManagerV2(
         } catch (e: Exception) {
             val error = V4TransactionErrors.Companion.error(null, e.toString())
             trackTransactionError("commitCCTPWithdraw", error)
+            callback(false, error, null)
+        }
+    }
+
+    override fun commitInjectiveDeposit(callback: TransactionCallback) {
+        try {
+            adaptor?.commitInjectiveDeposit(callback)
+        } catch (e: Exception) {
+            val error = V4TransactionErrors.Companion.error(null, e.toString())
+            trackTransactionError("commitInjectiveDeposit", error)
             callback(false, error, null)
         }
     }

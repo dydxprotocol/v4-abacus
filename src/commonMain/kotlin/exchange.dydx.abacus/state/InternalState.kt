@@ -312,6 +312,14 @@ internal data class InternalAccountState(
     var groupedSubaccounts: MutableMap<Int, InternalSubaccountState> = mutableMapOf(),
 
     var tradingRewards: InternalTradingRewardsState = InternalTradingRewardsState(),
+
+    var injectiveBalances: InternalInjectiveBalancesState? = null,
+)
+
+internal data class InternalInjectiveBalancesState(
+    // Both in the smallest unit of their denom
+    val usdc: BigDecimal,
+    val inj: BigDecimal,
 )
 
 internal data class InternalTradingRewardsState(

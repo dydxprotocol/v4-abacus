@@ -119,9 +119,11 @@ class TestFileSystem : FileSystemProtocol {
 class TestRest() : RestProtocol {
     private val mock = AbacusMockData()
     private var responses = mutableMapOf<String, String>()
+    private val postResponseCodes = mutableMapOf<String, Int>()
     private val parser = Parser()
 
     var requests = iMutableListOf<String>()
+    val postedBodies = mutableListOf<Pair<String, String?>>()
 
     init {
         setResponse(
@@ -232,12 +234,16 @@ class TestRest() : RestProtocol {
         callback: RestCallback,
     ) {
         requests.add(url)
+        postedBodies.add(url to body)
 
         val response = responses[url]
+        val responseCode = postResponseCodes.remove(url)
         if (response != null) {
             responses.remove(url)
             val code = parser.asInt(response)
-            if (code != null) {
+            if (responseCode != null) {
+                callback(response, responseCode, null)
+            } else if (code != null) {
                 callback(null, code, null)
             } else {
                 callback(response, 200, null)
@@ -266,6 +272,11 @@ class TestRest() : RestProtocol {
 
     fun setResponse(url: String, response: String) {
         responses[url] = response
+    }
+
+    fun setPostResponse(url: String, response: String, httpCode: Int) {
+        responses[url] = response
+        postResponseCodes[url] = httpCode
     }
 }
 
@@ -315,12 +326,15 @@ class TestChain : DYDXChainTransactionsProtocol {
     var depositResponse: String? = null
     var withdrawResponse: String? = null
     var signCompliancePayload: String? = null
+    var injectivePublicKeyResponse: String? = null
+    var signInjectiveResponse: String? = null
 
     var transactionCallback: ((response: String?) -> Unit)? = null
 
     var placeOrderPayloads = mutableListOf<String>()
     var canceldOrderPayloads = mutableListOf<String>()
     var transferPayloads = mutableListOf<String>()
+    var injectiveSignPayloads = mutableListOf<String>()
 
     var requests = mutableListOf<QueryType>()
 
@@ -357,6 +371,10 @@ class TestChain : DYDXChainTransactionsProtocol {
                 getHeight(callback)
             }
 
+            QueryType.GetInjectivePublicKey -> {
+                callback(injectivePublicKeyResponse ?: dummyError)
+            }
+
             else -> {}
         }
     }
@@ -389,6 +407,11 @@ class TestChain : DYDXChainTransactionsProtocol {
 
             TransactionType.SignCompliancePayload -> {
                 signCompliancePayload(paramsInJson!!, callback)
+            }
+
+            TransactionType.SignInjectiveDirect -> {
+                injectiveSignPayloads.add(paramsInJson!!)
+                callback(signInjectiveResponse ?: dummyError)
             }
 
             else -> {}

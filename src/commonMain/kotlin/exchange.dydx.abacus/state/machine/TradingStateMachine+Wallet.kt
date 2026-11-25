@@ -5,6 +5,7 @@ import exchange.dydx.abacus.protocols.asTypedList
 import exchange.dydx.abacus.protocols.asTypedObject
 import exchange.dydx.abacus.responses.SocketInfo
 import exchange.dydx.abacus.state.Changes
+import exchange.dydx.abacus.state.InternalInjectiveBalancesState
 import exchange.dydx.abacus.state.StateChanges
 import exchange.dydx.abacus.state.manager.BlockAndTime
 import exchange.dydx.abacus.utils.Logger
@@ -262,6 +263,15 @@ internal fun TradingStateMachine.onChainUnbonding(payload: String): StateChanges
     } else {
         StateChanges(iListOf())
     }
+}
+
+internal fun TradingStateMachine.setInjectiveBalances(balances: InternalInjectiveBalancesState?): StateChanges {
+    val account = internalState.wallet.account
+    if (account.injectiveBalances == balances) {
+        return StateChanges.noChange
+    }
+    account.injectiveBalances = balances
+    return StateChanges(iListOf(Changes.accountBalances), null)
 }
 
 internal fun TradingStateMachine.onChainStakingRewards(payload: String): StateChanges {

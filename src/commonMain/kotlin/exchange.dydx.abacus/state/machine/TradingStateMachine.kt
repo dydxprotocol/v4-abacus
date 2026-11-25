@@ -727,6 +727,7 @@ open class TradingStateMachine(
                     groupedSubaccounts = groupedSubaccounts,
                     tradingRewards = account.tradingRewards,
                     launchIncentivePoints = account.launchIncentivePoints,
+                    injectiveBalances = account.injectiveBalances,
                 )
             }
         }

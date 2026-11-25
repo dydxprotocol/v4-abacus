@@ -380,8 +380,7 @@ class V4ForegroundCycleTests : NetworkTests() {
                    "getAccountBalances",
                    "getDelegatorDelegations",
                    "getCurrentUnstaking",
-                   "getStakingRewards",
-                   "getNobleBalance"
+                   "getStakingRewards"
                 ]
             """.trimIndent(),
             testChain?.requests?.map { it.rawValue },
@@ -454,8 +453,7 @@ class V4ForegroundCycleTests : NetworkTests() {
                    "getAccountBalances",
                    "getDelegatorDelegations",
                    "getCurrentUnstaking",
-                   "getStakingRewards",
-                   "getNobleBalance"
+                   "getStakingRewards"
                 ]
             """.trimIndent(),
             testChain?.requests?.map { it.rawValue },
@@ -626,12 +624,10 @@ class V4ForegroundCycleTests : NetworkTests() {
                    "getDelegatorDelegations",
                    "getCurrentUnstaking",
                    "getStakingRewards",
-                   "getNobleBalance",
                    "getAccountBalances",
                    "getDelegatorDelegations",
                    "getCurrentUnstaking",
-                   "getStakingRewards",
-                   "getNobleBalance"
+                   "getStakingRewards"
                 ]
             """.trimIndent(),
             testChain?.requests?.map { it.rawValue },
@@ -709,8 +705,7 @@ class V4ForegroundCycleTests : NetworkTests() {
                    "getAccountBalances",
                    "getDelegatorDelegations",
                    "getCurrentUnstaking",
-                   "getStakingRewards",
-                   "getNobleBalance"
+                   "getStakingRewards"
                 ]
             """.trimIndent(),
             testChain?.requests?.map { it.rawValue },

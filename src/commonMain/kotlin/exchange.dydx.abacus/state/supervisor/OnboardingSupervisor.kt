@@ -45,6 +45,7 @@ import exchange.dydx.abacus.utils.SLIPPAGE_PERCENT
 import exchange.dydx.abacus.utils.filterNotNull
 import exchange.dydx.abacus.utils.iMapOf
 import exchange.dydx.abacus.utils.isAddressValid
+import exchange.dydx.abacus.utils.toInjectiveEvmAddress
 import exchange.dydx.abacus.utils.toJsonPrettyPrint
 import exchange.dydx.abacus.utils.toNeutronAddress
 import exchange.dydx.abacus.utils.toNobleAddress
@@ -211,6 +212,7 @@ internal class OnboardingSupervisor(
         accountAddress: String,
         sourceAddress: String,
         subaccountNumber: Int?,
+        injectiveAddress: String?,
     ) {
         if (stateMachine.skipGoFast) {
             stateMachine.internalState.input.transfer.goFastRoute = null
@@ -222,6 +224,7 @@ internal class OnboardingSupervisor(
                 accountAddress = accountAddress,
                 sourceAddress = sourceAddress,
                 subaccountNumber = subaccountNumber,
+                injectiveAddress = injectiveAddress,
                 goFast = true,
             )
             retrieveSkipDepositRouteGoFast(
@@ -229,6 +232,7 @@ internal class OnboardingSupervisor(
                 accountAddress = accountAddress,
                 sourceAddress = sourceAddress,
                 subaccountNumber = subaccountNumber,
+                injectiveAddress = injectiveAddress,
                 goFast = false,
             )
         } else {
@@ -239,6 +243,7 @@ internal class OnboardingSupervisor(
                     accountAddress = accountAddress,
                     sourceAddress = sourceAddress,
                     subaccountNumber = subaccountNumber,
+                    injectiveAddress = injectiveAddress,
                 )
             } else {
                 retrieveSkipDepositRouteNonCCTP(
@@ -246,9 +251,32 @@ internal class OnboardingSupervisor(
                     accountAddress = accountAddress,
                     sourceAddress = sourceAddress,
                     subaccountNumber = subaccountNumber,
+                    injectiveAddress = injectiveAddress,
                 )
             }
         }
+    }
+
+    private fun depositChainAddresses(
+        accountAddress: String,
+        sourceAddress: String,
+        fromChain: String,
+        injectiveAddress: String?,
+        includeOsmosisAndNeutron: Boolean,
+    ): Map<String, String?>? {
+        val injectiveEvmAddress = injectiveAddress?.toInjectiveEvmAddress() ?: return null
+        val dydxChainId = helper.environment.dydxChainId ?: return null
+        val addresses = mutableMapOf<String, String?>(
+            fromChain to sourceAddress,
+            helper.configs.injectiveChainId() to injectiveAddress,
+            helper.configs.injectiveEvmChainId to injectiveEvmAddress,
+            dydxChainId to accountAddress,
+        )
+        if (includeOsmosisAndNeutron) {
+            addresses[helper.configs.osmosisChainId()] = accountAddress.toOsmosisAddress()
+            addresses[helper.configs.neutronChainId()] = accountAddress.toNeutronAddress()
+        }
+        return addresses
     }
 
     private fun retrieveSkipDepositRouteGoFast(
@@ -256,6 +284,7 @@ internal class OnboardingSupervisor(
         accountAddress: String,
         sourceAddress: String,
         subaccountNumber: Int?,
+        injectiveAddress: String?,
         goFast: Boolean
     ) {
         val fromChain = state?.input?.transfer?.chain ?: return
@@ -277,37 +306,25 @@ internal class OnboardingSupervisor(
             return
         }
         val fromAmountString = helper.parser.asString(fromAmount) ?: return
-
-        val allSwapVenues = stateMachine.internalState.input.transfer.swapVenues
-        val swapVenues = allSwapVenues.filter {
-            it.chain_id == OSMOSIS_SWAP_VENUE || it.chain_id == NEUTRON_SWAP_VENUE || it.chain_id == fromChain
-        }.map {
-            it.toMap()
-        }
-
-        val chainId = helper.environment.dydxChainId ?: return
-        val nativeChainUSDCDenom = helper.environment.tokens["usdc"]?.denom ?: return
-
-        val osmosisChainId = helper.configs.osmosisChainId()
-        val nobleChainId = helper.configs.nobleChainId()
-        val neutronChainId = helper.configs.neutronChainId()
+        val chainAddresses = depositChainAddresses(
+            accountAddress = accountAddress,
+            sourceAddress = sourceAddress,
+            fromChain = fromChain,
+            injectiveAddress = injectiveAddress,
+            includeOsmosisAndNeutron = true,
+        ) ?: return
 
         val body = mutableMapOf(
             "amount_in" to fromAmountString,
             "source_asset_denom" to fromTokenDenomForAPIUse,
             "source_asset_chain_id" to fromChain,
-            "dest_asset_denom" to nativeChainUSDCDenom,
-            "dest_asset_chain_id" to chainId,
-            "chain_ids_to_addresses" to mapOf(
-                fromChain to sourceAddress,
-                osmosisChainId to accountAddress.toOsmosisAddress(),
-                nobleChainId to accountAddress.toNobleAddress(),
-                neutronChainId to accountAddress.toNeutronAddress(),
-                chainId to accountAddress,
-            ),
+            "dest_asset_denom" to helper.configs.injectiveEvmUsdcAddress,
+            "dest_asset_chain_id" to helper.configs.injectiveEvmChainId,
+            "chain_ids_to_addresses" to chainAddresses,
             "slippage_tolerance_percent" to SLIPPAGE_PERCENT,
             "allow_unsafe" to true,
             "smart_relay" to true,
+            "allow_multi_tx" to true,
             "go_fast" to goFast,
             "smart_swap_options" to mapOf(
                 "split_routes" to false,
@@ -319,7 +336,6 @@ internal class OnboardingSupervisor(
                 "CCTP",
                 "GO_FAST",
             ),
-            "swap_venues" to swapVenues,
         )
 
         val oldState = stateMachine.state
@@ -357,6 +373,7 @@ internal class OnboardingSupervisor(
         accountAddress: String,
         sourceAddress: String,
         subaccountNumber: Int?,
+        injectiveAddress: String?,
     ) {
         val fromChain = state?.input?.transfer?.chain ?: return
         val fromTokenDenom = state.input.transfer.token ?: return
@@ -382,20 +399,15 @@ internal class OnboardingSupervisor(
                 null
             }
         }
-        val osmosisChainId = helper.configs.osmosisChainId()
-        val nobleChainId = helper.configs.nobleChainId()
-        val neutronChainId = helper.configs.neutronChainId()
-        val chainId = helper.environment.dydxChainId ?: return
-        val nativeChainUSDCDenom = helper.environment.tokens["usdc"]?.denom ?: return
         val fromAmountString = helper.parser.asString(fromAmount) ?: return
         val url = helper.configs.skipV2MsgsDirect()
-
-        val allSwapVenues = stateMachine.internalState.input.transfer.swapVenues
-        val swapVenues = allSwapVenues.filter {
-            it.chain_id == OSMOSIS_SWAP_VENUE || it.chain_id == NEUTRON_SWAP_VENUE || it.chain_id == fromChain
-        }.map {
-            it.toMap()
-        }
+        val chainAddresses = depositChainAddresses(
+            accountAddress = accountAddress,
+            sourceAddress = sourceAddress,
+            fromChain = fromChain,
+            injectiveAddress = injectiveAddress,
+            includeOsmosisAndNeutron = true,
+        ) ?: return
 
         val options = mapOf(
             "bridges" to listOf(
@@ -404,22 +416,16 @@ internal class OnboardingSupervisor(
                 CCTP_BRIDGE_ID,
             ),
             "smart_swap_options" to SMART_SWAP_OPTIONS,
-            "swap_venues" to swapVenues,
+            "allow_multi_tx" to true,
         )
         if (fromAmount != null && fromAmount > 0) {
             val body: Map<String, Any> = mapOf(
                 "amount_in" to fromAmountString,
                 "source_asset_denom" to fromTokenDenomForAPIUse,
                 "source_asset_chain_id" to fromChain,
-                "dest_asset_denom" to nativeChainUSDCDenom,
-                "dest_asset_chain_id" to chainId,
-                "chain_ids_to_addresses" to mapOf(
-                    fromChain to sourceAddress,
-                    osmosisChainId to accountAddress.toOsmosisAddress(),
-                    nobleChainId to accountAddress.toNobleAddress(),
-                    neutronChainId to accountAddress.toNeutronAddress(),
-                    chainId to accountAddress,
-                ),
+                "dest_asset_denom" to helper.configs.injectiveEvmUsdcAddress,
+                "dest_asset_chain_id" to helper.configs.injectiveEvmChainId,
+                "chain_ids_to_addresses" to chainAddresses,
                 "slippage_tolerance_percent" to SLIPPAGE_PERCENT,
             ) + options
 
@@ -451,6 +457,7 @@ internal class OnboardingSupervisor(
         accountAddress: String,
         sourceAddress: String,
         subaccountNumber: Int?,
+        injectiveAddress: String?,
     ) {
 //      We have a lot of duplicate code for these deposit/withdrawal route calls
 //      It's easier to dedupe now that the url is the same and only the args differ
@@ -473,19 +480,22 @@ internal class OnboardingSupervisor(
         if (fromAmount <= 0) return
         val fromAmountString = helper.parser.asString(fromAmount) ?: return
         val url = helper.configs.skipV2MsgsDirect()
-        val toChain = helper.environment.dydxChainId ?: return
-        val toToken = helper.environment.tokens["usdc"]?.denom ?: return
+        val chainAddresses = depositChainAddresses(
+            accountAddress = accountAddress,
+            sourceAddress = sourceAddress,
+            fromChain = fromChain,
+            injectiveAddress = injectiveAddress,
+            includeOsmosisAndNeutron = false,
+        ) ?: return
         val body: Map<String, Any> = mapOf(
             "amount_in" to fromAmountString,
             "source_asset_denom" to fromToken,
             "source_asset_chain_id" to fromChain,
-            "dest_asset_denom" to toToken,
-            "dest_asset_chain_id" to toChain,
-            "chain_ids_to_addresses" to mapOf(
-                fromChain to sourceAddress,
-                toChain to accountAddress,
-            ),
+            "dest_asset_denom" to helper.configs.injectiveEvmUsdcAddress,
+            "dest_asset_chain_id" to helper.configs.injectiveEvmChainId,
+            "chain_ids_to_addresses" to chainAddresses,
             "slippage_tolerance_percent" to SLIPPAGE_PERCENT,
+            "allow_multi_tx" to true,
             "bridges" to listOf(
                 CCTP_BRIDGE_ID,
                 IBC_BRIDGE_ID,
@@ -519,6 +529,7 @@ internal class OnboardingSupervisor(
         accountAddress: String?,
         sourceAddress: String?,
         subaccountNumber: Int?,
+        injectiveAddress: String?,
     ) {
         helper.ioImplementations.threading?.async(ThreadingType.abacus) {
             val stateResponse = stateMachine.transfer(
@@ -533,6 +544,7 @@ internal class OnboardingSupervisor(
                     accountAddress = accountAddress,
                     sourceAddress = sourceAddress,
                     subaccountNumber = subaccountNumber,
+                    injectiveAddress = injectiveAddress,
                 )
             }
             helper.ioImplementations.threading?.async(ThreadingType.main) {
@@ -548,12 +560,13 @@ internal class OnboardingSupervisor(
         type: TransferInputField?,
         accountAddress: String,
         sourceAddress: String,
-        subaccountNumber: Int?
+        subaccountNumber: Int?,
+        injectiveAddress: String?,
     ) {
         val state = stateMachine.state
         if (state?.input?.transfer?.type == TransferType.deposit) {
             if (type == TransferInputField.size) {
-                retrieveDepositRoute(state, accountAddress, sourceAddress, subaccountNumber)
+                retrieveDepositRoute(state, accountAddress, sourceAddress, subaccountNumber, injectiveAddress)
             }
         } else if (state?.input?.transfer?.type == TransferType.withdrawal) {
             if (type == TransferInputField.usdcSize ||
